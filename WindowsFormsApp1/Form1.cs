@@ -123,13 +123,8 @@ namespace VidDownload
 
         private void helpMenu_Click(object sender, EventArgs e)
         {
-            if (helpForm.Visible == true)
-            {
-                helpForm.Focus();
-            } else
-            {
-                helpForm.Show();
-            }
+            Form helpForm = new HelpForm();
+            helpForm.ShowDialog();
         }
     }
 }
