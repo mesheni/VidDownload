@@ -34,6 +34,7 @@ namespace VidDownload
 
         private async void DLBut_ClickAsync(object sender, EventArgs e)
         {
+            DLBut.Enabled = false;
             if (SText.Text == "")
             {
                 MessageBox.Show("Скопируйте ссылку!");
@@ -103,12 +104,8 @@ namespace VidDownload
                 progress.Report("90");
                 proc.Close();
                 progress.Report("100");
+                DLBut.Enabled = true;
             }); 
-        }
-
-        public void App(string i)
-        {
-            LText.Text += i;
         }
 
         private void butOpenFolder_Click(object sender, EventArgs e)

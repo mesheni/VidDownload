@@ -78,6 +78,7 @@
             this.LText.Location = new System.Drawing.Point(16, 173);
             this.LText.Multiline = true;
             this.LText.Name = "LText";
+            this.LText.ReadOnly = true;
             this.LText.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.LText.Size = new System.Drawing.Size(585, 286);
             this.LText.TabIndex = 2;
@@ -167,7 +168,10 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.MaximumSize = new System.Drawing.Size(627, 507);
+            this.MinimumSize = new System.Drawing.Size(627, 507);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VidDownload";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
