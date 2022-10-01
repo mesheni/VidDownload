@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
@@ -112,12 +113,13 @@ namespace VidDownload
 
         private void butOpenFolder_Click(object sender, EventArgs e)
         {
-            string filePath = @".\MyVideos\";
-            if (!Directory.Exists(filePath))
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
+            if (!Directory.Exists(path))
             {
-                Directory.CreateDirectory(filePath);
+                Directory.CreateDirectory(path);
             }
-            string argument = "/select, \"" + filePath + "\"";
+            
+            string argument = "/open, \"" + path;
             System.Diagnostics.Process.Start("explorer.exe", argument);
         }
 
