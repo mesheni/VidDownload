@@ -97,6 +97,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="icon.png" />
+    <Content Include="license.txt" />
     <Content Include="yt-dlp.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
