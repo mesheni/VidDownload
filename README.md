@@ -5,4 +5,4 @@
 - Скачивать видео с помощью удобного графического интерфейса;
 - Скачивать плейлисты целиком;
 
-![2022-09-20_19-30-56](https://user-images.githubusercontent.com/26280352/191313981-2b3af194-c20f-41ea-956c-40b068dabbfc.png)
+![2022-10-02_15-15-02](https://user-images.githubusercontent.com/26280352/193453450-1f378f2d-be71-4afb-9b75-e49f867fb505.png)
