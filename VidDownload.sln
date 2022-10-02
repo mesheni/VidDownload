@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VidDownload", "WindowsFormsApp1\VidDownload.csproj", "{854DE903-371E-4360-B450-3C1A0C710356}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VidDownload", "VidDownload\VidDownload.csproj", "{854DE903-371E-4360-B450-3C1A0C710356}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
