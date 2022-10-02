@@ -50,6 +50,7 @@
             this.MaximumSize = new System.Drawing.Size(250, 250);
             this.MinimumSize = new System.Drawing.Size(250, 250);
             this.Name = "HelpForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "HelpForm";
             this.ResumeLayout(false);
             this.PerformLayout();

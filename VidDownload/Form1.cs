@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace VidDownload
 {
@@ -25,16 +26,20 @@ namespace VidDownload
         {
             InitializeComponent();
             
-            string filePath = @".\MyVideos\";
-            if (!Directory.Exists(filePath))
+            string videoPath = @".\MyVideos\";
+            string logPath = @".\log\";
+            if (!Directory.Exists(videoPath))
             {
-                Directory.CreateDirectory(filePath);
+                Directory.CreateDirectory(videoPath);
+            }
+            if (!Directory.Exists(logPath))
+            {
+                Directory.CreateDirectory(logPath);
             }
         }
 
         private async void DLBut_ClickAsync(object sender, EventArgs e)
         {
-            DLBut.Enabled = false;
             if (SText.Text == "")
             {
                 MessageBox.Show("Скопируйте ссылку!");
@@ -51,8 +56,17 @@ namespace VidDownload
                 }
             }
         }
+
         public async void Download(IProgress<string> progress)
         {
+            DLBut.Invoke(new Action(() => DLBut.Enabled = false));
+
+            string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
+            string log = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" 
+                        + dateTime + "_log.txt");
+            FileStream fs = new FileStream(log, FileMode.CreateNew);
+            StreamWriter w = new StreamWriter(fs, Encoding.Default);
+
             await Task<string>.Run(() =>
             {
                 System.Diagnostics.Process proc = new System.Diagnostics.Process();
@@ -80,19 +94,16 @@ namespace VidDownload
                         {
                             this.Invoke((MethodInvoker)(() =>
                             {
-                                LText.Text += Environment.NewLine + e.Data;
-                                LText.SelectionStart = LText.TextLength;
-                                LText.ScrollToCaret();
+                                logLabel.Text = e.Data;
+                                w.WriteLine(e.Data);
                             }
                             ));
                         }
                         else
                         {
-                            LText.Text += Environment.NewLine + e.Data;
-                            LText.SelectionStart = LText.TextLength;
-                            LText.ScrollToCaret();
+                            logLabel.Text = e.Data;
+                            w.WriteLine(e.Data);
                         }
-                        
                     }
                 });
                 progress.Report("10");
@@ -104,8 +115,11 @@ namespace VidDownload
                 progress.Report("90");
                 proc.Close();
                 progress.Report("100");
-                DLBut.Enabled = true;
-            }); 
+                w.Close();
+                fs.Close();
+                DLBut.Invoke(new Action(() => DLBut.Enabled = true));
+                logLabel.Invoke(new Action(() => logLabel.Text = ""));
+            });
         }
 
         private void butOpenFolder_Click(object sender, EventArgs e)
