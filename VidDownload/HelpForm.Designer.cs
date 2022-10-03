@@ -34,9 +34,10 @@
             // helpLabel
             // 
             this.helpLabel.AutoSize = true;
-            this.helpLabel.Location = new System.Drawing.Point(21, 76);
+            this.helpLabel.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.helpLabel.Location = new System.Drawing.Point(5, 9);
             this.helpLabel.Name = "helpLabel";
-            this.helpLabel.Size = new System.Drawing.Size(192, 39);
+            this.helpLabel.Size = new System.Drawing.Size(217, 48);
             this.helpLabel.TabIndex = 0;
             this.helpLabel.Text = "Программу разработал Бунин Иван.\r\n\r\n2022 г.\r\n";
             this.helpLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -45,13 +46,14 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(234, 211);
+            this.ClientSize = new System.Drawing.Size(226, 211);
             this.Controls.Add(this.helpLabel);
+            this.Font = new System.Drawing.Font("Bahnschrift SemiBold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.MaximumSize = new System.Drawing.Size(250, 250);
-            this.MinimumSize = new System.Drawing.Size(250, 250);
+            this.MinimumSize = new System.Drawing.Size(242, 250);
             this.Name = "HelpForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "HelpForm";
+            this.Text = "О программе";
             this.ResumeLayout(false);
             this.PerformLayout();
 

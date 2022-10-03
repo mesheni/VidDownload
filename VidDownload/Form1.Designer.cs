@@ -38,6 +38,8 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.helpMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.logLabel = new System.Windows.Forms.Label();
+            this.comboRes = new System.Windows.Forms.ComboBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -48,7 +50,7 @@
             this.SText.ForeColor = System.Drawing.SystemColors.ControlText;
             this.SText.Location = new System.Drawing.Point(16, 61);
             this.SText.Name = "SText";
-            this.SText.Size = new System.Drawing.Size(587, 20);
+            this.SText.Size = new System.Drawing.Size(587, 21);
             this.SText.TabIndex = 0;
             // 
             // DLBut
@@ -106,7 +108,7 @@
             // 
             this.checkPlaylist.AutoSize = true;
             this.checkPlaylist.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.checkPlaylist.Location = new System.Drawing.Point(16, 84);
+            this.checkPlaylist.Location = new System.Drawing.Point(16, 85);
             this.checkPlaylist.Name = "checkPlaylist";
             this.checkPlaylist.Size = new System.Drawing.Size(168, 20);
             this.checkPlaylist.TabIndex = 7;
@@ -127,8 +129,8 @@
             // 
             this.helpMenu.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.helpMenu.Name = "helpMenu";
-            this.helpMenu.Size = new System.Drawing.Size(65, 20);
-            this.helpMenu.Text = "Помощь";
+            this.helpMenu.Size = new System.Drawing.Size(91, 20);
+            this.helpMenu.Text = "О программе";
             this.helpMenu.Click += new System.EventHandler(this.helpMenu_Click);
             // 
             // logLabel
@@ -140,11 +142,39 @@
             this.logLabel.Size = new System.Drawing.Size(0, 16);
             this.logLabel.TabIndex = 9;
             // 
+            // comboRes
+            // 
+            this.comboRes.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.comboRes.FormattingEnabled = true;
+            this.comboRes.Items.AddRange(new object[] {
+            "144",
+            "240",
+            "360",
+            "480",
+            "720",
+            "1080"});
+            this.comboRes.Location = new System.Drawing.Point(291, 83);
+            this.comboRes.Name = "comboRes";
+            this.comboRes.Size = new System.Drawing.Size(121, 22);
+            this.comboRes.TabIndex = 10;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label2.Location = new System.Drawing.Point(202, 86);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(83, 16);
+            this.label2.TabIndex = 11;
+            this.label2.Text = "Разрешение:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(611, 262);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.comboRes);
             this.Controls.Add(this.logLabel);
             this.Controls.Add(this.checkPlaylist);
             this.Controls.Add(this.butOpenFolder);
@@ -153,6 +183,7 @@
             this.Controls.Add(this.DLBut);
             this.Controls.Add(this.SText);
             this.Controls.Add(this.menuStrip1);
+            this.Font = new System.Drawing.Font("Bahnschrift SemiBold", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.MaximumSize = new System.Drawing.Size(627, 301);
@@ -178,6 +209,8 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem helpMenu;
         private System.Windows.Forms.Label logLabel;
+        private System.Windows.Forms.ComboBox comboRes;
+        private System.Windows.Forms.Label label2;
     }
 }
 

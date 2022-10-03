@@ -21,6 +21,7 @@ namespace VidDownload
     {
         Form helpForm = new HelpForm();
         private static StringBuilder output = new StringBuilder();
+        private int res = 0;
 
         public Form1()
         {
@@ -40,15 +41,23 @@ namespace VidDownload
 
         private async void DLBut_ClickAsync(object sender, EventArgs e)
         {
-            if (SText.Text == "")
+            if (SText.Text == "" || comboRes.Text == "")
             {
-                MessageBox.Show("Скопируйте ссылку!");
+                MessageBox.Show("Пустое поле ссылки или поле разрешения!", "Ошибка!", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             } else
             {
                 try
                 {
-                    var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
-                    await Task.Run(() => Download(progress));
+                    if (int.TryParse(comboRes.Text, out res))
+                    {
+                        var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
+                        await Task.Run(() => Download(progress));
+                    } else
+                    {
+                        MessageBox.Show("Некорректное значение в поле \"Расширение\"", "Ошибка!",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -76,7 +85,7 @@ namespace VidDownload
                     proc.StartInfo.UseShellExecute = false;
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.Arguments = $"yt-dlp -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{SText.Text}\"";
+                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:h264,res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{SText.Text}\"";
                 }
                 else
                 {
@@ -84,7 +93,7 @@ namespace VidDownload
                     proc.StartInfo.UseShellExecute = false;
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.Arguments = $"yt-dlp -P \"./MyVideos\" {SText.Text}";
+                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:h264,res:{res},fps\" -P \"./MyVideos\" {SText.Text}";
                 }
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
