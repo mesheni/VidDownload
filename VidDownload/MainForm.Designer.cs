@@ -37,10 +37,12 @@
             this.checkPlaylist = new System.Windows.Forms.CheckBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.menuAbout = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.logLabel = new System.Windows.Forms.Label();
             this.comboRes = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.menuHelp = new System.Windows.Forms.ToolStripMenuItem();
+            this.comboCodec = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -135,6 +137,13 @@
             this.menuAbout.Text = "О программе";
             this.menuAbout.Click += new System.EventHandler(this.helpMenu_Click);
             // 
+            // menuHelp
+            // 
+            this.menuHelp.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.menuHelp.Name = "menuHelp";
+            this.menuHelp.Size = new System.Drawing.Size(65, 20);
+            this.menuHelp.Text = "Помощь";
+            // 
             // logLabel
             // 
             this.logLabel.AutoSize = true;
@@ -172,18 +181,39 @@
             this.label2.TabIndex = 11;
             this.label2.Text = "Разрешение:";
             // 
-            // menuHelp
+            // comboCodec
             // 
-            this.menuHelp.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.menuHelp.Name = "menuHelp";
-            this.menuHelp.Size = new System.Drawing.Size(65, 20);
-            this.menuHelp.Text = "Помощь";
+            this.comboCodec.FormattingEnabled = true;
+            this.comboCodec.Items.AddRange(new object[] {
+            "av01",
+            "vp9.2",
+            "vp9",
+            "h265",
+            "h264",
+            "vp8",
+            "h263"});
+            this.comboCodec.Location = new System.Drawing.Point(482, 83);
+            this.comboCodec.Name = "comboCodec";
+            this.comboCodec.Size = new System.Drawing.Size(121, 21);
+            this.comboCodec.TabIndex = 12;
             // 
-            // Form1
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label3.Location = new System.Drawing.Point(429, 86);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(47, 16);
+            this.label3.TabIndex = 13;
+            this.label3.Text = "Кодек:";
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(611, 262);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.comboCodec);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboRes);
             this.Controls.Add(this.logLabel);
@@ -199,7 +229,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.MaximumSize = new System.Drawing.Size(627, 301);
             this.MinimumSize = new System.Drawing.Size(627, 301);
-            this.Name = "Form1";
+            this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "VidDownload";
             this.menuStrip1.ResumeLayout(false);
@@ -223,6 +253,8 @@
         private System.Windows.Forms.ComboBox comboRes;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolStripMenuItem menuHelp;
+        private System.Windows.Forms.ComboBox comboCodec;
+        private System.Windows.Forms.Label label3;
     }
 }
 

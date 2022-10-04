@@ -21,7 +21,9 @@ namespace VidDownload
     {
         Form aboutForm = new AboutForm();
         private static StringBuilder output = new StringBuilder();
-        private int res = 0;
+        private int res = 1080;
+        private static List<string> codecList = new List<string>();
+        private string codec = "av01";
 
         public MainForm()
         {
@@ -37,10 +39,16 @@ namespace VidDownload
             {
                 Directory.CreateDirectory(logPath);
             }
+
+            foreach (var i in comboCodec.Items)
+            {
+                codecList.Add(i.ToString());
+            }
         }
 
         private async void DLBut_ClickAsync(object sender, EventArgs e)
         {
+
             if (SText.Text == "" || comboRes.Text == "")
             {
                 MessageBox.Show("Пустое поле ссылки или поле разрешения!", "Ошибка!", 
@@ -51,8 +59,18 @@ namespace VidDownload
                 {
                     if (int.TryParse(comboRes.Text, out res))
                     {
-                        var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
-                        await Task.Run(() => Download(progress));
+                        if (comboCodec.Text == "" || !(codecList.Exists((i) => i == comboCodec.Text.ToString())))
+                        {
+                            var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
+                            await Task.Run(() => Download(progress));
+                        }
+                        else
+                        {
+                            codec = comboCodec.Text;
+                            var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
+                            await Task.Run(() => Download(progress));
+                        }
+
                     } else
                     {
                         MessageBox.Show("Некорректное значение в поле \"Расширение\"", "Ошибка!",
@@ -86,7 +104,7 @@ namespace VidDownload
                     proc.StartInfo.UseShellExecute = false;
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:av01,res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{SText.Text}\"";
+                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{SText.Text}\"";
                 }
                 else
                 {
@@ -94,7 +112,7 @@ namespace VidDownload
                     proc.StartInfo.UseShellExecute = false;
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:av01,res:{res},fps\" -P \"./MyVideos\" {SText.Text}";
+                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" {SText.Text}";
                 }
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
