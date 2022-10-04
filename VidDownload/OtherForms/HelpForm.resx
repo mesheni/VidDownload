@@ -117,8 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="luck" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\image\luck.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="richHelpBox.Text" xml:space="preserve">
+    <value>Как пользоваться программой:
+
+1. Вставьте ссылку на видео или плейлист в поле для ссылок.
+
+2. Выберите необходимое разрешение (если не знаете какой нужно, ставьте 1080, если программа не найдет нужное, то скачает лучшее из возможного).
+
+3. Выберите кодек,в котором вы хотите скачать видео. Если такой кодек на сайте, с которого вы скачиваете не используется, то программа скачает видео с любым возможным кодеком. (необязательно)</value>
   </data>
 </root>

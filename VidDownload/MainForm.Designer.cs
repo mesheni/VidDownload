@@ -143,6 +143,7 @@
             this.menuHelp.Name = "menuHelp";
             this.menuHelp.Size = new System.Drawing.Size(65, 20);
             this.menuHelp.Text = "Помощь";
+            this.menuHelp.Click += new System.EventHandler(this.menuHelp_Click);
             // 
             // logLabel
             // 

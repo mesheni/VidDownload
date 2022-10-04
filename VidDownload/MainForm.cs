@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VidDownload.OtherForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
@@ -142,11 +143,11 @@ namespace VidDownload
                 proc.WaitForExit();
                 progress.Report("90");
                 proc.Close();
-                progress.Report("100");
                 w.Close();
                 fs.Close();
                 DLBut.Invoke(new Action(() => DLBut.Enabled = true));
                 logLabel.Invoke(new Action(() => logLabel.Text = ""));
+                progress.Report("100");
             });
         }
 
@@ -166,6 +167,12 @@ namespace VidDownload
         {
             Form aboutForm = new AboutForm();
             aboutForm.ShowDialog();
+        }
+
+        private void menuHelp_Click(object sender, EventArgs e)
+        {
+            Form helpForm = new HelpForm();
+            helpForm.ShowDialog();
         }
     }
 }
