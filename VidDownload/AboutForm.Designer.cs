@@ -1,6 +1,6 @@
 ﻿namespace VidDownload
 {
-    partial class HelpForm
+    partial class AboutForm
     {
         /// <summary>
         /// Required designer variable.

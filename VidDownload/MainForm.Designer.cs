@@ -1,6 +1,6 @@
 ﻿namespace VidDownload
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Обязательная переменная конструктора.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.SText = new System.Windows.Forms.TextBox();
             this.DLBut = new System.Windows.Forms.Button();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
@@ -36,10 +36,11 @@
             this.butOpenFolder = new System.Windows.Forms.Button();
             this.checkPlaylist = new System.Windows.Forms.CheckBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.helpMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.logLabel = new System.Windows.Forms.Label();
             this.comboRes = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.menuHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -118,20 +119,21 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.helpMenu});
+            this.menuAbout,
+            this.menuHelp});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(611, 24);
             this.menuStrip1.TabIndex = 8;
             this.menuStrip1.Text = "menuStrip1";
             // 
-            // helpMenu
+            // menuAbout
             // 
-            this.helpMenu.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.helpMenu.Name = "helpMenu";
-            this.helpMenu.Size = new System.Drawing.Size(91, 20);
-            this.helpMenu.Text = "О программе";
-            this.helpMenu.Click += new System.EventHandler(this.helpMenu_Click);
+            this.menuAbout.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.menuAbout.Name = "menuAbout";
+            this.menuAbout.Size = new System.Drawing.Size(91, 20);
+            this.menuAbout.Text = "О программе";
+            this.menuAbout.Click += new System.EventHandler(this.helpMenu_Click);
             // 
             // logLabel
             // 
@@ -169,6 +171,13 @@
             this.label2.Size = new System.Drawing.Size(83, 16);
             this.label2.TabIndex = 11;
             this.label2.Text = "Разрешение:";
+            // 
+            // menuHelp
+            // 
+            this.menuHelp.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.menuHelp.Name = "menuHelp";
+            this.menuHelp.Size = new System.Drawing.Size(65, 20);
+            this.menuHelp.Text = "Помощь";
             // 
             // Form1
             // 
@@ -209,10 +218,11 @@
         private System.Windows.Forms.Button butOpenFolder;
         private System.Windows.Forms.CheckBox checkPlaylist;
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem helpMenu;
+        private System.Windows.Forms.ToolStripMenuItem menuAbout;
         private System.Windows.Forms.Label logLabel;
         private System.Windows.Forms.ComboBox comboRes;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ToolStripMenuItem menuHelp;
     }
 }
 

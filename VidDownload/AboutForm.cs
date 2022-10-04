@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace VidDownload
 {
-    public partial class HelpForm : Form
+    public partial class AboutForm : Form
     {
-        public HelpForm()
+        public AboutForm()
         {
             InitializeComponent();
         }

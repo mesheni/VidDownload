@@ -17,13 +17,13 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace VidDownload
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        Form helpForm = new HelpForm();
+        Form aboutForm = new AboutForm();
         private static StringBuilder output = new StringBuilder();
         private int res = 0;
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             
@@ -146,8 +146,8 @@ namespace VidDownload
 
         private void helpMenu_Click(object sender, EventArgs e)
         {
-            Form helpForm = new HelpForm();
-            helpForm.ShowDialog();
+            Form aboutForm = new AboutForm();
+            aboutForm.ShowDialog();
         }
     }
 }
