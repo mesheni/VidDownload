@@ -152,7 +152,9 @@
             "360",
             "480",
             "720",
-            "1080"});
+            "1080",
+            "1440",
+            "2160"});
             this.comboRes.Location = new System.Drawing.Point(291, 83);
             this.comboRes.Name = "comboRes";
             this.comboRes.Size = new System.Drawing.Size(121, 22);

@@ -61,7 +61,8 @@ namespace VidDownload
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.Message, "Ошибка!",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -85,7 +86,7 @@ namespace VidDownload
                     proc.StartInfo.UseShellExecute = false;
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:h264,res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{SText.Text}\"";
+                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:av01,res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{SText.Text}\"";
                 }
                 else
                 {
@@ -93,7 +94,7 @@ namespace VidDownload
                     proc.StartInfo.UseShellExecute = false;
                     proc.StartInfo.RedirectStandardOutput = true;
                     proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:h264,res:{res},fps\" -P \"./MyVideos\" {SText.Text}";
+                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:av01,res:{res},fps\" -P \"./MyVideos\" {SText.Text}";
                 }
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
