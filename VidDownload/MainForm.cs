@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VidDownload.Download;
 using VidDownload.OtherForms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
@@ -20,41 +21,28 @@ namespace VidDownload
 {
     public partial class MainForm : Form
     {
-        Form aboutForm = new AboutForm();
         private static StringBuilder output = new StringBuilder();
         private int res = 1080;
         private static List<string> codecList = new List<string>();
         private string codec = "av01";
+        private ParseLog parseLog = new ParseLog();
+
+        Form aboutForm = new AboutForm();
 
         public MainForm()
         {
             InitializeComponent();
-            
-            string videoPath = @".\MyVideos\";
-            string logPath = @".\log\";
-            if (!Directory.Exists(videoPath))
-            {
-                Directory.CreateDirectory(videoPath);
-            }
-            if (!Directory.Exists(logPath))
-            {
-                Directory.CreateDirectory(logPath);
-            }
-
-            foreach (var i in comboCodec.Items)
-            {
-                codecList.Add(i.ToString());
-            }
+            InitApp();
         }
 
         private async void DLBut_ClickAsync(object sender, EventArgs e)
         {
-
             if (SText.Text == "" || comboRes.Text == "")
             {
-                MessageBox.Show("Пустое поле ссылки или поле разрешения!", "Ошибка!", 
+                MessageBox.Show("Пустое поле ссылки или поле разрешения!", "Ошибка!",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-            } else
+            }
+            else
             {
                 try
                 {
@@ -72,7 +60,8 @@ namespace VidDownload
                             await Task.Run(() => Download(progress));
                         }
 
-                    } else
+                    }
+                    else
                     {
                         MessageBox.Show("Некорректное значение в поле \"Расширение\"", "Ошибка!",
                             MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -91,7 +80,7 @@ namespace VidDownload
             DLBut.Invoke(new Action(() => DLBut.Enabled = false));
 
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
-            string log = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" 
+            string log = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\"
                         + dateTime + "_log.txt");
             FileStream fs = new FileStream(log, FileMode.CreateNew);
             StreamWriter w = new StreamWriter(fs, Encoding.Default);
@@ -125,6 +114,7 @@ namespace VidDownload
                             {
                                 logLabel.Text = e.Data;
                                 w.WriteLine(e.Data);
+                                progress.Report(parseLog.Parse(e.Data));
                             }
                             ));
                         }
@@ -132,22 +122,20 @@ namespace VidDownload
                         {
                             logLabel.Text = e.Data;
                             w.WriteLine(e.Data);
+                            progress.Report(parseLog.Parse(e.Data));
                         }
                     }
                 });
-                progress.Report("10");
                 proc.Start();
-                progress.Report("20");
                 proc.BeginOutputReadLine();
-                progress.Report("30");
                 proc.WaitForExit();
-                progress.Report("90");
                 proc.Close();
+
                 w.Close();
                 fs.Close();
+
                 DLBut.Invoke(new Action(() => DLBut.Enabled = true));
                 logLabel.Invoke(new Action(() => logLabel.Text = ""));
-                progress.Report("100");
             });
         }
 
@@ -173,6 +161,25 @@ namespace VidDownload
         {
             Form helpForm = new HelpForm();
             helpForm.ShowDialog();
+        }
+
+        private void InitApp()
+        {
+            string videoPath = @".\MyVideos\";
+            string logPath = @".\log\";
+            if (!Directory.Exists(videoPath))
+            {
+                Directory.CreateDirectory(videoPath);
+            }
+            if (!Directory.Exists(logPath))
+            {
+                Directory.CreateDirectory(logPath);
+            }
+
+            foreach (var i in comboCodec.Items)
+            {
+                codecList.Add(i.ToString());
+            }
         }
     }
 }
