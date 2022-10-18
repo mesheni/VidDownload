@@ -1,27 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VidDownload.Download;
 using VidDownload.OtherForms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
 
 namespace VidDownload
 {
     public partial class MainForm : Form
     {
-        private static StringBuilder output = new StringBuilder();
         private int res = 1080;
         private static List<string> codecList = new List<string>();
         private string codec = "av01";
@@ -44,33 +34,25 @@ namespace VidDownload
             }
             else
             {
-                try
+                if (int.TryParse(comboRes.Text, out res))
                 {
-                    if (int.TryParse(comboRes.Text, out res))
+                    if (comboCodec.Text == "" || !(codecList.Exists((i) => i == comboCodec.Text.ToString())))
                     {
-                        if (comboCodec.Text == "" || !(codecList.Exists((i) => i == comboCodec.Text.ToString())))
-                        {
-                            var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
-                            await Task.Run(() => Download(progress));
-                        }
-                        else
-                        {
-                            codec = comboCodec.Text;
-                            var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
-                            await Task.Run(() => Download(progress));
-                        }
-
+                        var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
+                        await Task.Run(() => Download(progress));
                     }
                     else
                     {
-                        MessageBox.Show("Некорректное значение в поле \"Расширение\"", "Ошибка!",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        codec = comboCodec.Text;
+                        var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
+                        await Task.Run(() => Download(progress));
                     }
+
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show(ex.Message, "Ошибка!",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Некорректное значение в поле \"Расширение\"", "Ошибка!",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -80,30 +62,29 @@ namespace VidDownload
             DLBut.Invoke(new Action(() => DLBut.Enabled = false));
 
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
-            string log = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\"
-                        + dateTime + "_log.txt");
+            string log = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
+
             FileStream fs = new FileStream(log, FileMode.CreateNew);
             StreamWriter w = new StreamWriter(fs, Encoding.Default);
 
             await Task<string>.Run(() =>
             {
                 System.Diagnostics.Process proc = new System.Diagnostics.Process();
+
+                proc.StartInfo.FileName = @".\yt-dlp.exe";
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.CreateNoWindow = true;
+
                 if (checkPlaylist.Checked == true)
                 {
-                    proc.StartInfo.FileName = @".\yt-dlp.exe";
-                    proc.StartInfo.UseShellExecute = false;
-                    proc.StartInfo.RedirectStandardOutput = true;
-                    proc.StartInfo.CreateNoWindow = true;
                     proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{SText.Text}\"";
                 }
                 else
                 {
-                    proc.StartInfo.FileName = @".\yt-dlp.exe";
-                    proc.StartInfo.UseShellExecute = false;
-                    proc.StartInfo.RedirectStandardOutput = true;
-                    proc.StartInfo.CreateNoWindow = true;
                     proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" {SText.Text}";
                 }
+
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
                     if (!String.IsNullOrEmpty(e.Data))
@@ -126,6 +107,7 @@ namespace VidDownload
                         }
                     }
                 });
+
                 proc.Start();
                 proc.BeginOutputReadLine();
                 proc.WaitForExit();
@@ -183,19 +165,3 @@ namespace VidDownload
         }
     }
 }
-//await Task.Run(() =>
-//{
-//    if (this.InvokeRequired)
-//    {
-//        this.Invoke((MethodInvoker)(() =>
-//        {
-//            App(proc.StandardOutput.ReadLineAsync().ToString());
-
-//        }
-//        ));
-//    }
-//    else
-//    {
-//        App(proc.StandardOutput.ReadLineAsync().ToString());
-//    }
-//});

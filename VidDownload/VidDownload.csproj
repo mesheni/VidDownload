@@ -64,7 +64,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Download\DownloadController.cs" />
     <Compile Include="Download\ParseLog.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
