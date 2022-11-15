@@ -9,13 +9,3 @@ using System.Windows;
                                               //(used if a resource is not found in the page,
                                               // app, or any theme specific resource dictionaries)
 )]
-[assembly: AssemblyTitle("VidDownload")]
-[assembly: AssemblyDescription("Программа для загрузки видео с разных платформ.")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ivan Bunin")]
-[assembly: AssemblyProduct("VidDownload")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-[assembly: AssemblyVersion("0.5.0.0")]
-[assembly: AssemblyFileVersion("0.5.0.0")]
