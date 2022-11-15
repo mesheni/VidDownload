@@ -38,13 +38,15 @@ namespace VidDownload
                 {
                     if (comboCodec.Text == "" || !(codecList.Exists((i) => i == comboCodec.Text.ToString())))
                     {
-                        var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
+                        var progress = new Progress<string>(s => progressBar1.Value = 
+                            Convert.ToInt32(s));
                         await Task.Run(() => Download(progress));
                     }
                     else
                     {
                         codec = comboCodec.Text;
-                        var progress = new Progress<string>(s => progressBar1.Value = Convert.ToInt32(s));
+                        var progress = new Progress<string>(s => progressBar1.Value = 
+                            Convert.ToInt32(s));
                         await Task.Run(() => Download(progress));
                     }
 
@@ -115,6 +117,8 @@ namespace VidDownload
 
                 w.Close();
                 fs.Close();
+
+                progress.Report("0");
 
                 DLBut.Invoke(new Action(() => DLBut.Enabled = true));
                 logLabel.Invoke(new Action(() => logLabel.Text = ""));

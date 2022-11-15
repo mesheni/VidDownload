@@ -51,7 +51,7 @@
             this.SText.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.SText.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.SText.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.SText.Location = new System.Drawing.Point(16, 61);
+            this.SText.Location = new System.Drawing.Point(16, 56);
             this.SText.Name = "SText";
             this.SText.Size = new System.Drawing.Size(587, 21);
             this.SText.TabIndex = 0;
@@ -90,7 +90,7 @@
             this.label1.BackColor = System.Drawing.SystemColors.Control;
             this.label1.Font = new System.Drawing.Font("Bahnschrift SemiBold", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.label1.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.label1.Location = new System.Drawing.Point(12, 38);
+            this.label1.Location = new System.Drawing.Point(12, 33);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(212, 19);
             this.label1.TabIndex = 5;
@@ -111,7 +111,7 @@
             // 
             this.checkPlaylist.AutoSize = true;
             this.checkPlaylist.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.checkPlaylist.Location = new System.Drawing.Point(16, 85);
+            this.checkPlaylist.Location = new System.Drawing.Point(16, 90);
             this.checkPlaylist.Name = "checkPlaylist";
             this.checkPlaylist.Size = new System.Drawing.Size(168, 20);
             this.checkPlaylist.TabIndex = 7;
@@ -167,7 +167,7 @@
             "1080",
             "1440",
             "2160"});
-            this.comboRes.Location = new System.Drawing.Point(291, 83);
+            this.comboRes.Location = new System.Drawing.Point(291, 88);
             this.comboRes.Name = "comboRes";
             this.comboRes.Size = new System.Drawing.Size(121, 22);
             this.comboRes.TabIndex = 10;
@@ -176,7 +176,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label2.Location = new System.Drawing.Point(202, 86);
+            this.label2.Location = new System.Drawing.Point(202, 91);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(83, 16);
             this.label2.TabIndex = 11;
@@ -193,7 +193,7 @@
             "h264",
             "vp8",
             "h263"});
-            this.comboCodec.Location = new System.Drawing.Point(482, 83);
+            this.comboCodec.Location = new System.Drawing.Point(482, 88);
             this.comboCodec.Name = "comboCodec";
             this.comboCodec.Size = new System.Drawing.Size(121, 21);
             this.comboCodec.TabIndex = 12;
@@ -202,7 +202,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Bahnschrift SemiBold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(429, 86);
+            this.label3.Location = new System.Drawing.Point(429, 91);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(47, 16);
             this.label3.TabIndex = 13;
