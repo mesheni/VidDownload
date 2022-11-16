@@ -9,8 +9,8 @@
     <Grid x:Name="MainLayout" Background="Black">
         <Grid Background="#FF1D1D1D">
 
-            <TextBox x:Name="TextBoxURL" Margin="50,59,50,0" TextWrapping="Wrap" 
-                     VerticalAlignment="Top" Height="36" FontSize="20" 
+            <TextBox x:Name="TextBoxURL" Margin="50,59,50,0" 
+                     VerticalAlignment="Top" Height="36" FontSize="16" 
                      FontFamily="Bahnschrift SemiBold" VerticalContentAlignment="Center" 
                      Background="#FFE3D9FF" SelectionBrush="#FDFF5252"/>
             <Label Content="Поле для ссылки:" 

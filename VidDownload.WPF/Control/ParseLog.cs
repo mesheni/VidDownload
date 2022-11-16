@@ -9,7 +9,7 @@ namespace VidDownload.WPF.Control
 {
     internal class ParseLog
     {
-        public double Parse(string log)
+        public static double Parse(string log)
         {
             string buff;
             double stringResult = 0;

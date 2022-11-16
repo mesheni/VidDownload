@@ -26,8 +26,6 @@ namespace VidDownload.WPF
         private int res = 1080;
         private static List<string> codecList = new List<string>();
         private string codec = "av01";
-        private double[] progRes = new double[2];
-        private ParseLog parseLog = new ParseLog();
 
         public MainWindow()
         {
@@ -37,7 +35,7 @@ namespace VidDownload.WPF
 
         private async void  ButDownload_Click(object sender, RoutedEventArgs e)
         {
-            if (TextBoxURL.Text == "" || ComboRes.Text == "")
+            if (TextBoxURL.Text.Length == 0 || ComboRes.Text.Length == 0)
             {
                 MessageBox.Show("Пустое поле ссылки или поле разрешения!", "Ошибка!",
                     MessageBoxButton.OK, MessageBoxImage.Error);
@@ -46,14 +44,14 @@ namespace VidDownload.WPF
             {
                 if (int.TryParse(ComboRes.Text, out res))
                 {
-                    if (ComboCodec.Text == "" || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
+                    if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
                     {
-                        await Task.Run(() => Download(PrograssBarMain));
+                        await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
                     }
                     else
                     {
                         codec = ComboCodec.Text;
-                        await Task.Run(() => Download(PrograssBarMain));
+                        await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
                     }
 
                 }
@@ -75,9 +73,9 @@ namespace VidDownload.WPF
             FileStream fs = new FileStream(log, FileMode.CreateNew);
             StreamWriter w = new StreamWriter(fs, Encoding.Default);
 
-            await Task<string>.Run(() =>
+            await Task.Run(() =>
             {
-                System.Diagnostics.Process proc = new System.Diagnostics.Process();
+                Process proc = new Process();
 
                 proc.StartInfo.FileName = @".\yt-dlp.exe";
                 proc.StartInfo.UseShellExecute = false;
@@ -95,13 +93,13 @@ namespace VidDownload.WPF
 
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
-                    if (!String.IsNullOrEmpty(e.Data))
+                    if (!string.IsNullOrEmpty(e.Data))
                     {
                         Dispatcher.Invoke(() =>
                         {
                             labelInfo.Content = e.Data;
                             w.WriteLine(e.Data);
-                            PrograssBarMain.Value = parseLog.Parse(e.Data);
+                            PrograssBarMain.Value = ParseLog.Parse(e.Data);
 
                         });
                     }
@@ -117,7 +115,7 @@ namespace VidDownload.WPF
 
                 Dispatcher.Invoke(() => ButDownload.IsEnabled = true);
                 Dispatcher.Invoke(() => labelInfo.Content = "");
-            });
+            }).ConfigureAwait(true);
         }
 
         private void ButOpenFolder_Click(object sender, RoutedEventArgs e)
