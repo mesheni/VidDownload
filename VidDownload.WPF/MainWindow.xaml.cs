@@ -86,7 +86,7 @@ namespace VidDownload.WPF
                 
                 if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
                 {
-                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{TextBoxURL.Text}\"";
+                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
                 }
                 else
                 {
@@ -101,9 +101,6 @@ namespace VidDownload.WPF
                         {
                             labelInfo.Content = e.Data;
                             w.WriteLine(e.Data);
-                            //progRes = parseLog.Parse(e.Data);
-
-                            //PrograssBarMain.LargeChange = progRes[0];
                             PrograssBarMain.Value = parseLog.Parse(e.Data);
 
                         });
@@ -126,6 +123,7 @@ namespace VidDownload.WPF
         private void ButOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
+
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -139,6 +137,7 @@ namespace VidDownload.WPF
         {
             string videoPath = @".\MyVideos\";
             string logPath = @".\log\";
+
             if (!Directory.Exists(videoPath))
             {
                 Directory.CreateDirectory(videoPath);
