@@ -2,30 +2,20 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using VidDownload.WPF.Control;
 
 namespace VidDownload.WPF
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        private int res = 1080;
+        private int res = 2160;
         private static List<string> codecList = new List<string>();
         private string codec = "av01";
+        private string acodec = "mp3";
 
         public MainWindow()
         {
@@ -35,30 +25,26 @@ namespace VidDownload.WPF
 
         private async void  ButDownload_Click(object sender, RoutedEventArgs e)
         {
-            if (TextBoxURL.Text.Length == 0 || ComboRes.Text.Length == 0)
+            if (TextBoxURL.Text.Length == 0)
             {
-                MessageBox.Show("Пустое поле ссылки или поле разрешения!", "Ошибка!",
+                MessageBox.Show("Пустое поле ссылки!", "Ошибка!",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
             else
             {
-                if (int.TryParse(ComboRes.Text, out res))
-                {
-                    if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
-                    {
-                        await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
-                    }
-                    else
-                    {
-                        codec = ComboCodec.Text;
-                        await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
-                    }
+                if (ComboRes.Text.Length != 0)
+                    res = Convert.ToInt32(ComboRes.Text);
+                if (ComboAudio.Text.Length != 0)
+                    acodec = ComboAudio.Text;
 
+                if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
+                {
+                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
                 }
                 else
                 {
-                    MessageBox.Show("Некорректное значение в поле \"Расширение\"", "Ошибка!",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    codec = ComboCodec.Text;
+                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
                 }
             }
         }
@@ -69,7 +55,7 @@ namespace VidDownload.WPF
 
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
             string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
-
+            
             FileStream fs = new FileStream(log, FileMode.CreateNew);
             StreamWriter w = new StreamWriter(fs, Encoding.Default);
 
@@ -82,14 +68,26 @@ namespace VidDownload.WPF
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.CreateNoWindow = true;
                 
-                if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
+                // Видео
+                if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true) && Dispatcher.Invoke(() => CheckAudio.IsChecked == false))
                 {
-                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
+                    proc.StartInfo.Arguments = $"yt-dlp -r 4.2M -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
                 }
-                else
+                else if (Dispatcher.Invoke(() => CheckAudio.IsChecked == false))
                 {
-                    proc.StartInfo.Arguments = $"yt-dlp -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" {Dispatcher.Invoke(() => TextBoxURL.Text)}";
+                    proc.StartInfo.Arguments = $"yt-dlp -r 4.2M -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\"{Dispatcher.Invoke(() => TextBoxURL.Text)}";
                 }
+
+                // Аудио
+                if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true) && Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
+                {
+                    proc.StartInfo.Arguments = $"yt-dlp -f \"ba\" -x --audio-format {acodec} -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
+                }
+                else if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
+                {
+                    proc.StartInfo.Arguments = $"yt-dlp -f \"ba\" -x --audio-format {acodec} -P \"./MyVideos\" {Dispatcher.Invoke(() => TextBoxURL.Text)}";
+                }
+
 
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
@@ -149,6 +147,36 @@ namespace VidDownload.WPF
             {
                 codecList.Add(i.ToString());
             }
+        }
+
+        private void CheckAudio_Checked(object sender, RoutedEventArgs e)
+        {
+            LabelRes.Visibility = Visibility.Hidden;
+            ComboRes.Visibility = Visibility.Hidden;
+            LabelCodec.Visibility = Visibility.Hidden;
+            ComboCodec.Visibility = Visibility.Hidden;
+            LabelCheckAudio.Visibility = Visibility.Visible;
+            ComboAudio.Visibility = Visibility.Visible;
+        }
+
+        private void CheckAudio_Unchecked(object sender, RoutedEventArgs e)
+        {
+            LabelCheckAudio.Visibility = Visibility.Hidden;
+            ComboAudio.Visibility = Visibility.Hidden;
+            LabelCodec.Visibility = Visibility.Visible;
+            ComboCodec.Visibility = Visibility.Visible;
+            LabelRes.Visibility = Visibility.Visible;
+            ComboRes.Visibility = Visibility.Visible;
+        }
+
+        private void CheckBoxPlaylist_Checked(object sender, RoutedEventArgs e)
+        {
+            LabelLink.Content = "Поле для ссылки на плейлист:";
+        }
+
+        private void CheckBoxPlaylist_Unchecked(object sender, RoutedEventArgs e)
+        {
+            LabelLink.Content = "Поле для ссылки на видео:";
         }
     }
 }

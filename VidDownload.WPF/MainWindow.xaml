@@ -5,22 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VidDownload.WPF"
         mc:Ignorable="d"
-        Title="VidDownload" Height="445" Width="800" WindowStyle="SingleBorderWindow" MinWidth="800" WindowStartupLocation="CenterScreen" Icon="/icon.png" MinHeight="430" ResizeMode="NoResize">
+        Title="VidDownload" Height="559" Width="800" WindowStyle="SingleBorderWindow" MinWidth="800" WindowStartupLocation="CenterScreen" Icon="/icon.png" MinHeight="430" ResizeMode="NoResize">
     <Grid x:Name="MainLayout" Background="Black">
         <Grid Background="#FF1D1D1D">
 
-            <TextBox x:Name="TextBoxURL" Margin="50,59,50,0" 
+            <TextBox x:Name="TextBoxURL" Margin="50,68,50,0" 
                      VerticalAlignment="Top" Height="36" FontSize="16" 
                      FontFamily="Bahnschrift SemiBold" VerticalContentAlignment="Center" 
                      Background="#FFE3D9FF" SelectionBrush="#FDFF5252"/>
-            <Label Content="Поле для ссылки:" 
-                   Margin="0,10,0,0" VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" 
+            <Label x:Name="LabelLink" Content="Поле для ссылки на видео:" 
+                   Margin="0,19,0,0" VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" 
                    FontSize="22" Background="#B2383838" Foreground="White" Padding="50,5,5,5"/>
-            <ProgressBar x:Name="PrograssBarMain" Height="28" Margin="50,250,50,0" VerticalAlignment="Top" Foreground="#FFFF2D2D"/>
-            <CheckBox x:Name="CheckBoxPlaylist" Content="Скачать весь плейлист" Margin="517,103,50,0" Foreground="White" FontFamily="Bahnschrift SemiBold" FontSize="16" VerticalContentAlignment="Center" Height="29" VerticalAlignment="Top" Grid.RowSpan="1" Grid.ColumnSpan="1" Padding="5,0,0,0" FontStyle="Italic" IsChecked="False"/>
-            <Button x:Name="ButDownload" Content="Скачать" Margin="300,302,300,0" VerticalAlignment="Top" Height="45" Background="#FFE3D9FF" Foreground="Black" BorderBrush="#FF707070" FontFamily="Bahnschrift SemiBold" FontSize="24" Click="ButDownload_Click"/>
-            <Label x:Name="labelInfo" Content="" Margin="50,226,50,0" VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" Foreground="White"/>
-            <ComboBox x:Name="ComboRes" Margin="50,132,0,0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="189" FontFamily="Bahnschrift SemiBold">
+            <CheckBox x:Name="CheckBoxPlaylist" Content="Скачать весь плейлист" Margin="516,117,51,0" Foreground="White" FontFamily="Bahnschrift SemiBold" FontSize="16" VerticalContentAlignment="Center" Height="29" VerticalAlignment="Top" Grid.RowSpan="1" Grid.ColumnSpan="1" Padding="5,0,0,0" FontStyle="Italic" IsChecked="False" Checked="CheckBoxPlaylist_Checked" Unchecked="CheckBoxPlaylist_Unchecked"/>
+            <CheckBox x:Name="CheckAudio" Content="Только аудио" HorizontalAlignment="Left" Margin="516,155,0,0" 
+                      VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" Foreground="White" FontSize="16" 
+                      Width="190" Checked="CheckAudio_Checked" Unchecked="CheckAudio_Unchecked"/>
+
+            <ComboBox x:Name="ComboRes" Margin="50,141,0,0" Height="22" VerticalAlignment="Top" 
+                      HorizontalAlignment="Left" Width="104" FontFamily="Bahnschrift SemiBold">
                 <ComboBoxItem Content="144" FontFamily="Bahnschrift SemiBold"/>
                 <ComboBoxItem Content="240" FontFamily="Bahnschrift SemiBold"/>
                 <ComboBoxItem Content="360" FontFamily="Bahnschrift SemiBold"/>
@@ -30,7 +32,7 @@
                 <ComboBoxItem Content="1440" FontFamily="Bahnschrift SemiBold"/>
                 <ComboBoxItem Content="2160" FontFamily="Bahnschrift SemiBold"/>
             </ComboBox>
-            <ComboBox x:Name="ComboCodec" Margin="50,186,0,0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="189" FontFamily="Bahnschrift SemiBold">
+            <ComboBox x:Name="ComboCodec" Margin="50,195,0,0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="104" FontFamily="Bahnschrift SemiBold">
                 <ComboBoxItem Content="av01"/>
                 <ComboBoxItem Content="vp9.2"/>
                 <ComboBoxItem Content="vp9"/>
@@ -39,9 +41,35 @@
                 <ComboBoxItem Content="vp8"/>
                 <ComboBoxItem Content="h263"/>
             </ComboBox>
-            <Button x:Name="ButOpenFolder" Content="Открыть папку с видео" Margin="300,352,300,0" VerticalAlignment="Top" Height="30" FontFamily="Bahnschrift SemiBold" FontSize="14" Click="ButOpenFolder_Click"/>
-            <Label Content="Разрешение:" HorizontalAlignment="Left" Margin="50,103,0,0" VerticalAlignment="Top" Foreground="White" FontFamily="Bahnschrift SemiBold" Height="29" FontSize="16"/>
-            <Label Content="Кодек:" HorizontalAlignment="Left" Margin="50,159,0,0" VerticalAlignment="Top" Foreground="White" FontFamily="Bahnschrift SemiBold" Height="27" FontSize="16"/>
+            <Label x:Name="LabelCheckAudio" Content="Аудио формат:" HorizontalAlignment="Left" 
+                   Margin="50,112,0,0" VerticalAlignment="Top" Foreground="White" FontFamily="Bahnschrift SemiBold" 
+                   FontSize="16" Visibility="Hidden"/>
+            <ComboBox x:Name="ComboAudio" HorizontalAlignment="Left" Margin="50,141,0,0" VerticalAlignment="Top" 
+                      Width="104" Visibility="Hidden" FontFamily="Bahnschrift SemiBold">
+                <ComboBoxItem Background="White" Content="mp3" FontFamily="Bahnschrift SemiBold"/>
+                <ComboBoxItem Content="3gp"/>
+                <ComboBoxItem Content="flac"/>
+                <ComboBoxItem Content="wav"/>
+                <ComboBoxItem Content="aac"/>
+                <ComboBoxItem Content="m4a"/>
+            </ComboBox>
+
+
+
+            <Label x:Name="LabelRes" Content="Разрешение:" HorizontalAlignment="Left" Margin="50,112,0,0" VerticalAlignment="Top" 
+                   Foreground="White" FontFamily="Bahnschrift SemiBold" Height="29" FontSize="16"/>
+            <Label x:Name="LabelCodec" Content="Кодек:" HorizontalAlignment="Left" Margin="50,168,0,0" 
+                   VerticalAlignment="Top" Foreground="White" FontFamily="Bahnschrift SemiBold" Height="27" 
+                   FontSize="16"/>
+            <Label x:Name="labelInfo" Content="" Margin="50,346,50,0" VerticalAlignment="Top" 
+                   FontFamily="Bahnschrift SemiBold" Foreground="White"/>
+            <ProgressBar x:Name="PrograssBarMain" Height="28" Margin="50,370,50,0" VerticalAlignment="Top" 
+                         Foreground="#FFFF2D2D"/>
+            <Button x:Name="ButDownload" Content="Скачать" Margin="300,422,300,0" VerticalAlignment="Top" 
+                    Height="45" Background="#FFE3D9FF" Foreground="Black" BorderBrush="#FF707070" FontFamily="Bahnschrift SemiBold" FontSize="24" Click="ButDownload_Click"/>
+            <Button x:Name="ButOpenFolder" Content="Открыть папку с видео" Margin="300,472,300,0" 
+                    VerticalAlignment="Top" Height="30" FontFamily="Bahnschrift SemiBold" FontSize="14" 
+                    Click="ButOpenFolder_Click"/>
         </Grid>
 
     </Grid>
