@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <None Remove="icon.png" />
+    <None Remove="jojack.jpg" />
     <None Remove="license.txt" />
   </ItemGroup>
 
@@ -30,6 +31,7 @@
     <Resource Include="icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="jojack.jpg" />
   </ItemGroup>
 
   <ItemGroup>

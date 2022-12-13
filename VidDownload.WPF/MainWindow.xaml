@@ -73,6 +73,7 @@
             <Label x:Name="LabelFormat" Content="Расширение файла:" HorizontalAlignment="Left" Margin="50,222,0,0" VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" Foreground="White" FontSize="16"/>
             <ComboBox x:Name="ComboFormat" HorizontalAlignment="Left" Margin="50,251,0,0" VerticalAlignment="Top" Width="104" FontFamily="Bahnschrift SemiBold"/>
             <CheckBox x:Name="CheckCoder" Content="Перекодировать видео" HorizontalAlignment="Left" Margin="516,188,0,0" VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" FontSize="16" Foreground="White" Checked="CheckCoder_Checked" Unchecked="CheckCoder_Unchecked"/>
+            <Image x:Name="imgJJ" HorizontalAlignment="Left" Margin="10,457,0,10" Width="134" Source="/jojack.jpg" OpacityMask="Black"/>
         </Grid>
 
     </Grid>
