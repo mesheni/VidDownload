@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using VidDownload.WPF.Control;
+using VidDownload.WPF.Help;
 
 namespace VidDownload.WPF
 {
@@ -88,22 +89,22 @@ namespace VidDownload.WPF
                     {
                         if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
                         {
-                            proc.StartInfo.Arguments = $"yt-dlp -r 4.2M --recode-video {format} -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
+                            proc.StartInfo.Arguments = $"yt-dlp --recode-video {format} -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
                         }
                         else
                         {
-                            proc.StartInfo.Arguments = $"yt-dlp -r 4.2M --recode-video {format} -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
+                            proc.StartInfo.Arguments = $"yt-dlp --recode-video {format} -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
                         }
                     }
                     else
                     {
                         if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
                         {
-                            proc.StartInfo.Arguments = $"yt-dlp -r 4.2M --remux-video {format} -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
+                            proc.StartInfo.Arguments = $"yt-dlp --remux-video {format} -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
                         }
                         else
                         {
-                            proc.StartInfo.Arguments = $"yt-dlp -r 4.2M --remux-video {format} -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
+                            proc.StartInfo.Arguments = $"yt-dlp --remux-video {format} -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
                         }
                     }
                     
@@ -221,6 +222,12 @@ namespace VidDownload.WPF
         private void CheckCoder_Unchecked(object sender, RoutedEventArgs e)
         {
             ComboFormat.Items.Remove("mov");
+        }
+
+        private void ButtonHelp_Click(object sender, RoutedEventArgs e)
+        {
+            HelpWindow help = new HelpWindow();
+            help.ShowDialog();
         }
     }
 }

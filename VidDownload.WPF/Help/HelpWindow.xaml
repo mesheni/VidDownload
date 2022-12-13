@@ -1,0 +1,19 @@
+﻿<Window x:Class="VidDownload.WPF.Help.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VidDownload.WPF.Help"
+        mc:Ignorable="d"
+        Title="Помощь" Height="300
+        " Width="300
+        " ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+    <Grid Background="#FF1F1F1F">
+        <Image x:Name="imgJojack" Margin="10,123,10,10" Source="/jojack.jpg" Stretch="Fill"/>
+        <Label x:Name="LabelHelp" Content="Программу создал Иван Бунин (mesh)" HorizontalAlignment="Center" 
+               Margin="0,10,0,0" VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" Foreground="White"/>
+        <Label Content="2022 г." HorizontalAlignment="Center" Margin="0,94,0,0" VerticalAlignment="Top" 
+               FontFamily="Bahnschrift SemiBold" Foreground="White"/>
+
+    </Grid>
+</Window>
