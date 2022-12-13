@@ -8,6 +8,8 @@
 
 ![2022-12-11_14-44-42](https://user-images.githubusercontent.com/26280352/206901661-ad84a764-2ce7-4297-8990-51c1909e1b2f.png)
 
+Для работы программы необходим .NET 3.1. Скачать его можно отсюда: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-3.1.425-windows-x64-installer
+
 **Для сборки и запуска у себя на компьютере понадобится:**
 - Visual Studio 2022
 - .NET Core 3.1
