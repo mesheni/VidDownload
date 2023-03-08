@@ -8,11 +8,11 @@
 
 ![2022-12-13_21-17-09](https://user-images.githubusercontent.com/26280352/207413282-54278256-7599-47a2-a4d7-9db5609f8be0.png)
 
-Для работы программы необходим .NET 3.1. Скачать его можно отсюда: https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-3.1.425-windows-x64-installer
+Для работы программы необходим .NET 6 Скачать его можно отсюда: [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-3.1.425-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 
 **Для сборки и запуска у себя на компьютере понадобится:**
 - Visual Studio 2022
-- .NET Core 3.1
+- .NET 6
 - Инструментарий для создаания WPF приложений
 - yt-dlp
 - ffmpeg
