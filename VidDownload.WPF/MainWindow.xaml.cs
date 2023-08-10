@@ -158,21 +158,21 @@ namespace VidDownload.WPF
 
         private void CheckAudio_Checked(object sender, RoutedEventArgs e)
         {
-            LabelRes.Visibility = Visibility.Hidden;
-            ComboRes.Visibility = Visibility.Hidden;
-            LabelCodec.Visibility = Visibility.Hidden;
-            ComboCodec.Visibility = Visibility.Hidden;
-            LabelFormat.Visibility = Visibility.Hidden;
-            ComboFormat.Visibility = Visibility.Hidden;
-            CheckCoder.Visibility = Visibility.Hidden;
+            LabelRes.Visibility = Visibility.Collapsed;
+            ComboRes.Visibility = Visibility.Collapsed;
+            LabelCodec.Visibility = Visibility.Collapsed;
+            ComboCodec.Visibility = Visibility.Collapsed;
+            LabelFormat.Visibility = Visibility.Collapsed;
+            ComboFormat.Visibility = Visibility.Collapsed;
+            CheckCoder.Visibility = Visibility.Collapsed;
             LabelCheckAudio.Visibility = Visibility.Visible;
             ComboAudio.Visibility = Visibility.Visible;
         }
 
         private void CheckAudio_Unchecked(object sender, RoutedEventArgs e)
         {
-            LabelCheckAudio.Visibility = Visibility.Hidden;
-            ComboAudio.Visibility = Visibility.Hidden;
+            LabelCheckAudio.Visibility = Visibility.Collapsed;
+            ComboAudio.Visibility = Visibility.Collapsed;
             LabelCodec.Visibility = Visibility.Visible;
             ComboCodec.Visibility = Visibility.Visible;
             LabelRes.Visibility = Visibility.Visible;

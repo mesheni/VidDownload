@@ -14,12 +14,12 @@
                FontFamily="Raleway" Foreground="White" FontSize="18" FontWeight="Bold"/>
 
         <TextBlock HorizontalAlignment="Center" Margin="0,144,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="16" FontFamily="Raleway" FontWeight="Bold">
-            <Hyperlink NavigateUri="https://vk.com/me_sheni" RequestNavigate="Hyperlink_RequestNavigate">
+            <Hyperlink NavigateUri="https://vk.com/me_sheni" RequestNavigate="Hyperlink_Vk">
                 CСЫЛКА НА ПАБЛИК ВК
             </Hyperlink>
         </TextBlock>
         <TextBlock HorizontalAlignment="Center" Margin="0,118,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="16" FontFamily="Raleway" FontWeight="Bold">
-            <Hyperlink NavigateUri="https://github.com/mesheni" RequestNavigate="Hyperlink_RequestNavigate">
+            <Hyperlink NavigateUri="https://github.com/mesheni" RequestNavigate="Hyperlink_Gh">
                 ССЫЛКА НА GITHUB
             </Hyperlink>
         </TextBlock>
