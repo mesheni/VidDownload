@@ -5,15 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VidDownload.WPF.Help"
         mc:Ignorable="d"
-        Title="Помощь" Height="300
-        " Width="300
-        " ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+        Title="Помощь" Height="500" Width="500" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
     <Grid Background="#FF1F1F1F">
-        <Image x:Name="imgJojack" Margin="10,123,10,10" Source="/jojack.jpg" Stretch="Fill"/>
+        <Image x:Name="imgJojack" Margin="10,213,10,10" Source="/jojack.jpg" Stretch="Fill"/>
         <Label x:Name="LabelHelp" Content="Программу создал Иван Бунин (mesh)" HorizontalAlignment="Center" 
-               Margin="0,10,0,0" VerticalAlignment="Top" FontFamily="Bahnschrift SemiBold" Foreground="White"/>
-        <Label Content="2022 г." HorizontalAlignment="Center" Margin="0,94,0,0" VerticalAlignment="Top" 
-               FontFamily="Bahnschrift SemiBold" Foreground="White"/>
+               Margin="0,10,0,0" VerticalAlignment="Top" FontFamily="Raleway" Foreground="White" FontSize="20" FontWeight="Bold"/>
+        <Label Content="2023 г." HorizontalAlignment="Center" Margin="0,176,0,0" VerticalAlignment="Top" 
+               FontFamily="Raleway" Foreground="White" FontSize="18" FontWeight="Bold"/>
 
+        <TextBlock HorizontalAlignment="Center" Margin="0,144,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="16" FontFamily="Raleway" FontWeight="Bold">
+            <Hyperlink NavigateUri="https://vk.com/me_sheni" RequestNavigate="Hyperlink_RequestNavigate">
+                CСЫЛКА НА ПАБЛИК ВК
+            </Hyperlink>
+        </TextBlock>
+        <TextBlock HorizontalAlignment="Center" Margin="0,118,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="16" FontFamily="Raleway" FontWeight="Bold">
+            <Hyperlink NavigateUri="https://github.com/mesheni" RequestNavigate="Hyperlink_RequestNavigate">
+                ССЫЛКА НА GITHUB
+            </Hyperlink>
+        </TextBlock>
     </Grid>
 </Window>

@@ -17,7 +17,7 @@ namespace VidDownload.WPF
         private static List<string> codecList = new List<string>();
         private string codec = "av01";
         private string acodec = "mp3";
-        private string format = "mp4";
+        private string format = "";
 
         public MainWindow()
         {
@@ -53,6 +53,7 @@ namespace VidDownload.WPF
             }
         }
 
+        // Функция загрузки видео
         public async void Download(ProgressBar PrograssBarMain)
         {
             Dispatcher.Invoke(() => ButDownload.IsEnabled = false);
@@ -72,44 +73,20 @@ namespace VidDownload.WPF
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.CreateNoWindow = true;
                 
+                // Сборка команды и отправка в yt-dlp
                 if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
                 {
-                    if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
-                    {
-                        proc.StartInfo.Arguments = $"yt-dlp -f \"ba\" -x --audio-format {acodec} -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
-                    }
-                    else
-                    {
-                        proc.StartInfo.Arguments = $"yt-dlp -f \"ba\" -x --audio-format {acodec} -P \"./MyVideos\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
-                    }
+                    proc.StartInfo.Arguments = Command.LoadAudio(acodec, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
                 }
                 else
                 {
-                    if (Dispatcher.Invoke(() => CheckCoder.IsChecked == true)) 
+                    Dispatcher.Invoke(() =>
                     {
-                        if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
-                        {
-                            proc.StartInfo.Arguments = $"yt-dlp --recode-video {format} -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
-                        }
-                        else
-                        {
-                            proc.StartInfo.Arguments = $"yt-dlp --recode-video {format} -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
-                        }
-                    }
-                    else
-                    {
-                        if (Dispatcher.Invoke(() => CheckBoxPlaylist.IsChecked == true))
-                        {
-                            proc.StartInfo.Arguments = $"yt-dlp --remux-video {format} -S \"+codec:{codec},res:{res},fps\" -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
-                        }
-                        else
-                        {
-                            proc.StartInfo.Arguments = $"yt-dlp --remux-video {format} -S \"+codec:{codec},res:{res},fps\" -P \"./MyVideos\" \"{Dispatcher.Invoke(() => TextBoxURL.Text)}\"";
-                        }
-                    }
-                    
+                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, codec, res, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked, format);
+                    });
                 }
 
+                // Логирование и запись логов в файл
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
@@ -118,7 +95,7 @@ namespace VidDownload.WPF
                         {
                             labelInfo.Content = e.Data;
                             w.WriteLine(e.Data);
-                            PrograssBarMain.Value = ParseLog.Parse(e.Data);
+                            PrograssBarMain.Value = ParseLog.Parse(e.Data); // Парсинг % загрузки
                         });
                     }
                 });
@@ -136,6 +113,9 @@ namespace VidDownload.WPF
             }).ConfigureAwait(true);
         }
 
+
+
+        // Кнопка открытия папки с видео
         private void ButOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
