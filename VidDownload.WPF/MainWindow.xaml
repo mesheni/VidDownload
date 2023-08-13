@@ -3,9 +3,20 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:local="clr-namespace:VidDownload.WPF"
         mc:Ignorable="d"
-        Title="VidDownload" Margin="20" Height="480" Width="700" WindowStyle="SingleBorderWindow" WindowStartupLocation="CenterScreen" Icon="/icon.png" ResizeMode="NoResize">
+        Title="VidDownload" WindowStartupLocation="CenterScreen" Icon="/icon.png" ResizeMode="CanMinimize" SizeToContent="WidthAndHeight" WindowStyle="ThreeDBorderWindow" Width="650" MinWidth="650">
+    <Window.Resources>
+        <Style TargetType="Grid" x:Key="RoundGrid">
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="20" />
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+
     <Grid x:Name="MainLayout" Background="Black">
         <Grid Background="#FF1D1D1D">
             <Grid.RowDefinitions>
@@ -14,24 +25,24 @@
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Height="100">
+            <Grid Grid.Row="0" Height="auto">
+
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <Label x:Name="LabelLink" Content="Поле для ссылки на видео:" Margin="20, 0" VerticalAlignment="Top" FontFamily="Raleway" FontSize="22" Background="#B2383838" Foreground="White" FontWeight="Bold"/>
+                    <Label x:Name="LabelLink" Height="40" Content="Поле для ссылки на видео:" Margin="20, 0" FontFamily="Raleway" FontSize="22" Foreground="White" FontWeight="Bold" Background="#B2383838" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderThickness="0,0,0,0" Panel.ZIndex="0"/>
                     <TextBox x:Name="TextBoxURL" Margin="20, 0" VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Raleway" VerticalContentAlignment="Center" Background="#FFE3D9FF" SelectionBrush="#FDFF5252"/>
                 </StackPanel>
             </Grid>
 
+            <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,30,0,0">
 
-            <Grid Grid.Row="1" Margin="20, 0">
-                
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0" HorizontalAlignment="Left" Width="auto" Background="#FF2B2B2B">
                     <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10">
-                        <Label x:Name="LabelRes" Content="Разрешение:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Raleway" Height="29" FontSize="16" FontWeight="Bold"/>
-                        <ComboBox x:Name="ComboRes" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Raleway" FontWeight="Bold">
+                        <Label x:Name="LabelRes" Content="Разрешение:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Raleway" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" UseLayoutRounding="False" BorderThickness="0,0,0,0"/>
+                        <ComboBox x:Name="ComboRes" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Raleway" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
                             <ComboBoxItem Content="144" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="240" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="360" FontFamily="Raleway" FontWeight="Bold"/>
@@ -42,8 +53,8 @@
                             <ComboBoxItem Content="2160" FontFamily="Raleway" FontWeight="Bold"/>
                         </ComboBox>
 
-                        <Label x:Name="LabelCodec" Content="Кодек:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Raleway" Height="27" FontSize="16" FontWeight="Bold"/>
-                        <ComboBox x:Name="ComboCodec" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Raleway" FontWeight="Bold">
+                        <Label x:Name="LabelCodec" Content="Кодек:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Raleway" Height="27" FontSize="16" FontWeight="Bold" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0"/>
+                        <ComboBox x:Name="ComboCodec" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Raleway" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
                             <ComboBoxItem Content="av01" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="vp9.2" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="vp9" FontFamily="Raleway" FontWeight="Bold"/>
@@ -53,8 +64,8 @@
                             <ComboBoxItem Content="h263" FontFamily="Raleway" FontWeight="Bold"/>
                         </ComboBox>
 
-                        <Label x:Name="LabelCheckAudio" Content="Аудио формат:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Bahnschrift SemiBold" FontSize="16" Visibility="Collapsed"/>
-                        <ComboBox x:Name="ComboAudio" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" Visibility="Collapsed" FontFamily="Raleway" FontWeight="Bold">
+                        <Label x:Name="LabelCheckAudio" Content="Аудио формат:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Bahnschrift SemiBold" FontSize="16" Visibility="Collapsed" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0"/>
+                        <ComboBox x:Name="ComboAudio" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" Visibility="Collapsed" FontFamily="Raleway" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
                             <ComboBoxItem Background="White" Content="mp3" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="3gp" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="flac" FontFamily="Raleway" FontWeight="Bold"/>
@@ -63,8 +74,8 @@
                             <ComboBoxItem Content="m4a" FontFamily="Raleway" FontWeight="Bold"/>
                         </ComboBox>
 
-                        <Label x:Name="LabelFormat" Content="Расширение файла:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Raleway" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                        <ComboBox x:Name="ComboFormat" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" FontFamily="Raleway" FontWeight="Bold"/>
+                        <Label x:Name="LabelFormat" Content="Расширение файла:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Raleway" Foreground="White" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0"/>
+                        <ComboBox x:Name="ComboFormat" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" FontFamily="Raleway" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14"/>
                     </StackPanel>
                 </Grid>
 
@@ -77,10 +88,10 @@
                 </Grid>
             </Grid>
 
-            <Grid Grid.Row="2">
-                <StackPanel>
-                    <Label x:Name="labelInfo" Content="" Margin="20, 10, 20, 0" VerticalAlignment="Top" FontFamily="Consolas" Foreground="White"/>
-                    <ProgressBar x:Name="PrograssBarMain" Margin="20, 0" Height="28" VerticalAlignment="Top" Foreground="#FFFF2D2D"/>
+            <Grid Grid.Row="2" Height="auto">
+                <StackPanel Margin="0, 0, 0, 10">
+                    <Label x:Name="labelInfo" Content="" Width="610" HorizontalAlignment="Left" Margin="20,0,20,0" FontFamily="Consolas" Foreground="White" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+                    <ProgressBar x:Name="PrograssBarMain" Margin="20, 0" Height="28" VerticalAlignment="Top" Foreground="#FFFF2D2D" FontFamily="Raleway" FontWeight="Bold" FontSize="14"/>
 
                     <Button x:Name="ButDownload" Content="Скачать" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="250" Background="#FFE3D9FF" Foreground="Black" BorderBrush="#FF707070" FontFamily="Raleway" FontSize="24" Click="ButDownload_Click" FontWeight="Bold"/>
 
@@ -96,7 +107,7 @@
                             <Button x:Name="ButtonHelp" Content="?" HorizontalAlignment="Left" VerticalAlignment="Top" Width="30" Height="30" Click="ButtonHelp_Click" FontFamily="Raleway" FontWeight="Bold"/>
                         </Grid>
                     </Grid>
-                    
+
                 </StackPanel>
 
             </Grid>

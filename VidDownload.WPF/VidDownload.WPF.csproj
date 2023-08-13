@@ -29,6 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="HandyControl" Version="3.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
