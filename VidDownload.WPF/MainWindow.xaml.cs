@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
+using static System.Reflection.AssemblyKeyFileAttribute;
 
 namespace VidDownload.WPF
 {

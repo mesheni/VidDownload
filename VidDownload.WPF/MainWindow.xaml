@@ -7,15 +7,6 @@
         xmlns:local="clr-namespace:VidDownload.WPF"
         mc:Ignorable="d"
         Title="VidDownload" WindowStartupLocation="CenterScreen" Icon="/icon.png" ResizeMode="CanMinimize" SizeToContent="WidthAndHeight" WindowStyle="ThreeDBorderWindow" Width="650" MinWidth="650">
-    <Window.Resources>
-        <Style TargetType="Grid" x:Key="RoundGrid">
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="20" />
-                </Style>
-            </Style.Resources>
-        </Style>
-    </Window.Resources>
 
     <Grid x:Name="MainLayout" Background="Black">
         <Grid Background="#FF1D1D1D">
@@ -29,7 +20,7 @@
 
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
                     <Label x:Name="LabelLink" Height="40" Content="Поле для ссылки на видео:" Margin="20, 0" FontFamily="Raleway" FontSize="22" Foreground="White" FontWeight="Bold" Background="#B2383838" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderThickness="0,0,0,0" Panel.ZIndex="0"/>
-                    <TextBox x:Name="TextBoxURL" Margin="20, 0" VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Raleway" VerticalContentAlignment="Center" Background="#FFE3D9FF" SelectionBrush="#FDFF5252"/>
+                    <TextBox x:Name="TextBoxURL" Margin="20, 0" VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Raleway" VerticalContentAlignment="Center" Background="#FFE3D9FF" SelectionBrush="#FDFF5252" Width="610"/>
                 </StackPanel>
             </Grid>
 

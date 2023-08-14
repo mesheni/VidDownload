@@ -4,15 +4,33 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>bin\Release\netcoreapp3.1\icon.ico</ApplicationIcon>
-    <Version>0.6.2</Version>
-    <Company>Ivan Bunin</Company>
-    <Authors>Ivan Bunin</Authors>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Version>0.6.3</Version>
+    <Company></Company>
+    <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.6.2.0</AssemblyVersion>
+    <AssemblyVersion>0.6.3.4</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <FileVersion>0.6.3.4</FileVersion>
+    <SignAssembly>True</SignAssembly>
+    <Copyright>mesh</Copyright>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/mesheni/VidDownload</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <NeutralLanguage>ru</NeutralLanguage>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <AssemblyOriginatorKeyFile>VidDownload.WPF_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
+    <DelaySign>True</DelaySign>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,10 +40,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="bin\Release\netcoreapp3.1\icon.ico" />
+    <Content Include="icon.ico" />
     <Content Include="license.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +77,10 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="bin\Release\netcoreapp3.1\" />
   </ItemGroup>
 
 </Project>
