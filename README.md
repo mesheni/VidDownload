@@ -6,7 +6,7 @@
 - Скачивать плейлисты целиком;
 - Выбирать качество и кодек формат с которым будет загружаться видео или аудио;
 
-![2022-12-13_21-17-09](https://user-images.githubusercontent.com/26280352/207413282-54278256-7599-47a2-a4d7-9db5609f8be0.png)
+![2023-08-14_21-25-14](https://github.com/mesheni/VidDownload/assets/26280352/58a1dfdb-d9af-4379-9c55-9a98333d8026)
 
 Для работы программы необходим .NET 6 Скачать его можно отсюда: [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-3.1.425-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 
