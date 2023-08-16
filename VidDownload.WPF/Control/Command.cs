@@ -7,9 +7,9 @@ using System.Windows.Threading;
 
 namespace VidDownload.WPF.Control
 {
-    public class Command
+    public class Command // Класс для сборки команды для yt-dlp 
     {
-        static public string LoadAudio(string acodec, string reference, bool? isPlaylist)
+        static public string LoadAudio(string acodec, string reference, bool? isPlaylist) // Функция сборки команды для загрузки аудио
         {
             string result;
 
@@ -24,7 +24,7 @@ namespace VidDownload.WPF.Control
             return result;
         }
 
-        static public string LoadVideo(string reference, string vcodec, string res = "1080", bool? isPlaylist = null, bool? isCheckCoder = null, string format = null) 
+        static public string LoadVideo(string reference, string vcodec, string res = "1080", bool? isPlaylist = null, bool? isCheckCoder = null, string format = null) // Функция сборки команды для загрузки видео
         {
             string _format;
             string result;

@@ -9,11 +9,11 @@
     <Company></Company>
     <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.6.3.4</AssemblyVersion>
+    <AssemblyVersion>0.6.3.7</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <FileVersion>0.6.3.4</FileVersion>
+    <FileVersion>0.6.3.7</FileVersion>
     <SignAssembly>True</SignAssembly>
     <Copyright>mesh</Copyright>
     <PackageIcon>icon.png</PackageIcon>

@@ -14,6 +14,7 @@ namespace VidDownload.WPF
 {
     public partial class MainWindow : Window
     {
+        // Переменные для сборки команды
         private string res = "2160";
         private static List<string> codecList = new List<string>();
         private string codec = "av01";
@@ -26,8 +27,10 @@ namespace VidDownload.WPF
             InitApp();
         }
 
+        // Кнопка загрузки видео
         private async void  ButDownload_Click(object sender, RoutedEventArgs e)
         {
+            // Проверка на пустое поле ссылки
             if (TextBoxURL.Text.Length == 0)
             {
                 MessageBox.Show("Пустое поле ссылки!", "Ошибка!",
@@ -41,15 +44,15 @@ namespace VidDownload.WPF
                     acodec = ComboAudio.Text;
                 if (ComboFormat.Text.Length != 0)
                     format = ComboFormat.Text;
-
+                // Проверка на пустое поле кодека
                 if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
                 {
-                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
+                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true); // Загрузка видео
                 }
                 else
                 {
                     codec = ComboCodec.Text;
-                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true);
+                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true); // Загрузка видео
                 }
             }
         }
@@ -57,14 +60,17 @@ namespace VidDownload.WPF
         // Функция загрузки видео
         public async void Download(ProgressBar PrograssBarMain)
         {
+            // Блокировка кнопки загрузки
             Dispatcher.Invoke(() => ButDownload.IsEnabled = false);
-
+            
+            // Создание лога
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
             string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
             
             FileStream fs = new FileStream(log, FileMode.CreateNew);
             StreamWriter w = new StreamWriter(fs, Encoding.Default);
 
+            // Запуск yt-dlp и передача команды
             await Task.Run(() =>
             {
                 Process proc = new Process();
@@ -94,8 +100,8 @@ namespace VidDownload.WPF
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            labelInfo.Content = e.Data;
-                            w.WriteLine(e.Data);
+                            labelInfo.Content = e.Data; // Вывод логов в label
+                            w.WriteLine(e.Data); // Запись логов в файл
                             PrograssBarMain.Value = ParseLog.Parse(e.Data); // Парсинг % загрузки
                         });
                     }
@@ -106,11 +112,21 @@ namespace VidDownload.WPF
                 proc.WaitForExit();
                 proc.Close();
 
+                // Закрытие потока записи лога и разблокировка кнопки загрузки
                 w.Close();
                 fs.Close();
 
-                Dispatcher.Invoke(() => ButDownload.IsEnabled = true);
-                Dispatcher.Invoke(() => labelInfo.Content = "");
+                Dispatcher.Invoke(() =>
+                {
+                    ComboCodec.Text = "";
+                    ComboRes.Text = "";
+                    ComboAudio.Text = "";
+                    ComboFormat.Text = "";
+                    TextBoxURL.Text = "";
+                    
+                    ButDownload.IsEnabled = true;
+                    labelInfo.Content = "";
+                });
             }).ConfigureAwait(true);
         }
 
@@ -130,6 +146,7 @@ namespace VidDownload.WPF
             System.Diagnostics.Process.Start("explorer.exe", argument);
         }
 
+        // Функция инициализации папок в приложении
         private void InitApp()
         {
             string videoPath = @".\MyVideos\";
