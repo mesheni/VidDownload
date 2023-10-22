@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         Title="VidDownload" WindowStartupLocation="CenterScreen" Icon="/icon.png" ResizeMode="CanMinimize" SizeToContent="WidthAndHeight" WindowStyle="ThreeDBorderWindow" Width="650" MinWidth="650">
 
+    
     <Grid x:Name="MainLayout" Background="Black">
         <Grid Background="#FF1D1D1D">
             <Grid.RowDefinitions>
@@ -34,6 +35,7 @@
                     <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0, 10">
                         <Label x:Name="LabelRes" Content="Разрешение:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Raleway" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" UseLayoutRounding="False" BorderThickness="0,0,0,0"/>
                         <ComboBox x:Name="ComboRes" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Raleway" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
+                            <ComboBoxItem Content="" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="144" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="240" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="360" FontFamily="Raleway" FontWeight="Bold"/>
@@ -46,6 +48,7 @@
 
                         <Label x:Name="LabelCodec" Content="Кодек:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Raleway" Height="27" FontSize="16" FontWeight="Bold" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0"/>
                         <ComboBox x:Name="ComboCodec" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Raleway" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
+                            <ComboBoxItem Content="" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="av01" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="vp9.2" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="vp9" FontFamily="Raleway" FontWeight="Bold"/>
@@ -57,7 +60,8 @@
 
                         <Label x:Name="LabelCheckAudio" Content="Аудио формат:" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Bahnschrift SemiBold" FontSize="16" Visibility="Collapsed" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0"/>
                         <ComboBox x:Name="ComboAudio" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" Visibility="Collapsed" FontFamily="Raleway" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
-                            <ComboBoxItem Background="White" Content="mp3" FontFamily="Raleway" FontWeight="Bold"/>
+                            <ComboBoxItem Content="" FontFamily="Raleway" FontWeight="Bold"/>
+                            <ComboBoxItem Content="mp3" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="3gp" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="flac" FontFamily="Raleway" FontWeight="Bold"/>
                             <ComboBoxItem Content="wav" FontFamily="Raleway" FontWeight="Bold"/>

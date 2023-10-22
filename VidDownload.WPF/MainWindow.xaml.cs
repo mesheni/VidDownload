@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
+using Xabe.FFmpeg;
 using static System.Reflection.AssemblyKeyFileAttribute;
 
 namespace VidDownload.WPF
@@ -130,8 +131,6 @@ namespace VidDownload.WPF
             }).ConfigureAwait(true);
         }
 
-
-
         // Кнопка открытия папки с видео
         private void ButOpenFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -152,7 +151,7 @@ namespace VidDownload.WPF
             string videoPath = @".\MyVideos\";
             string logPath = @".\log\";
 
-            string[] formats = new string[] { "avi", "mkv", "mp4", "webm"};
+            string[] formats = new string[] {"", "avi", "mkv", "mp4", "webm"};
 
             foreach(var i in formats)
             {

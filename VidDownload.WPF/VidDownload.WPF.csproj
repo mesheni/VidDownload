@@ -9,12 +9,12 @@
     <Company></Company>
     <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.6.3.7</AssemblyVersion>
+    <AssemblyVersion>0.6.3.9</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <FileVersion>0.6.3.7</FileVersion>
-    <SignAssembly>True</SignAssembly>
+    <FileVersion>0.6.3.9</FileVersion>
+    <SignAssembly>False</SignAssembly>
     <Copyright>mesh</Copyright>
     <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/mesheni/VidDownload</RepositoryUrl>
@@ -23,6 +23,7 @@
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AssemblyOriginatorKeyFile>VidDownload.WPF_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
     <DelaySign>True</DelaySign>
+    <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -55,6 +56,7 @@
 
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.4.0" />
+    <PackageReference Include="Xabe.FFmpeg" Version="5.2.6" />
   </ItemGroup>
 
   <ItemGroup>
