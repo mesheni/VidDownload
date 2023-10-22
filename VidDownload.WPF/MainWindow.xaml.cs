@@ -6,14 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
+using System.Windows.Media;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
+using HandyControl.Themes;
 using Xabe.FFmpeg;
 using static System.Reflection.AssemblyKeyFileAttribute;
+using HandyControl.Controls;
+using HandyControl.Data;
 
 namespace VidDownload.WPF
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : System.Windows.Window
     {
         // Переменные для сборки команды
         private string res = "2160";
@@ -31,11 +36,12 @@ namespace VidDownload.WPF
         // Кнопка загрузки видео
         private async void  ButDownload_Click(object sender, RoutedEventArgs e)
         {
+
             // Проверка на пустое поле ссылки
             if (TextBoxURL.Text.Length == 0)
             {
-                MessageBox.Show("Пустое поле ссылки!", "Ошибка!",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                await Task.Run(() => Dispatcher.Invoke(() => TextBoxAnimation())).ConfigureAwait(true);
+                HandyControl.Controls.MessageBox.Error("Пустое поле ссылки!", "Ошибка!");
             }
             else
             {
@@ -148,6 +154,7 @@ namespace VidDownload.WPF
         // Функция инициализации папок в приложении
         private void InitApp()
         {
+
             string videoPath = @".\MyVideos\";
             string logPath = @".\log\";
 
@@ -212,8 +219,7 @@ namespace VidDownload.WPF
         private void CheckCoder_Checked(object sender, RoutedEventArgs e)
         {
             ComboFormat.Items.Add("mov");
-            MessageBox.Show("Перекодирование видео может потребовать длительного времени. Лучше воспользуйтесь сторонними конвертерами.", "Предупреждение",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            HandyControl.Controls.MessageBox.Info("Перекодирование видео может потребовать длительного времени. Лучше воспользуйтесь сторонними конвертерами.");
         }
 
         private void CheckCoder_Unchecked(object sender, RoutedEventArgs e)
@@ -226,5 +232,23 @@ namespace VidDownload.WPF
             HelpWindow help = new HelpWindow();
             help.ShowDialog();
         }
+
+        private void TextBoxAnimation()
+        {
+            ColorAnimation colorAnimation = new ColorAnimation
+            {
+                From = Colors.White, // Исходный цвет фона
+                To = (Color)ColorConverter.ConvertFromString("#ff4f4f"), // Целевой цвет фона
+                AutoReverse = true, // Автоматически вернуться к исходному цвету
+                Duration = TimeSpan.FromSeconds(0.5f), // Длительность анимации (1 секунда)
+                RepeatBehavior = new RepeatBehavior(2) // Повторять анимацию 2 раза
+            };
+
+            TextBoxURL.Background = new SolidColorBrush(Colors.White); // Установка исходного цвета фона
+
+            // Создание и применение анимации
+            TextBoxURL.Background.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
+        }
+
     }
 }
