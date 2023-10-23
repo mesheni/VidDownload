@@ -33,7 +33,11 @@ namespace VidDownload.WPF
             InitApp();
         }
 
-        // Кнопка загрузки видео
+        /// <summary>
+        /// Кнопка загрузки видео
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void  ButDownload_Click(object sender, RoutedEventArgs e)
         {
 
@@ -64,7 +68,10 @@ namespace VidDownload.WPF
             }
         }
 
-        // Функция загрузки видео
+        /// <summary>
+        /// Функция загрузки видео
+        /// </summary>
+        /// <param name="PrograssBarMain">Шкала прогресса</param>
         public async void Download(ProgressBar PrograssBarMain)
         {
             // Блокировка кнопки загрузки
@@ -125,6 +132,7 @@ namespace VidDownload.WPF
 
                 Dispatcher.Invoke(() =>
                 {
+                    PrograssBarMain.Value = 0;
                     ComboCodec.Text = "";
                     ComboRes.Text = "";
                     ComboAudio.Text = "";

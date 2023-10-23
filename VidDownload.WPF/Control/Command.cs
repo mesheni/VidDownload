@@ -7,8 +7,18 @@ using System.Windows.Threading;
 
 namespace VidDownload.WPF.Control
 {
-    public static class Command // Класс для сборки команды для yt-dlp 
+    /// <summary>
+    /// Класс для сборки команды для yt-dlp
+    /// </summary>
+    public static class Command
     {
+        /// <summary>
+        /// Функция сборки команды, для скачивания аудио
+        /// </summary>
+        /// <param name="acodec">Аудиокодек (mp3 и т.д)</param>
+        /// <param name="reference">Ссылка на видео</param>
+        /// <param name="isPlaylist">Скачать весь плейлист?</param>
+        /// <returns>Возвращает строку команды скачивания только аудио для yt-dlp</returns>
         static public string LoadAudio(string acodec, string reference, bool? isPlaylist) // Функция сборки команды для загрузки аудио
         {
             bool _isPlaylist = isPlaylist ?? false;
@@ -26,6 +36,16 @@ namespace VidDownload.WPF.Control
             return result;
         }
 
+        /// <summary>
+        /// Функция сборки команды для загрузки видео
+        /// </summary>
+        /// <param name="reference">Ссылка на видео</param>
+        /// <param name="vcodec">Видео кодек</param>
+        /// <param name="res">Разрешение видео</param>
+        /// <param name="format">Формат видеофайла</param>
+        /// <param name="isPlaylist">Скачать весь плейлист?</param>
+        /// <param name="isCheckCoder">Перекодировать видео?</param>
+        /// <returns>Возвращает строку команды скачивания видео для yt-dlp</returns>
         static public string LoadVideo(string reference, string vcodec, string res, string format, bool? isPlaylist, bool? isCheckCoder) // Функция сборки команды для загрузки видео
         {
             bool _isPlaylist = isPlaylist ?? false;
