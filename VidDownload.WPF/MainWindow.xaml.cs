@@ -21,11 +21,11 @@ namespace VidDownload.WPF
     public partial class MainWindow : System.Windows.Window
     {
         // Переменные для сборки команды
-        private string res = "2160";
+        private string res = null;
         private static List<string> codecList = new List<string>();
-        private string codec = "av01";
-        private string acodec = "mp3";
-        private string format = "";
+        private string codec = null;
+        private string acodec = null;
+        private string format = null;
 
         public MainWindow()
         {
@@ -96,7 +96,7 @@ namespace VidDownload.WPF
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, codec, res, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked, format);
+                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, codec, res, format, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
                     });
                 }
 
