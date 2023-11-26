@@ -5,15 +5,15 @@
     <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>0.6.3</Version>
+    <Version>0.6.4</Version>
     <Company></Company>
     <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.6.3.38</AssemblyVersion>
+    <AssemblyVersion>0.6.4</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <FileVersion>0.6.3.38</FileVersion>
+    <FileVersion>0.6.4</FileVersion>
     <SignAssembly>False</SignAssembly>
     <Copyright>mesh</Copyright>
     <PackageIcon>icon.png</PackageIcon>
