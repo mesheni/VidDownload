@@ -21,11 +21,11 @@ namespace VidDownload.WPF
     public partial class MainWindow : System.Windows.Window
     {
         // Переменные для сборки команды
-        private string res = "2160";
+        private string res = null;
         private static List<string> codecList = new List<string>();
-        private string codec = "av01";
-        private string acodec = "mp3";
-        private string format = "";
+        private string codec = null;
+        private string acodec = null;
+        private string format = null;
 
         public MainWindow()
         {
@@ -33,7 +33,11 @@ namespace VidDownload.WPF
             InitApp();
         }
 
-        // Кнопка загрузки видео
+        /// <summary>
+        /// Кнопка загрузки видео
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private async void  ButDownload_Click(object sender, RoutedEventArgs e)
         {
 
@@ -64,7 +68,10 @@ namespace VidDownload.WPF
             }
         }
 
-        // Функция загрузки видео
+        /// <summary>
+        /// Функция загрузки видео
+        /// </summary>
+        /// <param name="PrograssBarMain">Шкала прогресса</param>
         public async void Download(ProgressBar PrograssBarMain)
         {
             // Блокировка кнопки загрузки
@@ -96,7 +103,7 @@ namespace VidDownload.WPF
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, codec, res, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked, format);
+                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, codec, res, format, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
                     });
                 }
 
@@ -125,6 +132,7 @@ namespace VidDownload.WPF
 
                 Dispatcher.Invoke(() =>
                 {
+                    PrograssBarMain.Value = 0;
                     ComboCodec.Text = "";
                     ComboRes.Text = "";
                     ComboAudio.Text = "";

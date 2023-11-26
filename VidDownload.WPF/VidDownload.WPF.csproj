@@ -56,6 +56,7 @@
 
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.4.0" />
+    <PackageReference Include="HandyControl.Lang.en" Version="3.4.0" />
     <PackageReference Include="HandyControls.Lang.ru" Version="3.4.5" />
     <PackageReference Include="Xabe.FFmpeg" Version="5.2.6" />
   </ItemGroup>
