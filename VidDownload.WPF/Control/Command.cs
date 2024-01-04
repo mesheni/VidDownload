@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Threading;
-
-namespace VidDownload.WPF.Control
+﻿namespace VidDownload.WPF.Control
 {
     /// <summary>
     /// Класс для сборки команды для yt-dlp
@@ -28,7 +21,8 @@ namespace VidDownload.WPF.Control
             if (_isPlaylist)
             {
                 result = $"yt-dlp -f \"ba\" -x --audio-format {_acodec} -o \"./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s\" \"{reference}\"";
-            } else
+            }
+            else
             {
                 result = $"yt-dlp -f \"ba\" -x --audio-format {_acodec} -P \"./MyVideos\" \"{reference}\"";
             }
@@ -49,7 +43,7 @@ namespace VidDownload.WPF.Control
         static public string LoadVideo(string reference, string vcodec, string res, string format, bool? isPlaylist, bool? isCheckCoder) // Функция сборки команды для загрузки видео
         {
             bool _isPlaylist = isPlaylist ?? false;
-            bool _isCheckCoder = isCheckCoder ?? false; 
+            bool _isCheckCoder = isCheckCoder ?? false;
 
             string _res = res ?? "2160";
             string _vcodec = vcodec ?? "av01";
