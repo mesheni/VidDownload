@@ -2,19 +2,20 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Animation;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
-using HandyControl.Themes;
-using Xabe.FFmpeg;
-using static System.Reflection.AssemblyKeyFileAttribute;
-using HandyControl.Controls;
-using HandyControl.Data;
+using Octokit.Clients;
+using Octokit;
+using System.Windows.Shapes;
+using System.Net;
+
 
 namespace VidDownload.WPF
 {
@@ -31,6 +32,7 @@ namespace VidDownload.WPF
         {
             InitializeComponent();
             InitApp();
+            CheckUpdateAsync();
         }
 
         /// <summary>
@@ -38,7 +40,7 @@ namespace VidDownload.WPF
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void  ButDownload_Click(object sender, RoutedEventArgs e)
+        private async void ButDownload_Click(object sender, RoutedEventArgs e)
         {
 
             // Проверка на пустое поле ссылки
@@ -58,12 +60,12 @@ namespace VidDownload.WPF
                 // Проверка на пустое поле кодека
                 if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
                 {
-                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true); // Загрузка видео
+                    await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
                 }
                 else
                 {
                     codec = ComboCodec.Text;
-                    await Task.Run(() => Download(PrograssBarMain)).ConfigureAwait(true); // Загрузка видео
+                    await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
                 }
             }
         }
@@ -76,12 +78,12 @@ namespace VidDownload.WPF
         {
             // Блокировка кнопки загрузки
             Dispatcher.Invoke(() => ButDownload.IsEnabled = false);
-            
+
             // Создание лога
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
             string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
-            
-            FileStream fs = new FileStream(log, FileMode.CreateNew);
+
+            FileStream fs = new FileStream(log, System.IO.FileMode.CreateNew);
             StreamWriter w = new StreamWriter(fs, Encoding.Default);
 
             // Запуск yt-dlp и передача команды
@@ -93,7 +95,7 @@ namespace VidDownload.WPF
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.CreateNoWindow = true;
-                
+
                 // Сборка команды и отправка в yt-dlp
                 if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
                 {
@@ -116,7 +118,7 @@ namespace VidDownload.WPF
                         {
                             labelInfo.Content = e.Data; // Вывод логов в label
                             w.WriteLine(e.Data); // Запись логов в файл
-                            PrograssBarMain.Value = ParseLog.Parse(e.Data); // Парсинг % загрузки
+                            ProgressBarMain.Value = ParseLog.Parse(e.Data); // Парсинг % загрузки
                         });
                     }
                 });
@@ -132,13 +134,13 @@ namespace VidDownload.WPF
 
                 Dispatcher.Invoke(() =>
                 {
-                    PrograssBarMain.Value = 0;
+                    ProgressBarMain.Value = 0;
                     ComboCodec.Text = "";
                     ComboRes.Text = "";
                     ComboAudio.Text = "";
                     ComboFormat.Text = "";
                     TextBoxURL.Text = "";
-                    
+
                     ButDownload.IsEnabled = true;
                     labelInfo.Content = "";
                 });
@@ -166,9 +168,9 @@ namespace VidDownload.WPF
             string videoPath = @".\MyVideos\";
             string logPath = @".\log\";
 
-            string[] formats = new string[] {"", "avi", "mkv", "mp4", "webm"};
+            string[] formats = new string[] { "", "avi", "mkv", "mp4", "webm" };
 
-            foreach(var i in formats)
+            foreach (var i in formats)
             {
                 ComboFormat.Items.Add(i.ToString());
             }
@@ -186,6 +188,82 @@ namespace VidDownload.WPF
             {
                 codecList.Add(i.ToString());
             }
+        }
+
+        private async void CheckUpdateAsync()
+        {
+            await Task.Run(() =>
+            {
+                bool fileNotFound = false;
+                string? links = "";
+                string currentVer = string.Empty;
+                MessageBoxResult res = new MessageBoxResult();
+
+                var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
+
+                var releases = client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
+                var latest = releases;
+
+                string latestVer = latest.Result.TagName.Replace(".", "");
+
+                try
+                {
+                    var versionInfo = FileVersionInfo.GetVersionInfo("yt-dlp.exe");
+                    currentVer = versionInfo.FileVersion.Replace(".", "");
+
+                    if (Convert.ToInt32(currentVer) < Convert.ToInt32(latestVer))
+                    {
+                        res = HandyControl.Controls.MessageBox.Ask($"Текущая версия: {currentVer} \nПоследняя версия: {latestVer}\nПодтвердите начало обновления.", "Доступна новая версия yt-dlp!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    HandyControl.Controls.MessageBox.Error("При проверке обновлений не был найден файл yt-dlp!\nБудет загружена последняя версия.", "Ошибка!");
+                    fileNotFound = true;
+                }
+
+                if (res == MessageBoxResult.OK || fileNotFound)
+                {
+                    foreach (var release in releases.Result.Assets)
+                    {
+                        if (release.BrowserDownloadUrl.Contains("yt-dlp.exe"))
+                        {
+                            links = release.BrowserDownloadUrl;
+                        }
+
+                    }
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        labelInfo.Content = "Идет загрузка обновления yt-dlp!";
+                    });
+
+                    var wc = new WebClient();
+
+                    wc.DownloadProgressChanged += (sender, args) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            ProgressBarMain.Value = args.ProgressPercentage;
+                        });
+                    };
+
+                    wc.Headers.Add(HttpRequestHeader.UserAgent, "MyUserAgent");
+                    wc.DownloadFileAsync(new Uri(links), "yt-dlp.exe");
+
+                    wc.DownloadFileCompleted += (sender, args) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            ProgressBarMain.Value = 0;
+                            labelInfo.Content = "";
+                        });
+                        HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
+                        File.WriteAllText("ver_ytdlp.txt", latest.Result.TagName);
+                    };
+
+                }
+            }).ConfigureAwait(false);
         }
 
         private void CheckAudio_Checked(object sender, RoutedEventArgs e)
@@ -248,7 +326,7 @@ namespace VidDownload.WPF
                 From = Colors.White, // Исходный цвет фона
                 To = (Color)ColorConverter.ConvertFromString("#ff4f4f"), // Целевой цвет фона
                 AutoReverse = true, // Автоматически вернуться к исходному цвету
-                Duration = TimeSpan.FromSeconds(0.5f), // Длительность анимации (1 секунда)
+                Duration = TimeSpan.FromSeconds(0.5f), // Длительность анимации (0,5 секунд)
                 RepeatBehavior = new RepeatBehavior(2) // Повторять анимацию 2 раза
             };
 

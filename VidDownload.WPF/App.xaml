@@ -1,18 +1,19 @@
-﻿<Application x:Class="VidDownload.WPF.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:VidDownload.WPF"
-             StartupUri="MainWindow.xaml"
-             xmlns:hc="https://handyorg.github.io/handycontrol">
+﻿<Application
+    x:Class="VidDownload.WPF.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:local="clr-namespace:VidDownload.WPF"
+    StartupUri="MainWindow.xaml">
 
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml"/>
-                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
-                <hc:StandaloneTheme AccentColor="Red"/>
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
+                <hc:StandaloneTheme AccentColor="Red" />
 
-                <hc:Theme AccentColor="#ff4f4f"/>
+                <hc:Theme AccentColor="#ff4f4f" />
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>
