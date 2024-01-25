@@ -9,11 +9,11 @@
     <Company></Company>
     <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.6.4.17</AssemblyVersion>
+    <AssemblyVersion>0.6.4.24</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <FileVersion>0.6.4.17</FileVersion>
+    <FileVersion>0.6.4.24</FileVersion>
     <SignAssembly>False</SignAssembly>
     <Copyright>mesh</Copyright>
     <PackageIcon>icon.png</PackageIcon>
@@ -33,6 +33,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Update\**" />
+    <EmbeddedResource Remove="Update\**" />
+    <None Remove="Update\**" />
+    <Page Remove="Update\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="icon.png" />
@@ -86,7 +93,6 @@
 
   <ItemGroup>
     <Folder Include="bin\Release\netcoreapp3.1\" />
-    <Folder Include="Update\" />
   </ItemGroup>
 
 </Project>
