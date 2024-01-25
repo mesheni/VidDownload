@@ -235,6 +235,7 @@ namespace VidDownload.WPF
 
                     Dispatcher.Invoke(() =>
                     {
+                        ButDownload.IsEnabled = false;
                         labelInfo.Content = "Идет загрузка обновления yt-dlp!";
                     });
 
@@ -257,9 +258,10 @@ namespace VidDownload.WPF
                         {
                             ProgressBarMain.Value = 0;
                             labelInfo.Content = "";
+                            ButDownload.IsEnabled = true;
                         });
                         HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
-                        File.WriteAllText("ver_ytdlp.txt", latest.Result.TagName);
+                        
                     };
 
                 }

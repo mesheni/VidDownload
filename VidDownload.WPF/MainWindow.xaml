@@ -88,7 +88,7 @@
                     <Label x:Name="labelInfo" Content="" Width="610" HorizontalAlignment="Left" Margin="20,0,20,0" FontFamily="Consolas" Foreground="White" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
                     <ProgressBar x:Name="ProgressBarMain" Margin="20, 0" Height="28" VerticalAlignment="Top" Foreground="#FDFF5252" FontFamily="Raleway" FontWeight="Bold" FontSize="14"/>
 
-                    <Button x:Name="ButDownload" Content="Скачать" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="250" Background="#FFFFE3E3" Foreground="Black" BorderBrush="#FF707070" FontFamily="Raleway" FontSize="24" Click="ButDownload_Click" FontWeight="Bold"/>
+                    <Button x:Name="ButDownload" Content="Скачать" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="250" Background="#FFFF4F4F" Foreground="White" BorderBrush="White" FontFamily="Raleway" FontSize="24" Click="ButDownload_Click" FontWeight="Bold"/>
 
                     <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
