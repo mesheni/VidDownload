@@ -321,6 +321,12 @@ namespace VidDownload.WPF
             help.ShowDialog();
         }
 
+        private void ButtonConvert_Click(object sender, RoutedEventArgs e)
+        {
+            ConvertWindow.ConvertWindow convert = new ConvertWindow.ConvertWindow();
+            convert.ShowDialog();
+        }
+
         private void TextBoxAnimation()
         {
             ColorAnimation colorAnimation = new ColorAnimation
