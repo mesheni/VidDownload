@@ -6,14 +6,15 @@
 - Скачивать плейлисты целиком;
 - Выбирать качество и кодек формат с которым будет загружаться видео или аудио;
 
-![2023-08-14_21-25-14](https://github.com/mesheni/VidDownload/assets/26280352/58a1dfdb-d9af-4379-9c55-9a98333d8026)
+![2024-01-29_21-13-31](https://github.com/mesheni/VidDownload/assets/26280352/b4f1df46-2cf3-4ee4-9ca4-9d95e091522c)
 
-Для работы программы необходим .NET 6 Скачать его можно отсюда: [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-3.1.425-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+
+Для работы программы необходим .NET 6. Скачать его можно отсюда:  [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/sdk-3.1.425-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 
 **Для сборки и запуска у себя на компьютере понадобится:**
 - Visual Studio 2022
 - .NET 6
-- Инструментарий для создаания WPF приложений
+- Инструментарий для создания WPF приложений
 - yt-dlp
 - ffmpeg
 - ffprobe
