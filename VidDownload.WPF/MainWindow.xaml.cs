@@ -276,7 +276,7 @@ namespace VidDownload.WPF
             ComboCodec.Visibility = Visibility.Collapsed;
             LabelFormat.Visibility = Visibility.Collapsed;
             ComboFormat.Visibility = Visibility.Collapsed;
-            CheckCoder.Visibility = Visibility.Collapsed;
+            CheckCoder.IsEnabled = false;
             LabelCheckAudio.Visibility = Visibility.Visible;
             ComboAudio.Visibility = Visibility.Visible;
         }
@@ -291,7 +291,7 @@ namespace VidDownload.WPF
             ComboRes.Visibility = Visibility.Visible;
             LabelFormat.Visibility = Visibility.Visible;
             ComboFormat.Visibility = Visibility.Visible;
-            CheckCoder.Visibility = Visibility.Visible;
+            CheckCoder.IsEnabled = true;
         }
 
         private void CheckBoxPlaylist_Checked(object sender, RoutedEventArgs e)

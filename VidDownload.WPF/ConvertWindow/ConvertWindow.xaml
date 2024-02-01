@@ -8,6 +8,20 @@
         mc:Ignorable="d"
         Title="ConvertWindow" Height="450" Width="800">
     <Grid Background="#FF1D1D1D">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="20, 20, 0, 0">
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                <Label Content="Выберите видеофайл:" Width="218" Background="#FF1D1D1D" Foreground="White" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" FontSize="16" Height="36"/>
+                <Button Content="Обзор" Width="100" />
+            </StackPanel>
+
+        </Grid>
+
 
     </Grid>
 </Window>
