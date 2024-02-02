@@ -25,5 +25,10 @@ namespace VidDownload.WPF.Help
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
             e.Handled = true;
         }
+
+        private void imgJojack_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo("https://vk.com/jojacki") { UseShellExecute = true });
+        }
     }
 }

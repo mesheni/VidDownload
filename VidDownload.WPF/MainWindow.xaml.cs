@@ -276,9 +276,9 @@ namespace VidDownload.WPF
             ComboCodec.Visibility = Visibility.Collapsed;
             LabelFormat.Visibility = Visibility.Collapsed;
             ComboFormat.Visibility = Visibility.Collapsed;
-            CheckCoder.IsEnabled = false;
             LabelCheckAudio.Visibility = Visibility.Visible;
             ComboAudio.Visibility = Visibility.Visible;
+            CheckCoder.IsEnabled = false;
         }
 
         private void CheckAudio_Unchecked(object sender, RoutedEventArgs e)
