@@ -15,6 +15,7 @@ using Octokit.Clients;
 using Octokit;
 using System.Windows.Shapes;
 using System.Net;
+using System.Globalization;
 
 
 namespace VidDownload.WPF
@@ -192,80 +193,81 @@ namespace VidDownload.WPF
 
         private async void CheckUpdateAsync()
         {
-            await Task.Run(() =>
-            {
-                bool fileNotFound = false;
-                string? links = "";
-                string currentVer = string.Empty;
-                MessageBoxResult res = new MessageBoxResult();
-
-                var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
-
-                var releases = client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
-                var latest = releases;
-
-                string latestVer = latest.Result.TagName.Replace(".", "");
-
-                try
+            if (CheckForInternetConnection())
+                await Task.Run(() =>
                 {
-                    var versionInfo = FileVersionInfo.GetVersionInfo("yt-dlp.exe");
-                    currentVer = versionInfo.FileVersion.Replace(".", "");
+                    bool fileNotFound = false;
+                    string? links = "";
+                    string currentVer = string.Empty;
+                    MessageBoxResult res = new MessageBoxResult();
 
-                    if (Convert.ToInt32(currentVer) < Convert.ToInt32(latestVer))
+                    var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
+
+                    var releases = client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
+                    var latest = releases;
+
+                    string latestVer = latest.Result.TagName.Replace(".", "");
+
+                    try
                     {
-                        res = HandyControl.Controls.MessageBox.Ask($"Текущая версия: {currentVer} \nПоследняя версия: {latestVer}\nПодтвердите начало обновления.", "Доступна новая версия yt-dlp!");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    HandyControl.Controls.MessageBox.Error("При проверке обновлений не был найден файл yt-dlp!\nБудет загружена последняя версия.", "Ошибка!");
-                    fileNotFound = true;
-                }
+                        var versionInfo = FileVersionInfo.GetVersionInfo("yt-dlp.exe");
+                        currentVer = versionInfo.FileVersion.Replace(".", "");
 
-                if (res == MessageBoxResult.OK || fileNotFound)
-                {
-                    foreach (var release in releases.Result.Assets)
-                    {
-                        if (release.BrowserDownloadUrl.Contains("yt-dlp.exe"))
+                        if (Convert.ToInt32(currentVer) < Convert.ToInt32(latestVer))
                         {
-                            links = release.BrowserDownloadUrl;
+                            res = HandyControl.Controls.MessageBox.Ask($"Текущая версия: {currentVer} \nПоследняя версия: {latestVer}\nПодтвердите начало обновления.", "Доступна новая версия yt-dlp!");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        HandyControl.Controls.MessageBox.Error("При проверке обновлений не был найден файл yt-dlp!\nБудет загружена последняя версия.", "Ошибка!");
+                        fileNotFound = true;
+                    }
+
+                    if (res == MessageBoxResult.OK || fileNotFound)
+                    {
+                        foreach (var release in releases.Result.Assets)
+                        {
+                            if (release.BrowserDownloadUrl.Contains("yt-dlp.exe"))
+                            {
+                                links = release.BrowserDownloadUrl;
+                            }
+
                         }
 
-                    }
-
-                    Dispatcher.Invoke(() =>
-                    {
-                        ButDownload.IsEnabled = false;
-                        labelInfo.Content = "Идет загрузка обновления yt-dlp!";
-                    });
-
-                    var wc = new WebClient();
-
-                    wc.DownloadProgressChanged += (sender, args) =>
-                    {
                         Dispatcher.Invoke(() =>
                         {
-                            ProgressBarMain.Value = args.ProgressPercentage;
+                            ButDownload.IsEnabled = false;
+                            labelInfo.Content = "Идет загрузка обновления yt-dlp!";
                         });
-                    };
 
-                    wc.Headers.Add(HttpRequestHeader.UserAgent, "MyUserAgent");
-                    wc.DownloadFileAsync(new Uri(links), "yt-dlp.exe");
+                        var wc = new WebClient();
 
-                    wc.DownloadFileCompleted += (sender, args) =>
-                    {
-                        Dispatcher.Invoke(() =>
+                        wc.DownloadProgressChanged += (sender, args) =>
                         {
-                            ProgressBarMain.Value = 0;
-                            labelInfo.Content = "";
-                            ButDownload.IsEnabled = true;
-                        });
-                        HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
+                            Dispatcher.Invoke(() =>
+                            {
+                                ProgressBarMain.Value = args.ProgressPercentage;
+                            });
+                        };
+
+                        wc.Headers.Add(HttpRequestHeader.UserAgent, "MyUserAgent");
+                        wc.DownloadFileAsync(new Uri(links), "yt-dlp.exe");
+
+                        wc.DownloadFileCompleted += (sender, args) =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                ProgressBarMain.Value = 0;
+                                labelInfo.Content = "";
+                                ButDownload.IsEnabled = true;
+                            });
+                            HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
                         
-                    };
+                        };
 
-                }
-            }).ConfigureAwait(false);
+                    }
+                }).ConfigureAwait(false);
         }
 
         private void CheckAudio_Checked(object sender, RoutedEventArgs e)
@@ -342,6 +344,32 @@ namespace VidDownload.WPF
 
             // Создание и применение анимации
             TextBoxURL.Background.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
+        }
+
+        public static bool CheckForInternetConnection(int timeoutMs = 10000, string url = null)
+        {
+            try
+            {
+                url ??= CultureInfo.InstalledUICulture switch
+                {
+                    { Name: var n } when n.StartsWith("fa") => // Iran
+                        "http://www.aparat.com",
+                    { Name: var n } when n.StartsWith("zh") => // China
+                        "http://www.baidu.com",
+                    _ =>
+                        "http://www.gstatic.com/generate_204",
+                };
+
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.KeepAlive = false;
+                request.Timeout = timeoutMs;
+                using (var response = (HttpWebResponse)request.GetResponse())
+                    return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
     }
