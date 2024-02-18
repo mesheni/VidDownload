@@ -16,7 +16,7 @@
 
         <Grid Grid.Row="0" Margin="20, 20, 0, 0">
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                <Label Content="Выберите видеофайл:" Width="auto" Background="#FF1D1D1D" Foreground="White" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" FontSize="16" Height="36"/>
+                <Label Content="Выберите видеофайл:" Width="auto" Background="#FF1D1D1D" Foreground="White" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" FontSize="16" Height="36" FontWeight="Bold"/>
                 <Button Content="Обзор" Width="100" FontFamily="Cascadia Code" FontSize="14" />
                 <Label Name="LabelFileName" Content="Имя файла.mp4" Width="auto" Height="30" Margin="10, 0, 0, 0" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left"/>
             </StackPanel>
@@ -24,8 +24,8 @@
         </Grid>
 
         <Grid Grid.Row="1" Margin="20, 20, 20, 0">
-            <StackPanel HorizontalAlignment="Left" Orientation="Vertical">
-                <Label x:Name="LabelFormat" Content="Разрешение:" Margin="20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Cascadia Code" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" UseLayoutRounding="False" BorderThickness="0,0,0,0"/>
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                <Label x:Name="LabelFormat" Content="Расширение:" Margin="10, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Cascadia Code" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" UseLayoutRounding="False" BorderThickness="0,0,0,0"/>
                 <ComboBox x:Name="ComboFormat" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Cascadia Code" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
                     <ComboBoxItem Content="" FontFamily="Cascadia Code" FontWeight="Bold"/>
                     <ComboBoxItem Content="AVI" FontFamily="Cascadia Code" FontWeight="Bold"/>
@@ -34,9 +34,10 @@
                     <ComboBoxItem Content="MOV" FontFamily="Cascadia Code" FontWeight="Bold"/>
                 </ComboBox>
             </StackPanel>
-            
+
         </Grid>
-
-
+        <Grid>
+                
+        </Grid>
     </Grid>
 </Window>

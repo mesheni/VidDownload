@@ -346,16 +346,16 @@ namespace VidDownload.WPF
             TextBoxURL.Background.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
         }
 
-        public static bool CheckForInternetConnection(int timeoutMs = 10000, string url = null)
+        public static bool CheckForInternetConnection(int timeoutMs = 1000, string url = null)
         {
             try
             {
                 url ??= CultureInfo.InstalledUICulture switch
                 {
-                    { Name: var n } when n.StartsWith("fa") => // Iran
-                        "http://www.aparat.com",
-                    { Name: var n } when n.StartsWith("zh") => // China
-                        "http://www.baidu.com",
+                    //{ Name: var n } when n.StartsWith("fa") => // Iran
+                    //    "http://www.aparat.com",
+                    { Name: var n } when n.StartsWith("ru") => // Russian
+                        "https://ya.ru/",
                     _ =>
                         "http://www.gstatic.com/generate_204",
                 };
