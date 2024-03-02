@@ -17,6 +17,37 @@ using System.Windows.Shapes;
 using System.Net;
 using System.Globalization;
 
+/*
+
+     _____  
+   .'     `.
+  /         \
+ |           |      Программа для скачивания видео с YouTube и других платформ.
+ '.  +^^^+  .'      Current version: 0.7.0
+   `. \./ .'        by mesh
+     |_|_|          2024г.
+     (___)          First commit: 20 августа, 2022г.
+     (___)
+     `---'
+
+Russian:
+Не стоит относиться к коду этой программы слишком серьезно. Я создаю ее для собственного изучения и совершенствования, 
+а также в рамках своих исследований. Хотя я, возможно, и не профессиональный программист, вы можете просмотреть код и 
+внести любые изменения или улучшения, которые сочтете необходимыми.
+
+English:
+Do not take this program's code too seriously. I am creating it for my own learning and improvement, 
+and as part of my studies. While I may not be a professional programmer, you are welcome to review 
+the code and suggest any fixes or improvements you see fit.
+
+Мои контакты:
+Email - bunin.ivan14@yandex.ru
+GitHub - https://github.com/mesheni
+Telegram - https://t.me/meshenii
+VK - https://vk.com/mesheni
+Twitter/X - https://x.com/meshenii
+
+*/
 
 namespace VidDownload.WPF
 {
