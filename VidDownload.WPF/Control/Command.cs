@@ -12,10 +12,10 @@
         /// <param name="reference">Ссылка на видео</param>
         /// <param name="isPlaylist">Скачать весь плейлист?</param>
         /// <returns>Возвращает строку команды скачивания только аудио для yt-dlp</returns>
-        static public string LoadAudio(string acodec, string reference, bool? isPlaylist) // Функция сборки команды для загрузки аудио
+        static public string LoadAudio(Settings settings, string reference, bool? isPlaylist) // Функция сборки команды для загрузки аудио
         {
             bool _isPlaylist = isPlaylist ?? false;
-            string _acodec = acodec ?? "mp3";
+            string _acodec = settings.AudioCodec;
             string result;
 
             if (_isPlaylist)
@@ -40,25 +40,25 @@
         /// <param name="isPlaylist">Скачать весь плейлист?</param>
         /// <param name="isCheckCoder">Перекодировать видео?</param>
         /// <returns>Возвращает строку команды скачивания видео для yt-dlp</returns>
-        static public string LoadVideo(string reference, string vcodec, string res, string format, bool? isPlaylist, bool? isCheckCoder) // Функция сборки команды для загрузки видео
+        static public string LoadVideo(string reference, Settings settings, bool? isPlaylist, bool? isCheckCoder) // Функция сборки команды для загрузки видео
         {
             bool _isPlaylist = isPlaylist ?? false;
             bool _isCheckCoder = isCheckCoder ?? false;
 
-            string _res = res ?? "2160";
-            string _vcodec = vcodec ?? "av01";
+            string _res = settings.Resolution;
+            string _vcodec = settings.VideoCodec;
             string _format;
             string result;
 
             if (_isCheckCoder)
             {
-                _format = "--recode-video " + format;
+                _format = "--recode-video " + settings.Format;
             }
             else
             {
-                if (format != null)
+                if (settings.Format != null)
                 {
-                    _format = "--remux-video " + format;
+                    _format = "--remux-video " + settings.Format;
                 }
                 else
                 {

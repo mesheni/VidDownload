@@ -1,19 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <Version>0.6.5</Version>
-    <Company></Company>
+    <Company />
     <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.6.5.49</AssemblyVersion>
+    <AssemblyVersion>0.6.5.50</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <FileVersion>0.6.5.49</FileVersion>
+    <FileVersion>0.6.5.50</FileVersion>
     <SignAssembly>False</SignAssembly>
     <Copyright>mesh</Copyright>
     <PackageIcon>icon.png</PackageIcon>
@@ -25,42 +24,35 @@
     <DelaySign>True</DelaySign>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>embedded</DebugType>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Update\**" />
     <EmbeddedResource Remove="Update\**" />
     <None Remove="Update\**" />
     <Page Remove="Update\**" />
   </ItemGroup>
-
   <ItemGroup>
     <None Remove="icon.png" />
     <None Remove="jojack.jpg" />
     <None Remove="license.txt" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="icon.ico" />
     <Content Include="license.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <None Include="..\icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.4.0" />
     <PackageReference Include="HandyControl.Lang.en" Version="3.4.0" />
@@ -68,14 +60,12 @@
     <PackageReference Include="Octokit" Version="9.1.0" />
     <PackageReference Include="Xabe.FFmpeg" Version="5.2.6" />
   </ItemGroup>
-
   <ItemGroup>
     <Resource Include="icon.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="jojack.jpg" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -83,16 +73,13 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="bin\Release\netcoreapp3.1\" />
   </ItemGroup>
-
 </Project>

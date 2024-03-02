@@ -23,12 +23,8 @@ namespace VidDownload.WPF
     public partial class MainWindow : System.Windows.Window
     {
         // Переменные для сборки команды
-        private string res = null;
         private static List<string> codecList = new();
-        private string codec = null;
-        private string acodec = null;
-        private string format = null;
-
+        Settings settings = new();
         public MainWindow()
         {
             InitializeComponent();
@@ -53,11 +49,11 @@ namespace VidDownload.WPF
             else
             {
                 if (ComboRes.Text.Length != 0)
-                    res = ComboRes.Text;
+                    settings.Resolution = ComboRes.Text;
                 if (ComboAudio.Text.Length != 0)
-                    acodec = ComboAudio.Text;
+                    settings.AudioCodec = ComboAudio.Text;
                 if (ComboFormat.Text.Length != 0)
-                    format = ComboFormat.Text;
+                    settings.Format = ComboFormat.Text;
                 // Проверка на пустое поле кодека
                 if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
                 {
@@ -65,7 +61,7 @@ namespace VidDownload.WPF
                 }
                 else
                 {
-                    codec = ComboCodec.Text;
+                    settings.VideoCodec = ComboCodec.Text;
                     await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
                 }
             }
@@ -99,13 +95,13 @@ namespace VidDownload.WPF
                 // Сборка команды и отправка в yt-dlp
                 if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
                 {
-                    proc.StartInfo.Arguments = Command.LoadAudio(acodec, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
+                    proc.StartInfo.Arguments = Command.LoadAudio(settings, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
                 }
                 else
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, codec, res, format, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
+                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, settings, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
                     });
                 }
 
@@ -193,7 +189,7 @@ namespace VidDownload.WPF
 
         private async void CheckUpdateAsync()
         {
-            if (CheckForInternetConnection())
+            if (CheckForInternetConnection().Result)
                 await Task.Run(() =>
                 {
                     bool fileNotFound = false;
@@ -346,30 +342,36 @@ namespace VidDownload.WPF
             TextBoxURL.Background.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
         }
 
-        public static bool CheckForInternetConnection(int timeoutMs = 1000, string url = null)
+        public async Task<bool> CheckForInternetConnection(int timeoutMs = 1000, string url = null)
         {
-            try
+            bool result = false;
+            await Task.Run(() => 
             {
-                url ??= CultureInfo.InstalledUICulture switch
+                try
                 {
-                    //{ Name: var n } when n.StartsWith("fa") => // Iran
-                    //    "http://www.aparat.com",
-                    { Name: var n } when n.StartsWith("ru") => // Russian
-                        "https://ya.ru/",
-                    _ =>
-                        "http://www.gstatic.com/generate_204",
-                };
+                    url ??= CultureInfo.InstalledUICulture switch
+                    {
+                        //{ Name: var n } when n.StartsWith("fa") => // Iran
+                        //    "http://www.aparat.com",
+                        { Name: var n } when n.StartsWith("ru") => // Russian
+                            "https://ya.ru/",
+                        _ =>
+                            "http://www.gstatic.com/generate_204",
+                    };
 
-                var request = (HttpWebRequest)WebRequest.Create(url);
-                request.KeepAlive = false;
-                request.Timeout = timeoutMs;
-                using (var response = (HttpWebResponse)request.GetResponse())
-                    return true;
-            }
-            catch
-            {
-                return false;
-            }
+                    var request = (HttpWebRequest)WebRequest.Create(url);
+                    request.KeepAlive = false;
+                    request.Timeout = timeoutMs;
+                    using (var response = (HttpWebResponse)request.GetResponse())
+                        result = true;
+                }
+                catch
+                {
+                    result = false;
+                }
+            }).ConfigureAwait(false);
+
+            return result;
         }
 
     }
