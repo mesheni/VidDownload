@@ -24,7 +24,7 @@ namespace VidDownload.WPF
     {
         // Переменные для сборки команды
         private string res = null;
-        private static List<string> codecList = new List<string>();
+        private static List<string> codecList = new();
         private string codec = null;
         private string acodec = null;
         private string format = null;
@@ -84,13 +84,12 @@ namespace VidDownload.WPF
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
             string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
 
-            FileStream fs = new FileStream(log, System.IO.FileMode.CreateNew);
-            StreamWriter w = new StreamWriter(fs, Encoding.Default);
+            FileStream fs = new(log, System.IO.FileMode.CreateNew);
 
             // Запуск yt-dlp и передача команды
             await Task.Run(() =>
             {
-                Process proc = new Process();
+                Process proc = new();
 
                 proc.StartInfo.FileName = @".\yt-dlp.exe";
                 proc.StartInfo.UseShellExecute = false;
@@ -110,6 +109,7 @@ namespace VidDownload.WPF
                     });
                 }
 
+                StreamWriter w = new(fs, Encoding.Default);
                 // Логирование и запись логов в файл
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
@@ -199,7 +199,7 @@ namespace VidDownload.WPF
                     bool fileNotFound = false;
                     string? links = "";
                     string currentVer = string.Empty;
-                    MessageBoxResult res = new MessageBoxResult();
+                    MessageBoxResult res = new();
 
                     var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
 
@@ -319,19 +319,19 @@ namespace VidDownload.WPF
 
         private void ButtonHelp_Click(object sender, RoutedEventArgs e)
         {
-            HelpWindow help = new HelpWindow();
+            HelpWindow help = new();
             help.ShowDialog();
         }
 
         private void ButtonConvert_Click(object sender, RoutedEventArgs e)
         {
-            ConvertWindow.ConvertWindow convert = new ConvertWindow.ConvertWindow();
+            ConvertWindow.ConvertWindow convert = new();
             convert.ShowDialog();
         }
 
         private void TextBoxAnimation()
         {
-            ColorAnimation colorAnimation = new ColorAnimation
+            ColorAnimation colorAnimation = new()
             {
                 From = Colors.White, // Исходный цвет фона
                 To = (Color)ColorConverter.ConvertFromString("#ff4f4f"), // Целевой цвет фона
