@@ -1,17 +1,17 @@
 ﻿namespace VidDownload.WPF.Control
 {
     /// <summary>
-    /// Класс для сборки команды для yt-dlp
+    /// Класс Command инкапсулирует действие и позволяет вызвать действие с помощью метода Execute.
+    /// Это позволяет отделить вызов действия от кода пользовательского интерфейса, такого как обработчики нажатий кнопок.
     /// </summary>
+
+    /// Предоставляет функции для создания командных строк yt-dlp для загрузки аудио и видео.
+    /// LoadAudio создает команду для загрузки только аудио. LoadVideo создает команду 
+    /// для загрузки видео, при необходимости включая перекодирование или ремуксинг и настройку разрешения.
+    /// Оба принимают ссылочный URL и настройки, а также обрабатывают плейлисты, если они указаны.
     public static class Command
     {
-        /// <summary>
-        /// Функция сборки команды, для скачивания аудио
-        /// </summary>
-        /// <param name="acodec">Аудиокодек (mp3 и т.д)</param>
-        /// <param name="reference">Ссылка на видео</param>
-        /// <param name="isPlaylist">Скачать весь плейлист?</param>
-        /// <returns>Возвращает строку команды скачивания только аудио для yt-dlp</returns>
+
         static public string LoadAudio(Settings settings, string reference, bool? isPlaylist) // Функция сборки команды для загрузки аудио
         {
             bool _isPlaylist = isPlaylist ?? false;
@@ -30,16 +30,6 @@
             return result;
         }
 
-        /// <summary>
-        /// Функция сборки команды для загрузки видео
-        /// </summary>
-        /// <param name="reference">Ссылка на видео</param>
-        /// <param name="vcodec">Видео кодек</param>
-        /// <param name="res">Разрешение видео</param>
-        /// <param name="format">Формат видеофайла</param>
-        /// <param name="isPlaylist">Скачать весь плейлист?</param>
-        /// <param name="isCheckCoder">Перекодировать видео?</param>
-        /// <returns>Возвращает строку команды скачивания видео для yt-dlp</returns>
         static public string LoadVideo(string reference, Settings settings, bool? isPlaylist, bool? isCheckCoder) // Функция сборки команды для загрузки видео
         {
             bool _isPlaylist = isPlaylist ?? false;

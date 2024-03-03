@@ -63,8 +63,9 @@ namespace VidDownload.WPF
             CheckUpdateAsync();
         }
 
+
         /// <summary>
-        /// Кнопка загрузки видео
+        /// Обрабатывает событие click для кнопки загрузки. Инициирует асинхронный процесс загрузки видео.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -99,7 +100,7 @@ namespace VidDownload.WPF
         }
 
         /// <summary>
-        /// Функция загрузки видео
+        /// Асинхронная функция загрузки видео. 
         /// </summary>
         /// <param name="PrograssBarMain">Шкала прогресса</param>
         public async void Download(ProgressBar PrograssBarMain)

@@ -23,17 +23,5 @@ namespace VidDownload.WPF.ConvertWindow
         {
             InitializeComponent();
         }
-
-        /*
-        private void Convert_Click(object sender, RoutedEventArgs e)
-        {
-            
-            if (string.IsNullOrEmpty(Input.Text) || string.IsNullOrEmpty(Output.Text))
-            {
-                MessageBox.Show("Введите путь к файлу и выберите папку для сохранения");
-                return;
-            }
-        }
-        */
     }
 }
