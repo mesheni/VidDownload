@@ -117,12 +117,12 @@ namespace VidDownload.WPF
             // Запуск yt-dlp и передача команды
             await Task.Run(() =>
             {
-                Process proc = new();
+                Process proc = new(); // Создание процесса yt-dlp.
 
-                proc.StartInfo.FileName = @".\yt-dlp.exe";
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.FileName = @".\yt-dlp.exe"; // Путь к исполняемому файлу
+                proc.StartInfo.UseShellExecute = false; // Использовать командную строку
+                proc.StartInfo.RedirectStandardOutput = true; // Перенаправление вывода
+                proc.StartInfo.CreateNoWindow = true; // Не создавать окно
 
                 // Сборка команды и отправка в yt-dlp
                 if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
@@ -386,22 +386,22 @@ namespace VidDownload.WPF
                         //{ Name: var n } when n.StartsWith("fa") => // Iran
                         //    "http://www.aparat.com",
                         { Name: var n } when n.StartsWith("ru") => // Russian
-                            "https://ya.ru/",
+                            "https://ya.ru/", 
                         _ =>
                             "http://www.gstatic.com/generate_204",
                     };
 
-                    var request = (HttpWebRequest)WebRequest.Create(url);
-                    request.KeepAlive = false;
-                    request.Timeout = timeoutMs;
-                    using (var response = (HttpWebResponse)request.GetResponse())
+                    var request = (HttpWebRequest)WebRequest.Create(url); // Создание запроса
+                    request.KeepAlive = false; // Отключение KeepAlive для сокета
+                    request.Timeout = timeoutMs; // Установка таймаута
+                    using (var response = (HttpWebResponse)request.GetResponse()) // Получение ответа от сервера
                         result = true;
                 }
                 catch
                 {
                     result = false;
                 }
-            }).ConfigureAwait(false);
+            }).ConfigureAwait(false); 
 
             return result;
         }
