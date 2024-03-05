@@ -127,7 +127,10 @@ namespace VidDownload.WPF
                 // Сборка команды и отправка в yt-dlp
                 if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
                 {
-                    proc.StartInfo.Arguments = Command.LoadAudio(settings, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
+                    Dispatcher.Invoke(() =>
+                    {
+                        proc.StartInfo.Arguments = Command.LoadAudio(settings, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
+                    });
                 }
                 else
                 {

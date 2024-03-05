@@ -1,7 +1,4 @@
 namespace VidDownload.WPF.Control;
-/// <summary>
-/// TODO: Напишите краткую документацию для этого кода
-/// </summary>
 
 /// <summary>
 /// Класс Settings определяет свойства для разрешения видео, кодеков и формата.
