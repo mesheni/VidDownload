@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using Xabe.FFmpeg;
 using Xabe;
 using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace VidDownload.WPF.ConvertWindow
 {
@@ -23,6 +24,8 @@ namespace VidDownload.WPF.ConvertWindow
     /// </summary>
     public partial class ConvertWindow : Window
     {
+        private string fileName = String.Empty;
+
         public ConvertWindow()
         {
             InitializeComponent();
@@ -30,18 +33,45 @@ namespace VidDownload.WPF.ConvertWindow
 
         private async void ButConvert_Click(object sender, RoutedEventArgs e)
         {
-            //string outputPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".mp4");
-            //IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo("Test").ConfigureAwait(false);
+            await Task.Run(async () => 
+            {
+                IConversion conversion = new Conversion();
 
-            //IStream videoStream = mediaInfo.VideoStreams.FirstOrDefault()
-            //    ?.SetCodec(VideoCodec.h264);
-            //IStream audioStream = mediaInfo.AudioStreams.FirstOrDefault()
-            //    ?.SetCodec(AudioCodec.aac);
+                string outputPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".mp4");
+                IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(fileName).ConfigureAwait(false);
 
-            //await FFmpeg.Conversions.New()
-            //    .AddStream(audioStream, videoStream)
-            //    .SetOutput(outputPath)
-            //    .Start().ConfigureAwait(false);
+                IStream videoStream = mediaInfo.VideoStreams.FirstOrDefault()
+                    ?.SetCodec(VideoCodec.hevc);
+                IStream audioStream = mediaInfo.AudioStreams.FirstOrDefault()
+                    ?.SetCodec(AudioCodec.aac);
+
+                conversion.OnProgress += (sender, args) =>
+                {
+                    //var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
+                    Dispatcher.Invoke(() =>
+                    {
+                        var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
+                        Debug.WriteLine($"[{args.Duration} / {args.TotalLength}] {percent}%");
+
+                        //labelInfoFFmpeg.Content = args.Data;
+                        //Debug.WriteLine($"{args.Data}{Environment.NewLine}");
+
+                        //labelInfoFFmpeg.Content = $"[{args.Duration} / {args.TotalLength}] {percent}%";
+                        //ProgressBarFFmpeg.Value = percent;
+                    });
+
+                };
+                await conversion.Start().ConfigureAwait(false);
+
+                await FFmpeg.Conversions.New()
+                    .AddStream(audioStream, videoStream)
+                    .SetOutput(outputPath)
+                    .Start().ConfigureAwait(false);
+
+                
+            }).ConfigureAwait(false);
+
+            
 
         }
 
@@ -49,13 +79,14 @@ namespace VidDownload.WPF.ConvertWindow
         {
             OpenFileDialog openFileDialog = new()
             {
-                Filter = "Video files (*.mp4;*.avi;*.wmv)|*.mp4;*.avi;*.wmv"
+                Filter = "Video files (*.mp4;*.avi;*.wmv;*.mkv)|*.mp4;*.avi;*.wmv;*.mkv"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
                 LabelFileName.Text = openFileDialog.FileName;
-                labelInfoFFmpeg.Content = System.IO.Path.GetFileName(openFileDialog.FileName);
+                fileName = openFileDialog.FileName;
+                //fileName = System.IO.Path.GetFileName(openFileDialog.FileName);
             }
         }
     }
