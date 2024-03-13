@@ -35,9 +35,14 @@ namespace VidDownload.WPF.ConvertWindow
         {
             await Task.Run(async () => 
             {
-                IConversion conversion = new Conversion();
+                //TODO: Сделать аппаратное ускорение конвертации
+
 
                 string outputPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".mp4");
+
+                var conversion = await FFmpeg.Conversions.FromSnippet.ToMp4(fileName, "test.mp4").ConfigureAwait(false);
+
+                
                 IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(fileName).ConfigureAwait(false);
 
                 IStream videoStream = mediaInfo.VideoStreams.FirstOrDefault()
@@ -48,22 +53,21 @@ namespace VidDownload.WPF.ConvertWindow
                 conversion.OnProgress += (sender, args) =>
                 {
                     //var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
-                    Dispatcher.Invoke(() =>
-                    {
-                        var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
-                        Debug.WriteLine($"[{args.Duration} / {args.TotalLength}] {percent}%");
 
-                        //labelInfoFFmpeg.Content = args.Data;
-                        //Debug.WriteLine($"{args.Data}{Environment.NewLine}");
+                    var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
+                    Debug.WriteLine($"[{args.Duration} / {args.TotalLength}] {percent}%");
 
-                        //labelInfoFFmpeg.Content = $"[{args.Duration} / {args.TotalLength}] {percent}%";
-                        //ProgressBarFFmpeg.Value = percent;
-                    });
+                    //labelInfoFFmpeg.Content = args.Data;
+                    //Debug.WriteLine($"{args.Data}{Environment.NewLine}");
+
+                    //labelInfoFFmpeg.Content = $"[{args.Duration} / {args.TotalLength}] {percent}%";
+                    //ProgressBarFFmpeg.Value = percent;
 
                 };
                 await conversion.Start().ConfigureAwait(false);
 
                 await FFmpeg.Conversions.New()
+                    //.UseHardwareAcceleration(, VideoCodec.H264_cuvid, VideoCodec.H264_nvenc)
                     .AddStream(audioStream, videoStream)
                     .SetOutput(outputPath)
                     .Start().ConfigureAwait(false);

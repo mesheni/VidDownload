@@ -16,6 +16,7 @@ using Octokit;
 using System.Windows.Shapes;
 using System.Net;
 using System.Globalization;
+using Xabe.FFmpeg.Downloader;
 
 /*
 
@@ -61,6 +62,7 @@ namespace VidDownload.WPF
             InitializeComponent();
             InitApp();
             CheckUpdateAsync();
+            //FFmpegDownloader.GetLatestVersion(FFmpegVersion.Shared);
         }
 
 
