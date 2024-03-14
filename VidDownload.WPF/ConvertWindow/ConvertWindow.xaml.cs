@@ -16,6 +16,7 @@ using Xabe.FFmpeg;
 using Xabe;
 using Microsoft.Win32;
 using System.Diagnostics;
+using HandyControl.Controls;
 
 namespace VidDownload.WPF.ConvertWindow
 {
@@ -35,14 +36,11 @@ namespace VidDownload.WPF.ConvertWindow
         {
             await Task.Run(async () => 
             {
-                //TODO: Сделать аппаратное ускорение конвертации
-
-
+                //TODO: Сделать аппаратное ускорение конвертации (по возможности)
                 string outputPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".mp4");
 
                 var conversion = await FFmpeg.Conversions.FromSnippet.ToMp4(fileName, "test.mp4").ConfigureAwait(false);
 
-                
                 IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(fileName).ConfigureAwait(false);
 
                 IStream videoStream = mediaInfo.VideoStreams.FirstOrDefault()
@@ -52,31 +50,23 @@ namespace VidDownload.WPF.ConvertWindow
 
                 conversion.OnProgress += (sender, args) =>
                 {
-                    //var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
-
                     var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
-                    Debug.WriteLine($"[{args.Duration} / {args.TotalLength}] {percent}%");
 
-                    //labelInfoFFmpeg.Content = args.Data;
-                    //Debug.WriteLine($"{args.Data}{Environment.NewLine}");
-
-                    //labelInfoFFmpeg.Content = $"[{args.Duration} / {args.TotalLength}] {percent}%";
-                    //ProgressBarFFmpeg.Value = percent;
-
+                    Dispatcher.Invoke(() => labelInfoFFmpeg.Content = $"[{args.Duration} / {args.TotalLength}] {percent}%");
+                    Dispatcher.Invoke(() => ProgressBarFFmpeg.Value = percent);
                 };
                 await conversion.Start().ConfigureAwait(false);
 
                 await FFmpeg.Conversions.New()
-                    //.UseHardwareAcceleration(, VideoCodec.H264_cuvid, VideoCodec.H264_nvenc)
                     .AddStream(audioStream, videoStream)
                     .SetOutput(outputPath)
                     .Start().ConfigureAwait(false);
-
                 
             }).ConfigureAwait(false);
 
+            Dispatcher.Invoke(() => labelInfoFFmpeg.Content = String.Empty);
+            Dispatcher.Invoke(() => ProgressBarFFmpeg.Value = 0);
             
-
         }
 
         private void ButChoiseVideo_Click(object sender, RoutedEventArgs e)
