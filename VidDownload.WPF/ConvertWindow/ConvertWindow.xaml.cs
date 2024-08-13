@@ -23,7 +23,7 @@ namespace VidDownload.WPF.ConvertWindow
     /// <summary>
     /// Логика взаимодействия для ConvertWindow.xaml
     /// </summary>
-    public partial class ConvertWindow : Window
+    public partial class ConvertWindow : System.Windows.Window
     {
         private string fileName = String.Empty;
 
@@ -40,6 +40,7 @@ namespace VidDownload.WPF.ConvertWindow
                 string outputPath = System.IO.Path.ChangeExtension(System.IO.Path.GetTempFileName(), ".mp4");
 
                 var conversion = await FFmpeg.Conversions.FromSnippet.ToMp4(fileName, "test.mp4").ConfigureAwait(false);
+                var percent = 0;
 
                 IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(fileName).ConfigureAwait(false);
 
@@ -50,7 +51,17 @@ namespace VidDownload.WPF.ConvertWindow
 
                 conversion.OnProgress += (sender, args) =>
                 {
-                    var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
+
+                    //Debug.WriteLine($"{args.Data}{Environment.NewLine}");
+
+                    //Dispatcher.Invoke(() => 
+                    //{
+                        percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
+
+                    //});
+                    Debug.WriteLine($"[{args.Duration} / {args.TotalLength}] {percent}%");
+
+                    //var percent = (int)(Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds, 2) * 100);
 
                     Dispatcher.Invoke(() => labelInfoFFmpeg.Content = $"[{args.Duration} / {args.TotalLength}] {percent}%");
                     Dispatcher.Invoke(() => ProgressBarFFmpeg.Value = percent);
@@ -64,8 +75,8 @@ namespace VidDownload.WPF.ConvertWindow
                 
             }).ConfigureAwait(false);
 
-            Dispatcher.Invoke(() => labelInfoFFmpeg.Content = String.Empty);
-            Dispatcher.Invoke(() => ProgressBarFFmpeg.Value = 0);
+            //Dispatcher.Invoke(() => labelInfoFFmpeg.Content = String.Empty);
+            //Dispatcher.Invoke(() => ProgressBarFFmpeg.Value = 0);
             
         }
 
