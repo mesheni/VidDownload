@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Octokit;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using System.Net.Http.Headers;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,12 +13,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
-using Octokit.Clients;
-using Octokit;
-using System.Windows.Shapes;
-using System.Net;
-using System.Globalization;
-using Xabe.FFmpeg.Downloader;
 
 /*
 
@@ -32,13 +28,13 @@ using Xabe.FFmpeg.Downloader;
      `---'
 
 Russian:
-Не стоит относиться к коду этой программы слишком серьезно. Я создаю ее для изучения и совершенствования, а также 
-в рамках своих исследований. Хотя я, возможно, и не профессиональный программист, вы можете просмотреть код и 
+Не стоит относиться к коду этой программы слишком серьезно. Я создаю ее для изучения и совершенствования, а также
+в рамках своих исследований. Хотя я, возможно, и не профессиональный программист, вы можете просмотреть код и
 внести любые изменения или улучшения, которые сочтете необходимыми.
 
 English:
-Do not take this program's code too seriously. I am creating it for my own learning and improvement, 
-and as part of my studies. While I may not be a professional programmer, you are welcome to review 
+Do not take this program's code too seriously. I am creating it for my own learning and improvement,
+and as part of my studies. While I may not be a professional programmer, you are welcome to review
 the code and suggest any fixes or improvements you see fit.
 
 Мои контакты:
@@ -296,7 +292,7 @@ namespace VidDownload.WPF
                                 ButDownload.IsEnabled = true;
                             });
                             HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
-                        
+
                         };
 
                     }
@@ -382,7 +378,7 @@ namespace VidDownload.WPF
         public async Task<bool> CheckForInternetConnection(int timeoutMs = 1000, string url = null)
         {
             bool result = false;
-            await Task.Run(() => 
+            await Task.Run(() =>
             {
                 try
                 {
@@ -391,7 +387,7 @@ namespace VidDownload.WPF
                         //{ Name: var n } when n.StartsWith("fa") => // Iran
                         //    "http://www.aparat.com",
                         { Name: var n } when n.StartsWith("ru") => // Russian
-                            "https://ya.ru/", 
+                            "https://ya.ru/",
                         _ =>
                             "http://www.gstatic.com/generate_204",
                     };
@@ -406,7 +402,7 @@ namespace VidDownload.WPF
                 {
                     result = false;
                 }
-            }).ConfigureAwait(false); 
+            }).ConfigureAwait(false);
 
             return result;
         }
