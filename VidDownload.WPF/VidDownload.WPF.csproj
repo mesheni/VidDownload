@@ -56,8 +56,8 @@
   <ItemGroup>
     <PackageReference Include="HandyControl" Version="3.5.1" />
     <PackageReference Include="HandyControl.Lang.en" Version="3.5.1" />
-    <PackageReference Include="HandyControls.Lang.ru" Version="3.5.0" />
-    <PackageReference Include="Octokit" Version="10.0.0" />
+    <PackageReference Include="HandyControls.Lang.ru" Version="3.5.3" />
+    <PackageReference Include="Octokit" Version="13.0.1" />
     <PackageReference Include="Xabe.FFmpeg" Version="5.2.6" />
     <PackageReference Include="Xabe.FFmpeg.Downloader" Version="5.2.6" />
   </ItemGroup>
