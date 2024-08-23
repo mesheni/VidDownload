@@ -177,7 +177,11 @@ namespace VidDownload.WPF
             }).ConfigureAwait(true);
         }
 
-        // Кнопка открытия папки с видео
+        /// <summary>
+        /// Кнопка открытия папки с видео
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
@@ -191,7 +195,9 @@ namespace VidDownload.WPF
             System.Diagnostics.Process.Start("explorer.exe", argument);
         }
 
-        // Функция инициализации папок в приложении
+        /// <summary>
+        /// Инициализирует приложение и подготовку необходимых переменных и папок для работы с видео.
+        /// </summary>
         private void InitApp()
         {
 
@@ -220,6 +226,12 @@ namespace VidDownload.WPF
             }
         }
 
+        /// <summary>
+        /// Проверяет наличие обновлений для приложения yt-dlp на GitHub
+        /// </summary> <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private async void CheckUpdateAsync()
         {
             if (CheckForInternetConnection().Result)
@@ -358,6 +370,9 @@ namespace VidDownload.WPF
             convert.ShowDialog();
         }
 
+        /// <summary>
+        /// Этот код создает анимацию изменения цвета фона TextBoxURL
+        /// </summary>
         private void TextBoxAnimation()
         {
             ColorAnimation colorAnimation = new()
@@ -375,6 +390,13 @@ namespace VidDownload.WPF
             TextBoxURL.Background.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
         }
 
+
+        /// <summary>
+        /// Проверка подключения к интернету.
+        /// </summary>
+        /// <param name="timeoutMs">Время ожидания сети</param>
+        /// <param name="url">Ссылка для проверки подключения</param>
+        /// <returns></returns>
         public async Task<bool> CheckForInternetConnection(int timeoutMs = 1000, string url = null)
         {
             bool result = false;
