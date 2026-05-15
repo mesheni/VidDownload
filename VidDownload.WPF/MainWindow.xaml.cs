@@ -110,7 +110,7 @@ namespace VidDownload.WPF
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
             string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
 
-            FileStream fs = new(log, System.IO.FileMode.CreateNew);
+            using FileStream fs = new(log, System.IO.FileMode.CreateNew);
 
             // Запуск yt-dlp и передача команды
             await Task.Run(() =>
@@ -138,7 +138,7 @@ namespace VidDownload.WPF
                     });
                 }
 
-                StreamWriter w = new(fs, Encoding.Default);
+                using StreamWriter w = new(fs, Encoding.Default);
                 // Логирование и запись логов в файл
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
@@ -153,14 +153,22 @@ namespace VidDownload.WPF
                     }
                 });
 
+                if (!File.Exists(@".\yt-dlp.exe"))
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        HandyControl.Controls.MessageBox.Error("Не найден yt-dlp.exe. Перезапустите программу для автоматической загрузки.", "Ошибка!");
+                        ProgressBarMain.Value = 0;
+                        ButDownload.IsEnabled = true;
+                        labelInfo.Content = "";
+                    });
+                    return;
+                }
+
                 proc.Start();
                 proc.BeginOutputReadLine();
                 proc.WaitForExit();
                 proc.Close();
-
-                // Закрытие потока записи лога и разблокировка кнопки загрузки
-                w.Close();
-                fs.Close();
 
                 Dispatcher.Invoke(() =>
                 {
@@ -234,7 +242,7 @@ namespace VidDownload.WPF
         /// <returns></returns>
         private async void CheckUpdateAsync()
         {
-            if (CheckForInternetConnection().Result)
+            if (await CheckForInternetConnection())
                 await Task.Run(async () =>
                 {
                     bool fileNotFound = false;

@@ -60,36 +60,36 @@
                 switch (outputFormat.ToLower())
                 {
                     case "mp4":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter(useNVENC ? "-c:v h264_nvenc" : "-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         if (useNVENC)
-                        {
-                            conversion.AddParameter("-c:v h264_nvenc");
                             conversion.AddParameter("-preset fast");
-                        }
                         break;
                     case "avi":
-                        conversion.SetVideoCodec(VideoCodec.mpeg4);
-                        conversion.SetAudioCodec(AudioCodec.mp3);
+                        conversion.AddParameter("-c:v mpeg4");
+                        conversion.AddParameter("-c:a libmp3lame");
                         break;
                     case "mkv":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter("-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         break;
                     case "mov":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter("-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         break;
                     default:
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter("-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         break;
                 }
 
                 // Подписка на события прогресса
                 conversion.OnProgress += (sender, args) =>
                 {
-                    int percent = (int)Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds * 100, 0);
+                    double total = args.TotalLength.TotalSeconds;
+                    int percent = total > 0
+                        ? (int)Math.Round(args.Duration.TotalSeconds / total * 100, 0)
+                        : 0;
                     Debug.WriteLine($"[{args.Duration} / {args.TotalLength}] {percent}%");
                     _onProgress?.Invoke(percent, $"[{args.Duration} / {args.TotalLength}] {percent}%");
                 };
