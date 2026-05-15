@@ -22,6 +22,8 @@ namespace VidDownload.WPF.Control
             Directory.CreateDirectory(logPath);
             string logFile = System.IO.Path.Combine(logPath, $"{dateTime}_log.txt");
 
+            bool cancelled = false;
+
             try
             {
                 if (!File.Exists(@".\yt-dlp.exe"))
@@ -62,18 +64,22 @@ namespace VidDownload.WPF.Control
                 proc.Start();
                 proc.BeginOutputReadLine();
 
-                await Task.Run(() =>
+                while (!proc.HasExited)
                 {
-                    while (!proc.HasExited)
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            proc.Kill();
-                            throw new OperationCanceledException(cancellationToken);
-                        }
-                        proc.WaitForExit(100);
+                        cancelled = true;
+                        try { proc.Kill(); } catch { }
+                        break;
                     }
-                }, cancellationToken);
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                }
+
+                if (cancelled)
+                {
+                    DownloadCompleted?.Invoke(false, "Загрузка отменена");
+                    return;
+                }
 
                 proc.WaitForExit();
                 proc.Close();

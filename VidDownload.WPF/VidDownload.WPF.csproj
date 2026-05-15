@@ -97,12 +97,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="QueueWindow\QueueWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="bin\Release\netcoreapp3.1\" />
   </ItemGroup>
 </Project>

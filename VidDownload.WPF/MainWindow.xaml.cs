@@ -1,68 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
-using VidDownload.WPF.QueueWindow;
 using HandyControl.Data;
-
-/*
-
-     _____  
-   .'     `.
-  /         \
- |           |      Программа для скачивания видео с YouTube и других платформ.
- '.  +^^^+  .'      Current version: 0.7.0
-   `. \./ .'        by mesh
-     |_|_|          2024г.
-     (___)          First commit: 20 августа, 2022г.
-     (___)
-     `---'
-
-Russian:
-Не стоит относиться к коду этой программы слишком серьезно. Я создаю ее для изучения и совершенствования, а также
-в рамках своих исследований. Хотя я, возможно, и не профессиональный программист, вы можете просмотреть код и
-внести любые изменения или улучшения, которые сочтете необходимыми.
-
-English:
-Do not take this program's code too seriously. I am creating it for my own learning and improvement,
-and as part of my studies. While I may not be a professional programmer, you are welcome to review
-the code and suggest any fixes or improvements you see fit.
-
-Мои контакты:
-Email - bunin.ivan14@yandex.ru
-GitHub - https://github.com/mesheni
-Telegram - https://t.me/meshenii
-VK - https://vk.com/mesheni
-Twitter/X - https://x.com/meshenii
-
-*/
 
 namespace VidDownload.WPF
 {
     public partial class MainWindow : System.Windows.Window
     {
-        // Переменные для сборки команды
         private List<string> codecList = new();
         Settings settings = new();
         private UpdateService? _updateService;
         private DownloadService? _downloadService;
         private CancellationTokenSource? _cts;
 
+        // ===== Очередь =====
+        private readonly ObservableCollection<QueueItem> _queueItems = new();
+        private CancellationTokenSource? _queueCts;
+        private bool _isQueueProcessing;
+
         public MainWindow()
         {
             InitializeComponent();
             InitApp();
             LoadSavedSettings();
+            ListViewQueue.ItemsSource = _queueItems;
+            UpdateQueueStatus();
+
             _updateService = new UpdateService();
             _updateService.ProgressChanged += (progress) =>
                 Dispatcher.Invoke(() => ProgressBarMain.Value = progress);
@@ -84,16 +61,16 @@ namespace VidDownload.WPF
             CheckUpdateAsync();
         }
 
-        /// <summary>
-        /// Загружает сохранённые настройки и применяет их к UI.
-        /// </summary>
+        // ===== НАСТРОЙКИ =====
+
         private void LoadSavedSettings()
         {
             settings = Settings.Load();
-            ComboRes.Text = settings.Resolution;
-            ComboCodec.Text = settings.VideoCodec;
-            ComboAudio.Text = settings.AudioCodec;
-            ComboFormat.Text = settings.Format;
+
+            SelectComboItem(ComboRes, settings.Resolution);
+            SelectComboItem(ComboCodec, settings.VideoCodec);
+            SelectComboItem(ComboAudio, settings.AudioCodec);
+            SelectComboItem(ComboFormat, settings.Format);
 
             if (settings.Theme == "Light")
                 ApplyTheme(false);
@@ -109,9 +86,20 @@ namespace VidDownload.WPF
             catch { }
         }
 
-        /// <summary>
-        /// Сохраняет текущие настройки из UI.
-        /// </summary>
+        private static void SelectComboItem(ComboBox combo, string value)
+        {
+            if (string.IsNullOrEmpty(value)) return;
+            foreach (var obj in combo.Items)
+            {
+                string itemText = obj is ComboBoxItem cbi ? cbi.Content?.ToString() : obj.ToString();
+                if (string.Equals(itemText, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    combo.SelectedItem = obj;
+                    return;
+                }
+            }
+        }
+
         private void SaveCurrentSettings()
         {
             if (ComboRes.Text.Length != 0)
@@ -126,14 +114,13 @@ namespace VidDownload.WPF
             settings.Save();
         }
 
-        /// <summary>
-        /// Обрабатывает событие click для кнопки загрузки. Инициирует асинхронный процесс загрузки видео.
-        /// </summary>
+        // ===== СКАЧИВАНИЕ =====
+
         private async void ButDownload_Click(object sender, RoutedEventArgs e)
         {
             if (TextBoxURL.Text.Length == 0)
             {
-                await Task.Run(() => Dispatcher.Invoke(() => TextBoxAnimation())).ConfigureAwait(true);
+                await Task.Run(() => Dispatcher.Invoke(() => TextBoxAnimation())).ConfigureAwait(false);
                 HandyControl.Controls.MessageBox.Error("Пустое поле ссылки!", "Ошибка!");
                 return;
             }
@@ -161,10 +148,10 @@ namespace VidDownload.WPF
                     _cts = null;
                     if (success)
                     {
-                        ComboCodec.Text = settings.VideoCodec;
-                        ComboRes.Text = settings.Resolution;
-                        ComboAudio.Text = settings.AudioCodec;
-                        ComboFormat.Text = settings.Format;
+                        SelectComboItem(ComboCodec, settings.VideoCodec);
+                        SelectComboItem(ComboRes, settings.Resolution);
+                        SelectComboItem(ComboAudio, settings.AudioCodec);
+                        SelectComboItem(ComboFormat, settings.Format);
                         TextBoxURL.Text = "";
                         labelInfo.Content = message;
                     }
@@ -198,39 +185,279 @@ namespace VidDownload.WPF
             }
         }
 
-        /// <summary>
-        /// Останавливает текущую загрузку.
-        /// </summary>
         private void ButStop_Click(object sender, RoutedEventArgs e)
         {
-            _cts?.Cancel();
+            if (_cts != null)
+            {
+                _cts.Cancel();
+                _cts = null;
+            }
             ButStop.IsEnabled = false;
         }
 
-        /// <summary>
-        /// Кнопка открытия папки с видео
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        // ===== ОЧЕРЕДЬ =====
+
+        private void TextBoxQueueUrl_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                AddUrlsToQueue(TextBoxQueueUrl.Text.Trim());
+                TextBoxQueueUrl.Text = string.Empty;
+                e.Handled = true;
+            }
+        }
+
+        private void ButAddToQueue_Click(object sender, RoutedEventArgs e)
+        {
+            AddUrlsToQueue(TextBoxQueueUrl.Text.Trim());
+            TextBoxQueueUrl.Text = string.Empty;
+        }
+
+        private void AddUrlsToQueue(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            var urls = text.Split(new[] { '\n', ';', '\r' }, StringSplitOptions.RemoveEmptyEntries)
+                           .Select(u => u.Trim())
+                           .Where(u => u.Length > 0)
+                           .ToArray();
+
+            foreach (var url in urls)
+            {
+                var item = new QueueItem(url);
+                _queueItems.Add(item);
+                _ = FetchVideoTitleAsync(item);
+            }
+            UpdateQueueStatus();
+        }
+
+        private async Task FetchVideoTitleAsync(QueueItem item)
+        {
+            try
+            {
+                if (!File.Exists(@".\yt-dlp.exe"))
+                {
+                    item.Title = item.Url;
+                    return;
+                }
+
+                var proc = new Process();
+                proc.StartInfo.FileName = @".\yt-dlp.exe";
+                proc.StartInfo.Arguments = $"--no-warnings --print title --print thumbnail \"{item.Url}\"";
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.CreateNoWindow = true;
+
+                proc.Start();
+                string output = await proc.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+                proc.WaitForExit(10000);
+
+                var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                if (lines.Length > 0 && !string.IsNullOrEmpty(lines[0]))
+                {
+                    string title = lines[0].Trim();
+                    if (title.Length > 120) title = title[..117] + "...";
+                    await Dispatcher.InvokeAsync(() => item.Title = title);
+                }
+
+                if (lines.Length > 1 && !string.IsNullOrEmpty(lines[1]))
+                {
+                    await Dispatcher.InvokeAsync(() => item.ThumbnailUrl = lines[1].Trim());
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to fetch video title: {ex.Message}");
+                if (string.IsNullOrEmpty(item.Title) || item.Title == item.Url)
+                    item.Title = item.Url;
+            }
+        }
+
+        private void ButRemoveQueueItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isQueueProcessing) return;
+            if (sender is Button btn && btn.Tag is QueueItem item)
+            {
+                _queueItems.Remove(item);
+                UpdateQueueStatus();
+            }
+        }
+
+        private void ButClearQueue_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isQueueProcessing) return;
+            _queueItems.Clear();
+            UpdateQueueStatus();
+        }
+
+        private async void ButStartQueue_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isQueueProcessing || _queueItems.Count == 0) return;
+
+            SaveCurrentSettings();
+
+            _isQueueProcessing = true;
+            _queueCts = new CancellationTokenSource();
+            var token = _queueCts.Token;
+
+            ButStartQueue.IsEnabled = false;
+            ButStopQueue.IsEnabled = true;
+            ButAddToQueue.IsEnabled = false;
+            ButClearQueue.IsEnabled = false;
+
+            try
+            {
+                for (int i = 0; i < _queueItems.Count; i++)
+                {
+                    if (token.IsCancellationRequested) break;
+
+                    var item = _queueItems[i];
+                    item.Status = "Загрузка...";
+                    TextQueueStatus.Text = $"Загрузка {i + 1} из {_queueItems.Count}";
+
+                    var downloadService = new DownloadService();
+                    var tcs = new TaskCompletionSource<bool>();
+
+                    downloadService.ProgressChanged += (progress) =>
+                    {
+                        Dispatcher.Invoke(() => item.Status = $"Загрузка... {progress}%");
+                    };
+
+                    downloadService.DownloadCompleted += (success, message) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            item.Status = success ? "✓ Готово" : $"✗ {message}";
+                        });
+                        tcs.TrySetResult(success);
+                    };
+
+                    try
+                    {
+                        var downloadTask = downloadService.DownloadAsync(
+                            item.Url, settings,
+                            CheckAudio.IsChecked == true,
+                            CheckBoxPlaylist.IsChecked == true,
+                            CheckCoder.IsChecked == true,
+                            token);
+
+                        await Task.WhenAny(downloadTask, tcs.Task).ConfigureAwait(true);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Dispatcher.Invoke(() => item.Status = "✗ Отменено");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.Invoke(() => item.Status = $"✗ {ex.Message}");
+                    }
+                }
+            }
+            finally
+            {
+                _isQueueProcessing = false;
+                _queueCts?.Dispose();
+                _queueCts = null;
+
+                Dispatcher.Invoke(() =>
+                {
+                    ButStartQueue.IsEnabled = true;
+                    ButStopQueue.IsEnabled = false;
+                    ButAddToQueue.IsEnabled = true;
+                    ButClearQueue.IsEnabled = true;
+
+                    var allDone = _queueItems.All(i => i.Status.StartsWith("✓", StringComparison.Ordinal));
+                    TextQueueStatus.Text = allDone
+                        ? "Все загрузки завершены"
+                        : "Обработка очереди завершена";
+                });
+            }
+        }
+
+        private void ButStopQueue_Click(object sender, RoutedEventArgs e)
+        {
+            _queueCts?.Cancel();
+            ButStopQueue.IsEnabled = false;
+        }
+
+        private void UpdateQueueStatus()
+        {
+            TextQueueStatus.Text = _queueItems.Count > 0
+                ? $"В очереди: {_queueItems.Count} видео"
+                : "Очередь пуста";
+        }
+
+        // ===== ПРОЧИЕ КНОПКИ =====
+
         private void ButOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
-
             if (!Directory.Exists(path))
-            {
                 Directory.CreateDirectory(path);
-            }
-
             string argument = "/open, \"" + path;
             System.Diagnostics.Process.Start("explorer.exe", argument);
         }
 
-        /// <summary>
-        /// Инициализирует приложение и подготовку необходимых переменных и папок для работы с видео.
-        /// </summary>
+        private void ButtonHelp_Click(object sender, RoutedEventArgs e)
+        {
+            HelpWindow help = new();
+            help.ShowDialog();
+        }
+
+        private void ButtonConvert_Click(object sender, RoutedEventArgs e)
+        {
+            ConvertWindow.ConvertWindow convert = new();
+            convert.ShowDialog();
+        }
+
+        // ===== ТЕМА =====
+
+        private void ButTheme_Click(object sender, RoutedEventArgs e)
+        {
+            bool makeDark = settings.Theme != "Light";
+            ApplyTheme(makeDark);
+            settings = settings with { Theme = makeDark ? "Dark" : "Light" };
+            settings.Save();
+        }
+
+        private void ApplyTheme(bool isDark)
+        {
+            var skinUri = isDark
+                ? "pack://application:,,,/HandyControl;component/Themes/SkinDark.xaml"
+                : "pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml";
+
+            for (int i = Application.Current.Resources.MergedDictionaries.Count - 1; i >= 0; i--)
+            {
+                var src = Application.Current.Resources.MergedDictionaries[i].Source?.OriginalString ?? "";
+                if (src.Contains("Skin"))
+                    Application.Current.Resources.MergedDictionaries.RemoveAt(i);
+            }
+
+            Application.Current.Resources.MergedDictionaries.Add(
+                new ResourceDictionary { Source = new Uri(skinUri, UriKind.Absolute) });
+        }
+
+        // ===== ЯЗЫК =====
+
+        private void ButLang_Click(object sender, RoutedEventArgs e)
+        {
+            bool makeEnglish = settings.Language != "en";
+            settings = settings with { Language = makeEnglish ? "en" : "ru" };
+            settings.Save();
+
+            var label = makeEnglish
+                ? "Language changed to English. Restart to apply."
+                : "Язык изменён на русский. Перезапустите для применения.";
+
+            HandyControl.Controls.MessageBox.Info(label, "Language / Язык");
+        }
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+
         private void InitApp()
         {
-
             string videoPath = @".\MyVideos\";
             string logPath = @".\log\";
 
@@ -242,23 +469,17 @@ namespace VidDownload.WPF
             }
 
             if (!Directory.Exists(videoPath))
-            {
                 Directory.CreateDirectory(videoPath);
-            }
             if (!Directory.Exists(logPath))
-            {
                 Directory.CreateDirectory(logPath);
-            }
 
             foreach (var i in ComboCodec.Items)
             {
-                codecList.Add(i.ToString());
+                if (i is ComboBoxItem cbi && cbi.Content != null)
+                    codecList.Add(cbi.Content.ToString()!);
             }
         }
 
-        /// <summary>
-        /// Проверяет наличие обновлений для приложения yt-dlp на GitHub
-        /// </summary>
         private async void CheckUpdateAsync()
         {
             if (!await CheckForInternetConnection())
@@ -290,6 +511,8 @@ namespace VidDownload.WPF
                 await _updateService.DownloadUpdateAsync(info.DownloadUrl);
             }
         }
+
+        // ===== CHECKBOX HANDLERS =====
 
         private void CheckAudio_Checked(object sender, RoutedEventArgs e)
         {
@@ -338,104 +561,39 @@ namespace VidDownload.WPF
             ComboFormat.Items.Remove("mov");
         }
 
-        private void ButtonHelp_Click(object sender, RoutedEventArgs e)
-        {
-            HelpWindow help = new();
-            help.ShowDialog();
-        }
+        // ===== АНИМАЦИЯ =====
 
-        private void ButtonConvert_Click(object sender, RoutedEventArgs e)
-        {
-            ConvertWindow.ConvertWindow convert = new();
-            convert.ShowDialog();
-        }
-
-        private void ButQueue_Click(object sender, RoutedEventArgs e)
-        {
-            var queueWindow = new QueueWindow.QueueWindow(settings, CheckAudio.IsChecked == true,
-                CheckBoxPlaylist.IsChecked == true, CheckCoder.IsChecked == true);
-            queueWindow.Owner = this;
-            queueWindow.ShowDialog();
-        }
-
-        private void ButTheme_Click(object sender, RoutedEventArgs e)
-        {
-            bool isDark = settings.Theme != "Light";
-            ApplyTheme(isDark);
-            settings = settings with { Theme = isDark ? "Dark" : "Light" };
-            settings.Save();
-        }
-
-        private void ApplyTheme(bool isDark)
-        {
-            var skin = isDark ? SkinType.Dark : SkinType.Default;
-            foreach (var dict in Application.Current.Resources.MergedDictionaries)
-            {
-                if (dict is HandyControl.Themes.StandaloneTheme theme)
-                {
-                    theme.Skin = skin;
-                    break;
-                }
-            }
-        }
-
-        private void ButLang_Click(object sender, RoutedEventArgs e)
-        {
-            bool isEnglish = settings.Language != "en";
-            settings = settings with { Language = isEnglish ? "en" : "ru" };
-            settings.Save();
-
-            var culture = isEnglish ? new CultureInfo("en") : new CultureInfo("ru");
-            Thread.CurrentThread.CurrentUICulture = culture;
-            Thread.CurrentThread.CurrentCulture = culture;
-
-            HandyControl.Controls.MessageBox.Info(
-                isEnglish ? "Language changed. Restart the application for full effect." :
-                           "Язык изменён. Для полного применения перезапустите приложение.",
-                "Language / Язык");
-        }
-
-        /// <summary>
-        /// Этот код создает анимацию изменения цвета фона TextBoxURL
-        /// </summary>
         private void TextBoxAnimation()
         {
             ColorAnimation colorAnimation = new()
             {
-                From = Colors.White, // Исходный цвет фона
-                To = (Color)ColorConverter.ConvertFromString("#ff4f4f"), // Целевой цвет фона
-                AutoReverse = true, // Автоматически вернуться к исходному цвету
-                Duration = TimeSpan.FromSeconds(0.5f), // Длительность анимации (0,5 секунд)
-                RepeatBehavior = new RepeatBehavior(2) // Повторять анимацию 2 раза
+                From = Colors.White,
+                To = (Color)ColorConverter.ConvertFromString("#ff4f4f"),
+                AutoReverse = true,
+                Duration = TimeSpan.FromSeconds(0.5f),
+                RepeatBehavior = new RepeatBehavior(2)
             };
 
-            TextBoxURL.Background = new SolidColorBrush(Colors.White); // Установка исходного цвета фона
-
-            // Создание и применение анимации
+            TextBoxURL.Background = new SolidColorBrush(Colors.White);
             TextBoxURL.Background.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
         }
 
+        // ===== ИНТЕРНЕТ =====
 
-        /// <summary>
-        /// Проверка подключения к интернету.
-        /// </summary>
-        /// <param name="timeoutMs">Время ожидания сети</param>
-        /// <param name="url">Ссылка для проверки подключения</param>
-        /// <returns></returns>
         public async Task<bool> CheckForInternetConnection(int timeoutMs = 1000, string url = null)
         {
             try
             {
                 url ??= CultureInfo.InstalledUICulture switch
                 {
-                    { Name: var n } when n.StartsWith("ru") =>
+                    { Name: var n } when n.StartsWith("ru", StringComparison.OrdinalIgnoreCase) =>
                         "https://ya.ru/",
                     _ =>
                         "http://www.gstatic.com/generate_204",
                 };
 
                 using var httpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(timeoutMs) };
-                using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+                using var response = await httpClient.GetAsync(new Uri(url)).ConfigureAwait(false);
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -443,6 +601,5 @@ namespace VidDownload.WPF
                 return false;
             }
         }
-
     }
 }
