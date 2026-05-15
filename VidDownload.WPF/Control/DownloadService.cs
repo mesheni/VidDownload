@@ -23,6 +23,7 @@ namespace VidDownload.WPF.Control
             string logFile = System.IO.Path.Combine(logPath, $"{dateTime}_log.txt");
 
             bool cancelled = false;
+            Process? proc = null;
 
             try
             {
@@ -35,7 +36,7 @@ namespace VidDownload.WPF.Control
                 using var fs = new FileStream(logFile, FileMode.CreateNew);
                 using var sw = new StreamWriter(fs, Encoding.Default);
 
-                var proc = new Process();
+                proc = new Process();
                 proc.StartInfo.FileName = @".\yt-dlp.exe";
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
@@ -69,7 +70,18 @@ namespace VidDownload.WPF.Control
                     if (cancellationToken.IsCancellationRequested)
                     {
                         cancelled = true;
-                        try { proc.Kill(); } catch { }
+                        try
+                        {
+                            if (!proc.HasExited)
+                            {
+                                proc.Kill(entireProcessTree: true);
+                                await proc.WaitForExitAsync().ConfigureAwait(false);
+                            }
+                        }
+                        catch
+                        {
+                            // Ignore errors while stopping the downloader on cancellation.
+                        }
                         break;
                     }
                     await Task.Delay(100, cancellationToken).ConfigureAwait(false);
@@ -82,18 +94,33 @@ namespace VidDownload.WPF.Control
                 }
 
                 proc.WaitForExit();
-                proc.Close();
 
                 DownloadCompleted?.Invoke(true, "Загрузка завершена");
             }
             catch (OperationCanceledException)
             {
-                // Процесс уже убит в цикле while (строка 72)
+                try
+                {
+                    if (proc != null && !proc.HasExited)
+                    {
+                        proc.Kill(entireProcessTree: true);
+                        await proc.WaitForExitAsync().ConfigureAwait(false);
+                    }
+                }
+                catch
+                {
+                    // Ignore errors while stopping the downloader on cancellation.
+                }
+
                 DownloadCompleted?.Invoke(false, "Загрузка отменена");
             }
             catch (Exception ex)
             {
                 DownloadCompleted?.Invoke(false, $"Ошибка: {ex.Message}");
+            }
+            finally
+            {
+                proc?.Dispose();
             }
         }
     }
