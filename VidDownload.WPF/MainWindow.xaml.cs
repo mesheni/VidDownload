@@ -492,12 +492,26 @@ namespace VidDownload.WPF
             {
                 try
                 {
-                    System.Diagnostics.Process.Start(
-                        new System.Diagnostics.ProcessStartInfo
+                    string? processPath = Environment.ProcessPath
+                        ?? Process.GetCurrentProcess().MainModule?.FileName;
+
+                    if (string.IsNullOrWhiteSpace(processPath) || !File.Exists(processPath))
+                    {
+                        throw new FileNotFoundException("Application executable was not found.", processPath);
+                    }
+
+                    var process = Process.Start(
+                        new ProcessStartInfo
                         {
-                            FileName = System.Reflection.Assembly.GetEntryAssembly().Location,
+                            FileName = processPath,
                             UseShellExecute = true
                         });
+
+                    if (process == null)
+                    {
+                        throw new InvalidOperationException("Application restart process was not started.");
+                    }
+
                     Application.Current.Shutdown();
                 }
                 catch
