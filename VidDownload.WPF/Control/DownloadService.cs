@@ -88,6 +88,7 @@ namespace VidDownload.WPF.Control
             }
             catch (OperationCanceledException)
             {
+                // Процесс уже убит в цикле while (строка 72)
                 DownloadCompleted?.Invoke(false, "Загрузка отменена");
             }
             catch (Exception ex)
