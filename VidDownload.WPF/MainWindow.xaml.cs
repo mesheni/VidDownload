@@ -464,13 +464,6 @@ namespace VidDownload.WPF
                 Application.Current.Resources.MergedDictionaries.Insert(0,
                     new ResourceDictionary { Source = new Uri(skinUri, UriKind.Absolute) });
             }
-
-            // Обновляем StandaloneTheme для консистентности
-            foreach (var dict in Application.Current.Resources.MergedDictionaries)
-            {
-                if (dict is HandyControl.Themes.StandaloneTheme st)
-                    st.Skin = isDark ? HandyControl.Themes.SkinType.Dark : HandyControl.Themes.SkinType.Default;
-            }
         }
 
         // ===== ЯЗЫК =====
