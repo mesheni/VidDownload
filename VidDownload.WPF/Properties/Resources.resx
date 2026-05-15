@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppTitle" xml:space="preserve">
+    <value>VidDownload</value>
+  </data>
+  <data name="LinkLabel" xml:space="preserve">
+    <value>Поле для ссылки на видео:</value>
+  </data>
+  <data name="PlaylistLinkLabel" xml:space="preserve">
+    <value>Поле для ссылки на плейлист:</value>
+  </data>
+  <data name="BtnDownload" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="BtnStop" xml:space="preserve">
+    <value>Стоп</value>
+  </data>
+  <data name="BtnQueue" xml:space="preserve">
+    <value>Очередь</value>
+  </data>
+  <data name="BtnOpenFolder" xml:space="preserve">
+    <value>Открыть папку с видео</value>
+  </data>
+  <data name="BtnConverter" xml:space="preserve">
+    <value>Конвертер</value>
+  </data>
+  <data name="BtnTheme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="BtnLang" xml:space="preserve">
+    <value>RU/EN</value>
+  </data>
+  <data name="LabelResolution" xml:space="preserve">
+    <value>Разрешение:</value>
+  </data>
+  <data name="LabelCodec" xml:space="preserve">
+    <value>Кодек:</value>
+  </data>
+  <data name="LabelAudioFormat" xml:space="preserve">
+    <value>Аудио формат:</value>
+  </data>
+  <data name="LabelFormat" xml:space="preserve">
+    <value>Расширение файла:</value>
+  </data>
+  <data name="CheckPlaylist" xml:space="preserve">
+    <value>Скачать весь плейлист</value>
+  </data>
+  <data name="CheckAudioOnly" xml:space="preserve">
+    <value>Только аудио</value>
+  </data>
+  <data name="CheckRecode" xml:space="preserve">
+    <value>Перекодировать видео</value>
+  </data>
+  <data name="MsgEmptyUrl" xml:space="preserve">
+    <value>Пустое поле ссылки!</value>
+  </data>
+  <data name="MsgError" xml:space="preserve">
+    <value>Ошибка!</value>
+  </data>
+  <data name="MsgDownloadComplete" xml:space="preserve">
+    <value>Загрузка завершена</value>
+  </data>
+  <data name="MsgDownloadCancelled" xml:space="preserve">
+    <value>Загрузка отменена</value>
+  </data>
+  <data name="MsgUpdateAvailable" xml:space="preserve">
+    <value>Доступна новая версия yt-dlp!</value>
+  </data>
+  <data name="MsgUpdateConfirm" xml:space="preserve">
+    <value>Текущая версия: {0}&#x0a;Последняя версия: {1}&#x0a;Подтвердите начало обновления.</value>
+  </data>
+  <data name="MsgUpdateComplete" xml:space="preserve">
+    <value>Обновление завершено!</value>
+  </data>
+  <data name="MsgUpdateError" xml:space="preserve">
+    <value>Ошибка обновления!</value>
+  </data>
+  <data name="MsgNoYtdlp" xml:space="preserve">
+    <value>Не найден yt-dlp.exe. Перезапустите программу для автоматической загрузки.</value>
+  </data>
+  <data name="MsgLanguageChanged" xml:space="preserve">
+    <value>Язык изменён. Для полного применения перезапустите приложение.</value>
+  </data>
+  <data name="QueueWindowTitle" xml:space="preserve">
+    <value>Очередь загрузок</value>
+  </data>
+  <data name="QueueAddUrl" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="QueueRemove" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="QueueClear" xml:space="preserve">
+    <value>Очистить</value>
+  </data>
+  <data name="QueueStartAll" xml:space="preserve">
+    <value>Скачать всё</value>
+  </data>
+  <data name="QueueStop" xml:space="preserve">
+    <value>Стоп</value>
+  </data>
+  <data name="QueueStatusWaiting" xml:space="preserve">
+    <value>Ожидание</value>
+  </data>
+  <data name="QueueStatusDownloading" xml:space="preserve">
+    <value>Загрузка...</value>
+  </data>
+  <data name="QueueStatusDone" xml:space="preserve">
+    <value>✓ Готово</value>
+  </data>
+  <data name="QueueStatusCanceled" xml:space="preserve">
+    <value>✗ Отменено</value>
+  </data>
+  <data name="QueueAllDone" xml:space="preserve">
+    <value>Все загрузки завершены</value>
+  </data>
+  <data name="QueueHasErrors" xml:space="preserve">
+    <value>Загрузка завершена с ошибками</value>
+  </data>
+  <data name="QueueEmpty" xml:space="preserve">
+    <value>Очередь пуста</value>
+  </data>
+  <data name="QueueCount" xml:space="preserve">
+    <value>В очереди: {0} видео</value>
+  </data>
+  <data name="HelpTitle" xml:space="preserve">
+    <value>Помощь</value>
+  </data>
+  <data name="ConvertWindowTitle" xml:space="preserve">
+    <value>Конвертер видео</value>
+  </data>
+  <data name="BtnHelp" xml:space="preserve">
+    <value>?</value>
+  </data>
+</root>

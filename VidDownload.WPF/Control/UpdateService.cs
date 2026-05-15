@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace VidDownload.WPF.Control
@@ -66,7 +67,7 @@ namespace VidDownload.WPF.Control
 
                 var totalBytes = response.Content.Headers.ContentLength ?? -1L;
                 using var contentStream = await response.Content.ReadAsStreamAsync();
-                using var fileStream = new FileStream("yt-dlp.exe", FileMode.Create, FileAccess.Write, FileShare.None);
+                using var fileStream = new FileStream("yt-dlp.exe", System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None);
 
                 var buffer = new byte[81920];
                 long bytesRead = 0;

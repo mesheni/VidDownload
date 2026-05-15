@@ -55,7 +55,7 @@ namespace VidDownload.WPF.Control
                         OutputReceived?.Invoke(e.Data);
                         sw.WriteLine(e.Data);
                         sw.Flush();
-                        ProgressChanged?.Invoke(ParseLog.Parse(e.Data));
+                        ProgressChanged?.Invoke((int)Math.Round(ParseLog.Parse(e.Data)));
                     }
                 };
 

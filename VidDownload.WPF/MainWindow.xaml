@@ -88,22 +88,33 @@
                     <Label x:Name="labelInfo" Content="" Width="610" HorizontalAlignment="Left" Margin="20,0,20,0" FontFamily="Cascadia Code SemiLight" Foreground="White" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
                     <ProgressBar x:Name="ProgressBarMain" Margin="20, 0" Height="28" VerticalAlignment="Top" Foreground="#FDFF5252" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
 
-                    <Button x:Name="ButDownload" Content="Скачать" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="350" Background="#FFFF4F4F" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" Click="ButDownload_Click" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 10">
+                        <Button x:Name="ButDownload" Content="Скачать" VerticalAlignment="Top" Height="45" Width="240" Background="#FFFF4F4F" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" Click="ButDownload_Click" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <Button x:Name="ButStop" Content="Стоп" VerticalAlignment="Top" Height="45" Width="100" Background="#FF4F4F4F" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="20" Click="ButStop_Click" FontWeight="Bold" IsEnabled="False"/>
+                    </StackPanel>
 
                     <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
                             <ColumnDefinition Width="auto"/>
                             <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid Grid.Column="0" Margin="0, 0, 10, 0">
-                            <Button x:Name="ButOpenFolder" Content="Открыть папку с видео" VerticalAlignment="Top" Height="30" Width="200"  FontFamily="Cascadia Code" Click="ButOpenFolder_Click" FontSize="14" FontWeight="Bold"/>
+                            <Button x:Name="ButQueue" Content="Очередь" VerticalAlignment="Top" Height="30" Width="90" FontFamily="Cascadia Code" Click="ButQueue_Click" FontSize="14" FontWeight="Bold"/>
                         </Grid>
                         <Grid Grid.Column="1" Margin="0, 0, 10, 0">
+                            <Button x:Name="ButOpenFolder" Content="Открыть папку с видео" VerticalAlignment="Top" Height="30" Width="200"  FontFamily="Cascadia Code" Click="ButOpenFolder_Click" FontSize="14" FontWeight="Bold"/>
+                        </Grid>
+                        <Grid Grid.Column="2" Margin="0, 0, 10, 0">
                             <Button x:Name="ButtonConv" Content="Конвертер" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ButtonConvert_Click" FontFamily="Cascadia Code" FontWeight="Bold" Background="#FF75FFAF" FontSize="14"/>
                         </Grid>
-                        <Grid Grid.Column="2">
-                            <Button x:Name="ButtonHelp" Content="?" HorizontalAlignment="Left" VerticalAlignment="Top" Width="30" Height="30" Click="ButtonHelp_Click" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
+                        <Grid Grid.Column="3" Margin="0, 0, 10, 0">
+                            <Button x:Name="ButTheme" Content="Тема" VerticalAlignment="Top" Width="70" Height="30" Click="ButTheme_Click" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
+                        </Grid>
+                        <Grid Grid.Column="4">
+                            <Button x:Name="ButLang" Content="RU/EN" VerticalAlignment="Top" Width="70" Height="30" Click="ButLang_Click" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
                         </Grid>
                     </Grid>
 

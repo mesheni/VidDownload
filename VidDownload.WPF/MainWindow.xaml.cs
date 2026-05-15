@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
+using VidDownload.WPF.QueueWindow;
+using HandyControl.Data;
 
 /*
 
@@ -53,11 +56,13 @@ namespace VidDownload.WPF
         Settings settings = new();
         private UpdateService? _updateService;
         private DownloadService? _downloadService;
+        private CancellationTokenSource? _cts;
 
         public MainWindow()
         {
             InitializeComponent();
             InitApp();
+            LoadSavedSettings();
             _updateService = new UpdateService();
             _updateService.ProgressChanged += (progress) =>
                 Dispatcher.Invoke(() => ProgressBarMain.Value = progress);
@@ -79,6 +84,47 @@ namespace VidDownload.WPF
             CheckUpdateAsync();
         }
 
+        /// <summary>
+        /// Загружает сохранённые настройки и применяет их к UI.
+        /// </summary>
+        private void LoadSavedSettings()
+        {
+            settings = Settings.Load();
+            ComboRes.Text = settings.Resolution;
+            ComboCodec.Text = settings.VideoCodec;
+            ComboAudio.Text = settings.AudioCodec;
+            ComboFormat.Text = settings.Format;
+
+            if (settings.Theme == "Light")
+                ApplyTheme(false);
+
+            try
+            {
+                if (settings.Language == "en")
+                {
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
+                    Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Сохраняет текущие настройки из UI.
+        /// </summary>
+        private void SaveCurrentSettings()
+        {
+            if (ComboRes.Text.Length != 0)
+                settings = settings with { Resolution = ComboRes.Text };
+            if (ComboAudio.Text.Length != 0)
+                settings = settings with { AudioCodec = ComboAudio.Text };
+            if (ComboFormat.Text.Length != 0)
+                settings = settings with { Format = ComboFormat.Text };
+            bool hasValidCodec = ComboCodec.Text.Length != 0 && codecList.Exists(i => i == ComboCodec.Text);
+            if (hasValidCodec)
+                settings = settings with { VideoCodec = ComboCodec.Text };
+            settings.Save();
+        }
 
         /// <summary>
         /// Обрабатывает событие click для кнопки загрузки. Инициирует асинхронный процесс загрузки видео.
@@ -92,18 +138,13 @@ namespace VidDownload.WPF
                 return;
             }
 
-            if (ComboRes.Text.Length != 0)
-                settings = settings with { Resolution = ComboRes.Text };
-            if (ComboAudio.Text.Length != 0)
-                settings = settings with { AudioCodec = ComboAudio.Text };
-            if (ComboFormat.Text.Length != 0)
-                settings = settings with { Format = ComboFormat.Text };
-
-            bool hasValidCodec = ComboCodec.Text.Length != 0 && codecList.Exists(i => i == ComboCodec.Text);
-            if (hasValidCodec)
-                settings = settings with { VideoCodec = ComboCodec.Text };
+            SaveCurrentSettings();
 
             ButDownload.IsEnabled = false;
+            ButStop.IsEnabled = true;
+
+            _cts = new CancellationTokenSource();
+            var token = _cts.Token;
 
             _downloadService = new DownloadService();
             _downloadService.OutputReceived += (output) =>
@@ -115,24 +156,55 @@ namespace VidDownload.WPF
                 Dispatcher.Invoke(() =>
                 {
                     ProgressBarMain.Value = 0;
-                    ComboCodec.Text = "";
-                    ComboRes.Text = "";
-                    ComboAudio.Text = "";
-                    ComboFormat.Text = "";
-                    TextBoxURL.Text = "";
                     ButDownload.IsEnabled = true;
-                    labelInfo.Content = "";
+                    ButStop.IsEnabled = false;
+                    _cts = null;
+                    if (success)
+                    {
+                        ComboCodec.Text = settings.VideoCodec;
+                        ComboRes.Text = settings.Resolution;
+                        ComboAudio.Text = settings.AudioCodec;
+                        ComboFormat.Text = settings.Format;
+                        TextBoxURL.Text = "";
+                        labelInfo.Content = message;
+                    }
+                    else
+                    {
+                        labelInfo.Content = message;
+                        HandyControl.Controls.MessageBox.Error(message, "Ошибка!");
+                    }
                 });
-                if (!success)
-                    HandyControl.Controls.MessageBox.Error(message, "Ошибка!");
             };
 
-            await _downloadService.DownloadAsync(
-                TextBoxURL.Text,
-                settings,
-                CheckAudio.IsChecked == true,
-                CheckBoxPlaylist.IsChecked == true,
-                CheckCoder.IsChecked == true);
+            try
+            {
+                await _downloadService.DownloadAsync(
+                    TextBoxURL.Text,
+                    settings,
+                    CheckAudio.IsChecked == true,
+                    CheckBoxPlaylist.IsChecked == true,
+                    CheckCoder.IsChecked == true,
+                    token);
+            }
+            catch (OperationCanceledException)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    labelInfo.Content = "Загрузка отменена";
+                    ProgressBarMain.Value = 0;
+                    ButDownload.IsEnabled = true;
+                    ButStop.IsEnabled = false;
+                });
+            }
+        }
+
+        /// <summary>
+        /// Останавливает текущую загрузку.
+        /// </summary>
+        private void ButStop_Click(object sender, RoutedEventArgs e)
+        {
+            _cts?.Cancel();
+            ButStop.IsEnabled = false;
         }
 
         /// <summary>
@@ -276,6 +348,51 @@ namespace VidDownload.WPF
         {
             ConvertWindow.ConvertWindow convert = new();
             convert.ShowDialog();
+        }
+
+        private void ButQueue_Click(object sender, RoutedEventArgs e)
+        {
+            var queueWindow = new QueueWindow.QueueWindow(settings, CheckAudio.IsChecked == true,
+                CheckBoxPlaylist.IsChecked == true, CheckCoder.IsChecked == true);
+            queueWindow.Owner = this;
+            queueWindow.ShowDialog();
+        }
+
+        private void ButTheme_Click(object sender, RoutedEventArgs e)
+        {
+            bool isDark = settings.Theme != "Light";
+            ApplyTheme(isDark);
+            settings = settings with { Theme = isDark ? "Dark" : "Light" };
+            settings.Save();
+        }
+
+        private void ApplyTheme(bool isDark)
+        {
+            var skin = isDark ? SkinType.Dark : SkinType.Default;
+            foreach (var dict in Application.Current.Resources.MergedDictionaries)
+            {
+                if (dict is HandyControl.Themes.StandaloneTheme theme)
+                {
+                    theme.Skin = skin;
+                    break;
+                }
+            }
+        }
+
+        private void ButLang_Click(object sender, RoutedEventArgs e)
+        {
+            bool isEnglish = settings.Language != "en";
+            settings = settings with { Language = isEnglish ? "en" : "ru" };
+            settings.Save();
+
+            var culture = isEnglish ? new CultureInfo("en") : new CultureInfo("ru");
+            Thread.CurrentThread.CurrentUICulture = culture;
+            Thread.CurrentThread.CurrentCulture = culture;
+
+            HandyControl.Controls.MessageBox.Info(
+                isEnglish ? "Language changed. Restart the application for full effect." :
+                           "Язык изменён. Для полного применения перезапустите приложение.",
+                "Language / Язык");
         }
 
         /// <summary>
