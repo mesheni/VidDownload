@@ -247,7 +247,12 @@ namespace VidDownload.WPF
                 using var proc = new Process();
                 using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 proc.StartInfo.FileName = @".\yt-dlp.exe";
-                proc.StartInfo.Arguments = $"--no-warnings --print title --print thumbnail \"{item.Url}\"";
+                proc.StartInfo.ArgumentList.Add("--no-warnings");
+                proc.StartInfo.ArgumentList.Add("--print");
+                proc.StartInfo.ArgumentList.Add("title");
+                proc.StartInfo.ArgumentList.Add("--print");
+                proc.StartInfo.ArgumentList.Add("thumbnail");
+                proc.StartInfo.ArgumentList.Add(item.Url);
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.RedirectStandardError = true;
