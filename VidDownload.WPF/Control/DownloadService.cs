@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -35,11 +36,48 @@ namespace VidDownload.WPF.Control
 
                 using var fs = new FileStream(logFile, FileMode.CreateNew);
                 using var sw = new StreamWriter(fs, Encoding.Default);
+                object logLock = new();
+                object stderrLock = new();
+                var stderrLines = new Queue<string>();
+                const int maxStderrLines = 3;
+
+                void WriteLog(string message)
+                {
+                    lock (logLock)
+                    {
+                        sw.WriteLine(message);
+                        sw.Flush();
+                    }
+                }
+
+                void AddStderrLine(string message)
+                {
+                    lock (stderrLock)
+                    {
+                        stderrLines.Enqueue(message);
+
+                        while (stderrLines.Count > maxStderrLines)
+                        {
+                            stderrLines.Dequeue();
+                        }
+                    }
+                }
+
+                string GetStderrSummary()
+                {
+                    lock (stderrLock)
+                    {
+                        return stderrLines.Count > 0
+                            ? $": {string.Join(" ", stderrLines)}"
+                            : string.Empty;
+                    }
+                }
 
                 proc = new Process();
                 proc.StartInfo.FileName = @".\yt-dlp.exe";
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.RedirectStandardError = true;
                 proc.StartInfo.CreateNoWindow = true;
 
                 if (isAudio)
@@ -56,14 +94,23 @@ namespace VidDownload.WPF.Control
                     if (!string.IsNullOrEmpty(e.Data))
                     {
                         OutputReceived?.Invoke(e.Data);
-                        sw.WriteLine(e.Data);
-                        sw.Flush();
+                        WriteLog(e.Data);
                         ProgressChanged?.Invoke((int)Math.Round(ParseLog.Parse(e.Data)));
+                    }
+                };
+
+                proc.ErrorDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        AddStderrLine(e.Data);
+                        WriteLog($"[stderr] {e.Data}");
                     }
                 };
 
                 proc.Start();
                 proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
 
                 while (!proc.HasExited)
                 {
@@ -95,7 +142,15 @@ namespace VidDownload.WPF.Control
 
                 proc.WaitForExit();
 
-                DownloadCompleted?.Invoke(true, "Загрузка завершена");
+                if (proc.ExitCode == 0)
+                {
+                    DownloadCompleted?.Invoke(true, "Загрузка завершена");
+                }
+                else
+                {
+                    string stderrSummary = GetStderrSummary();
+                    DownloadCompleted?.Invoke(false, $"Ошибка yt-dlp: код {proc.ExitCode}{stderrSummary}");
+                }
             }
             catch (OperationCanceledException)
             {
