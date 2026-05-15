@@ -1,0 +1,53 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VidDownload.WPF.ConvertWindow"
+        xmlns:hc="https://handyorg.github.io/handycontrol" x:Class="VidDownload.WPF.ConvertWindow.ConvertWindow"
+        mc:Ignorable="d"
+        Title="ConvertWindow" Height="450" Width="800">
+    <Grid Background="#FF1D1D1D" Width="auto" Height="auto">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="20, 20, 0, 0">
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                <Label Content="Выберите видеофайл:" Width="auto" Background="#FF1D1D1D" Foreground="White" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" FontSize="16" Height="36" FontWeight="Bold"/>
+                <Button x:Name="butChoiseVideo" Content="Обзор" Width="100" FontFamily="Cascadia Code" FontSize="14" Click="ButChoiseVideo_Click" />
+                <hc:TextBox Name="LabelFileName" Text="Имя файла.mp4" Width="450" Height="100" Margin="10, 0, 0, 0" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" AllowDrop="True" TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Top"/>
+            </StackPanel>
+
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="20,20,20,20">
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                <Label x:Name="LabelFormat" Content="Расширение:" Margin="10, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Cascadia Code" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" UseLayoutRounding="False" BorderThickness="0,0,0,0"/>
+                <ComboBox x:Name="ComboFormat" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Cascadia Code" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14">
+                    <ComboBoxItem Content="" FontFamily="Cascadia Code" FontWeight="Bold"/>
+                    <ComboBoxItem Content="AVI" FontFamily="Cascadia Code" FontWeight="Bold"/>
+                    <ComboBoxItem Content="MP4" FontFamily="Cascadia Code" FontWeight="Bold"/>
+                    <ComboBoxItem Content="MKV" FontFamily="Cascadia Code" FontWeight="Bold"/>
+                    <ComboBoxItem Content="MOV" FontFamily="Cascadia Code" FontWeight="Bold"/>
+                </ComboBox>
+            </StackPanel>
+
+        </Grid>
+        <Grid Grid.Row="2" Margin="20,0,20,20" VerticalAlignment="Bottom">
+            <StackPanel Orientation="Vertical">
+                <Label x:Name="labelInfoFFmpeg" Content="" Width="610" HorizontalAlignment="Center" Margin="20,0,20,0" FontFamily="Cascadia Code SemiLight" Foreground="White" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+                <ProgressBar x:Name="ProgressBarFFmpeg" Margin="20, 0" Height="28" VerticalAlignment="Top" Foreground="#FDFF5252" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="20,0,20,20" VerticalAlignment="Bottom">
+            <StackPanel Orientation="Vertical">
+                <Button x:Name="ButConvert" Content="Конвертировать" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="300" Background="#FFFF4F4F" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" FontWeight="Bold" Click="ButConvert_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

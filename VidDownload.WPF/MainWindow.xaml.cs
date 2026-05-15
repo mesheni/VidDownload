@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Octokit;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using System.Net.Http.Headers;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,33 +13,57 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
-using Octokit.Clients;
-using Octokit;
-using System.Windows.Shapes;
-using System.Net;
-using System.Globalization;
 
+/*
+
+     _____  
+   .'     `.
+  /         \
+ |           |      Программа для скачивания видео с YouTube и других платформ.
+ '.  +^^^+  .'      Current version: 0.7.0
+   `. \./ .'        by mesh
+     |_|_|          2024г.
+     (___)          First commit: 20 августа, 2022г.
+     (___)
+     `---'
+
+Russian:
+Не стоит относиться к коду этой программы слишком серьезно. Я создаю ее для изучения и совершенствования, а также
+в рамках своих исследований. Хотя я, возможно, и не профессиональный программист, вы можете просмотреть код и
+внести любые изменения или улучшения, которые сочтете необходимыми.
+
+English:
+Do not take this program's code too seriously. I am creating it for my own learning and improvement,
+and as part of my studies. While I may not be a professional programmer, you are welcome to review
+the code and suggest any fixes or improvements you see fit.
+
+Мои контакты:
+Email - bunin.ivan14@yandex.ru
+GitHub - https://github.com/mesheni
+Telegram - https://t.me/meshenii
+VK - https://vk.com/mesheni
+Twitter/X - https://x.com/meshenii
+
+*/
 
 namespace VidDownload.WPF
 {
     public partial class MainWindow : System.Windows.Window
     {
         // Переменные для сборки команды
-        private string res = null;
-        private static List<string> codecList = new List<string>();
-        private string codec = null;
-        private string acodec = null;
-        private string format = null;
-
+        private static List<string> codecList = new();
+        Settings settings = new();
         public MainWindow()
         {
             InitializeComponent();
             InitApp();
             CheckUpdateAsync();
+            //FFmpegDownloader.GetLatestVersion(FFmpegVersion.Shared);
         }
 
+
         /// <summary>
-        /// Кнопка загрузки видео
+        /// Обрабатывает событие click для кнопки загрузки. Инициирует асинхронный процесс загрузки видео.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -53,11 +79,11 @@ namespace VidDownload.WPF
             else
             {
                 if (ComboRes.Text.Length != 0)
-                    res = ComboRes.Text;
+                    settings.Resolution = ComboRes.Text;
                 if (ComboAudio.Text.Length != 0)
-                    acodec = ComboAudio.Text;
+                    settings.AudioCodec = ComboAudio.Text;
                 if (ComboFormat.Text.Length != 0)
-                    format = ComboFormat.Text;
+                    settings.Format = ComboFormat.Text;
                 // Проверка на пустое поле кодека
                 if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
                 {
@@ -65,14 +91,14 @@ namespace VidDownload.WPF
                 }
                 else
                 {
-                    codec = ComboCodec.Text;
+                    settings.VideoCodec = ComboCodec.Text;
                     await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
                 }
             }
         }
 
         /// <summary>
-        /// Функция загрузки видео
+        /// Асинхронная функция загрузки видео. 
         /// </summary>
         /// <param name="PrograssBarMain">Шкала прогресса</param>
         public async void Download(ProgressBar PrograssBarMain)
@@ -84,32 +110,35 @@ namespace VidDownload.WPF
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
             string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
 
-            FileStream fs = new FileStream(log, System.IO.FileMode.CreateNew);
-            StreamWriter w = new StreamWriter(fs, Encoding.Default);
+            FileStream fs = new(log, System.IO.FileMode.CreateNew);
 
             // Запуск yt-dlp и передача команды
             await Task.Run(() =>
             {
-                Process proc = new Process();
+                Process proc = new(); // Создание процесса yt-dlp.
 
-                proc.StartInfo.FileName = @".\yt-dlp.exe";
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.FileName = @".\yt-dlp.exe"; // Путь к исполняемому файлу
+                proc.StartInfo.UseShellExecute = false; // Использовать командную строку
+                proc.StartInfo.RedirectStandardOutput = true; // Перенаправление вывода
+                proc.StartInfo.CreateNoWindow = true; // Не создавать окно
 
                 // Сборка команды и отправка в yt-dlp
                 if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
                 {
-                    proc.StartInfo.Arguments = Command.LoadAudio(acodec, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
+                    Dispatcher.Invoke(() =>
+                    {
+                        proc.StartInfo.Arguments = Command.LoadAudio(settings, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
+                    });
                 }
                 else
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, codec, res, format, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
+                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, settings, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
                     });
                 }
 
+                StreamWriter w = new(fs, Encoding.Default);
                 // Логирование и запись логов в файл
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
@@ -148,7 +177,11 @@ namespace VidDownload.WPF
             }).ConfigureAwait(true);
         }
 
-        // Кнопка открытия папки с видео
+        /// <summary>
+        /// Кнопка открытия папки с видео
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButOpenFolder_Click(object sender, RoutedEventArgs e)
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
@@ -162,7 +195,9 @@ namespace VidDownload.WPF
             System.Diagnostics.Process.Start("explorer.exe", argument);
         }
 
-        // Функция инициализации папок в приложении
+        /// <summary>
+        /// Инициализирует приложение и подготовку необходимых переменных и папок для работы с видео.
+        /// </summary>
         private void InitApp()
         {
 
@@ -191,15 +226,21 @@ namespace VidDownload.WPF
             }
         }
 
+        /// <summary>
+        /// Проверяет наличие обновлений для приложения yt-dlp на GitHub
+        /// </summary> <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private async void CheckUpdateAsync()
         {
-            if (CheckForInternetConnection())
+            if (CheckForInternetConnection().Result)
                 await Task.Run(() =>
                 {
                     bool fileNotFound = false;
                     string? links = "";
                     string currentVer = string.Empty;
-                    MessageBoxResult res = new MessageBoxResult();
+                    MessageBoxResult res = new();
 
                     var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
 
@@ -209,7 +250,7 @@ namespace VidDownload.WPF
                     string latestVer = latest.Result.TagName.Replace(".", "");
 
                     try
-                    { 
+                    {
                         var versionInfo = FileVersionInfo.GetVersionInfo("yt-dlp.exe");
                         currentVer = versionInfo.FileVersion.Replace(".", "");
 
@@ -263,7 +304,7 @@ namespace VidDownload.WPF
                                 ButDownload.IsEnabled = true;
                             });
                             HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
-                        
+
                         };
 
                     }
@@ -278,9 +319,9 @@ namespace VidDownload.WPF
             ComboCodec.Visibility = Visibility.Collapsed;
             LabelFormat.Visibility = Visibility.Collapsed;
             ComboFormat.Visibility = Visibility.Collapsed;
-            CheckCoder.Visibility = Visibility.Collapsed;
             LabelCheckAudio.Visibility = Visibility.Visible;
             ComboAudio.Visibility = Visibility.Visible;
+            CheckCoder.IsEnabled = false;
         }
 
         private void CheckAudio_Unchecked(object sender, RoutedEventArgs e)
@@ -293,7 +334,7 @@ namespace VidDownload.WPF
             ComboRes.Visibility = Visibility.Visible;
             LabelFormat.Visibility = Visibility.Visible;
             ComboFormat.Visibility = Visibility.Visible;
-            CheckCoder.Visibility = Visibility.Visible;
+            CheckCoder.IsEnabled = true;
         }
 
         private void CheckBoxPlaylist_Checked(object sender, RoutedEventArgs e)
@@ -319,13 +360,22 @@ namespace VidDownload.WPF
 
         private void ButtonHelp_Click(object sender, RoutedEventArgs e)
         {
-            HelpWindow help = new HelpWindow();
+            HelpWindow help = new();
             help.ShowDialog();
         }
 
+        private void ButtonConvert_Click(object sender, RoutedEventArgs e)
+        {
+            ConvertWindow.ConvertWindow convert = new();
+            convert.ShowDialog();
+        }
+
+        /// <summary>
+        /// Этот код создает анимацию изменения цвета фона TextBoxURL
+        /// </summary>
         private void TextBoxAnimation()
         {
-            ColorAnimation colorAnimation = new ColorAnimation
+            ColorAnimation colorAnimation = new()
             {
                 From = Colors.White, // Исходный цвет фона
                 To = (Color)ColorConverter.ConvertFromString("#ff4f4f"), // Целевой цвет фона
@@ -340,30 +390,43 @@ namespace VidDownload.WPF
             TextBoxURL.Background.BeginAnimation(SolidColorBrush.ColorProperty, colorAnimation);
         }
 
-        public static bool CheckForInternetConnection(int timeoutMs = 10000, string url = null)
-        {
-            try
-            {
-                url ??= CultureInfo.InstalledUICulture switch
-                {
-                    { Name: var n } when n.StartsWith("fa") => // Iran
-                        "http://www.aparat.com",
-                    { Name: var n } when n.StartsWith("zh") => // China
-                        "http://www.baidu.com",
-                    _ =>
-                        "http://www.gstatic.com/generate_204",
-                };
 
-                var request = (HttpWebRequest)WebRequest.Create(url);
-                request.KeepAlive = false;
-                request.Timeout = timeoutMs;
-                using (var response = (HttpWebResponse)request.GetResponse())
-                    return true;
-            }
-            catch
+        /// <summary>
+        /// Проверка подключения к интернету.
+        /// </summary>
+        /// <param name="timeoutMs">Время ожидания сети</param>
+        /// <param name="url">Ссылка для проверки подключения</param>
+        /// <returns></returns>
+        public async Task<bool> CheckForInternetConnection(int timeoutMs = 1000, string url = null)
+        {
+            bool result = false;
+            await Task.Run(() =>
             {
-                return false;
-            }
+                try
+                {
+                    url ??= CultureInfo.InstalledUICulture switch
+                    {
+                        //{ Name: var n } when n.StartsWith("fa") => // Iran
+                        //    "http://www.aparat.com",
+                        { Name: var n } when n.StartsWith("ru") => // Russian
+                            "https://ya.ru/",
+                        _ =>
+                            "http://www.gstatic.com/generate_204",
+                    };
+
+                    var request = (HttpWebRequest)WebRequest.Create(url); // Создание запроса
+                    request.KeepAlive = false; // Отключение KeepAlive для сокета
+                    request.Timeout = timeoutMs; // Установка таймаута
+                    using (var response = (HttpWebResponse)request.GetResponse()) // Получение ответа от сервера
+                        result = true;
+                }
+                catch
+                {
+                    result = false;
+                }
+            }).ConfigureAwait(false);
+
+            return result;
         }
 
     }
