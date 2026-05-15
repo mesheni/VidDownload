@@ -464,6 +464,12 @@ namespace VidDownload.WPF
                 Application.Current.Resources.MergedDictionaries.Insert(0,
                     new ResourceDictionary { Source = new Uri(skinUri, UriKind.Absolute) });
             }
+
+            foreach (var dictionary in Application.Current.Resources.MergedDictionaries)
+            {
+                if (dictionary is StandaloneTheme st)
+                    st.Skin = isDark ? SkinType.Dark : SkinType.Default;
+            }
         }
 
         // ===== ЯЗЫК =====
