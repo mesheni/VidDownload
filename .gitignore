@@ -1,4 +1,3 @@
-```gitignore
 # Build artifacts and binaries
 *.exe
 *.dll
@@ -42,4 +41,3 @@ vendor/
 Thumbs.db
 ehthumbs.db
 Icon?
-```

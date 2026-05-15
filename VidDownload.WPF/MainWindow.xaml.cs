@@ -235,7 +235,7 @@ namespace VidDownload.WPF
         private async void CheckUpdateAsync()
         {
             if (CheckForInternetConnection().Result)
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     bool fileNotFound = false;
                     string? links = "";
@@ -244,10 +244,9 @@ namespace VidDownload.WPF
 
                     var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
 
-                    var releases = client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
-                    var latest = releases;
+                    var latest = await client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
 
-                    string latestVer = latest.Result.TagName.Replace(".", "");
+                    string latestVer = latest.TagName.Replace(".", "");
 
                     try
                     {
@@ -267,7 +266,7 @@ namespace VidDownload.WPF
 
                     if (res == MessageBoxResult.OK || fileNotFound)
                     {
-                        foreach (var release in releases.Result.Assets)
+                        foreach (var release in latest.Assets)
                         {
                             if (release.BrowserDownloadUrl.Contains("yt-dlp.exe"))
                             {
@@ -293,19 +292,15 @@ namespace VidDownload.WPF
                         };
 
                         wc.Headers.Add(HttpRequestHeader.UserAgent, "MyUserAgent");
-                        wc.DownloadFileAsync(new Uri(links), "yt-dlp.exe");
+                        await wc.DownloadFileTaskAsync(new Uri(links), "yt-dlp.exe");
 
-                        wc.DownloadFileCompleted += (sender, args) =>
+                        Dispatcher.Invoke(() =>
                         {
-                            Dispatcher.Invoke(() =>
-                            {
-                                ProgressBarMain.Value = 0;
-                                labelInfo.Content = "";
-                                ButDownload.IsEnabled = true;
-                            });
-                            HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
-
-                        };
+                            ProgressBarMain.Value = 0;
+                            labelInfo.Content = "";
+                            ButDownload.IsEnabled = true;
+                        });
+                        HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.TagName}", "Обновление завершено!");
 
                     }
                 }).ConfigureAwait(false);
