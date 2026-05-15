@@ -37,15 +37,16 @@
             string _format;
             string result;
 
+            _format = settings.Format?.ToLowerInvariant();
             if (_isCheckCoder)
             {
-                _format = "--recode-video " + settings.Format;
+                _format = "--recode-video " + _format;
             }
             else
             {
-                if (settings.Format != null)
+                if (!string.IsNullOrEmpty(_format))
                 {
-                    _format = "--remux-video " + settings.Format;
+                    _format = "--remux-video " + _format;
                 }
                 else
                 {

@@ -1,11 +1,9 @@
-﻿using Octokit;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Net;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -51,125 +49,69 @@ namespace VidDownload.WPF
     public partial class MainWindow : System.Windows.Window
     {
         // Переменные для сборки команды
-        private static List<string> codecList = new();
+        private List<string> codecList = new();
         Settings settings = new();
+        private UpdateService? _updateService;
+        private DownloadService? _downloadService;
+
         public MainWindow()
         {
             InitializeComponent();
             InitApp();
+            _updateService = new UpdateService();
+            _updateService.ProgressChanged += (progress) =>
+                Dispatcher.Invoke(() => ProgressBarMain.Value = progress);
+            _updateService.StatusChanged += (status) =>
+                Dispatcher.Invoke(() => labelInfo.Content = status);
+            _updateService.UpdateCompleted += (success, message) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ProgressBarMain.Value = 0;
+                    labelInfo.Content = "";
+                    ButDownload.IsEnabled = true;
+                });
+                if (success)
+                    HandyControl.Controls.MessageBox.Info(message, "Обновление завершено!");
+                else
+                    HandyControl.Controls.MessageBox.Error(message, "Ошибка обновления!");
+            };
             CheckUpdateAsync();
-            //FFmpegDownloader.GetLatestVersion(FFmpegVersion.Shared);
         }
 
 
         /// <summary>
         /// Обрабатывает событие click для кнопки загрузки. Инициирует асинхронный процесс загрузки видео.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private async void ButDownload_Click(object sender, RoutedEventArgs e)
         {
-
-            // Проверка на пустое поле ссылки
             if (TextBoxURL.Text.Length == 0)
             {
                 await Task.Run(() => Dispatcher.Invoke(() => TextBoxAnimation())).ConfigureAwait(true);
                 HandyControl.Controls.MessageBox.Error("Пустое поле ссылки!", "Ошибка!");
+                return;
             }
-            else
+
+            if (ComboRes.Text.Length != 0)
+                settings = settings with { Resolution = ComboRes.Text };
+            if (ComboAudio.Text.Length != 0)
+                settings = settings with { AudioCodec = ComboAudio.Text };
+            if (ComboFormat.Text.Length != 0)
+                settings = settings with { Format = ComboFormat.Text };
+
+            bool hasValidCodec = ComboCodec.Text.Length != 0 && codecList.Exists(i => i == ComboCodec.Text);
+            if (hasValidCodec)
+                settings = settings with { VideoCodec = ComboCodec.Text };
+
+            ButDownload.IsEnabled = false;
+
+            _downloadService = new DownloadService();
+            _downloadService.OutputReceived += (output) =>
+                Dispatcher.Invoke(() => labelInfo.Content = output);
+            _downloadService.ProgressChanged += (progress) =>
+                Dispatcher.Invoke(() => ProgressBarMain.Value = progress);
+            _downloadService.DownloadCompleted += (success, message) =>
             {
-                if (ComboRes.Text.Length != 0)
-                    settings.Resolution = ComboRes.Text;
-                if (ComboAudio.Text.Length != 0)
-                    settings.AudioCodec = ComboAudio.Text;
-                if (ComboFormat.Text.Length != 0)
-                    settings.Format = ComboFormat.Text;
-                // Проверка на пустое поле кодека
-                if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
-                {
-                    await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
-                }
-                else
-                {
-                    settings.VideoCodec = ComboCodec.Text;
-                    await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
-                }
-            }
-        }
-
-        /// <summary>
-        /// Асинхронная функция загрузки видео. 
-        /// </summary>
-        /// <param name="PrograssBarMain">Шкала прогресса</param>
-        public async void Download(ProgressBar PrograssBarMain)
-        {
-            // Блокировка кнопки загрузки
-            Dispatcher.Invoke(() => ButDownload.IsEnabled = false);
-
-            // Создание лога
-            string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
-            string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
-
-            using FileStream fs = new(log, System.IO.FileMode.CreateNew);
-
-            // Запуск yt-dlp и передача команды
-            await Task.Run(() =>
-            {
-                Process proc = new(); // Создание процесса yt-dlp.
-
-                proc.StartInfo.FileName = @".\yt-dlp.exe"; // Путь к исполняемому файлу
-                proc.StartInfo.UseShellExecute = false; // Использовать командную строку
-                proc.StartInfo.RedirectStandardOutput = true; // Перенаправление вывода
-                proc.StartInfo.CreateNoWindow = true; // Не создавать окно
-
-                // Сборка команды и отправка в yt-dlp
-                if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        proc.StartInfo.Arguments = Command.LoadAudio(settings, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
-                    });
-                }
-                else
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, settings, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
-                    });
-                }
-
-                using StreamWriter w = new(fs, Encoding.Default);
-                // Логирование и запись логов в файл
-                proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            labelInfo.Content = e.Data; // Вывод логов в label
-                            w.WriteLine(e.Data); // Запись логов в файл
-                            ProgressBarMain.Value = ParseLog.Parse(e.Data); // Парсинг % загрузки
-                        });
-                    }
-                });
-
-                if (!File.Exists(@".\yt-dlp.exe"))
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        HandyControl.Controls.MessageBox.Error("Не найден yt-dlp.exe. Перезапустите программу для автоматической загрузки.", "Ошибка!");
-                        ProgressBarMain.Value = 0;
-                        ButDownload.IsEnabled = true;
-                        labelInfo.Content = "";
-                    });
-                    return;
-                }
-
-                proc.Start();
-                proc.BeginOutputReadLine();
-                proc.WaitForExit();
-                proc.Close();
-
                 Dispatcher.Invoke(() =>
                 {
                     ProgressBarMain.Value = 0;
@@ -178,11 +120,19 @@ namespace VidDownload.WPF
                     ComboAudio.Text = "";
                     ComboFormat.Text = "";
                     TextBoxURL.Text = "";
-
                     ButDownload.IsEnabled = true;
                     labelInfo.Content = "";
                 });
-            }).ConfigureAwait(true);
+                if (!success)
+                    HandyControl.Controls.MessageBox.Error(message, "Ошибка!");
+            };
+
+            await _downloadService.DownloadAsync(
+                TextBoxURL.Text,
+                settings,
+                CheckAudio.IsChecked == true,
+                CheckBoxPlaylist.IsChecked == true,
+                CheckCoder.IsChecked == true);
         }
 
         /// <summary>
@@ -212,7 +162,7 @@ namespace VidDownload.WPF
             string videoPath = @".\MyVideos\";
             string logPath = @".\log\";
 
-            string[] formats = new string[] { "", "avi", "mkv", "mp4", "webm" };
+            string[] formats = new string[] { "", "AVI", "MKV", "MP4", "WEBM" };
 
             foreach (var i in formats)
             {
@@ -236,82 +186,37 @@ namespace VidDownload.WPF
 
         /// <summary>
         /// Проверяет наличие обновлений для приложения yt-dlp на GitHub
-        /// </summary> <summary>
-        /// 
         /// </summary>
-        /// <returns></returns>
         private async void CheckUpdateAsync()
         {
-            if (await CheckForInternetConnection())
-                await Task.Run(async () =>
-                {
-                    bool fileNotFound = false;
-                    string? links = "";
-                    string currentVer = string.Empty;
-                    MessageBoxResult res = new();
+            if (!await CheckForInternetConnection())
+                return;
 
-                    var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
+            var info = await _updateService!.CheckForUpdateAsync();
 
-                    var latest = await client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
+            if (!info.NeedsUpdate)
+                return;
 
-                    string latestVer = latest.TagName.Replace(".", "");
+            bool confirmed;
+            if (info.CurrentVersion == string.Empty)
+            {
+                HandyControl.Controls.MessageBox.Error(
+                    "При проверке обновлений не был найден файл yt-dlp!\nБудет загружена последняя версия.",
+                    "Ошибка!");
+                confirmed = true;
+            }
+            else
+            {
+                confirmed = HandyControl.Controls.MessageBox.Ask(
+                    $"Текущая версия: {info.CurrentVersion}\nПоследняя версия: {info.LatestVersion}\nПодтвердите начало обновления.",
+                    "Доступна новая версия yt-dlp!") == MessageBoxResult.OK;
+            }
 
-                    try
-                    {
-                        var versionInfo = FileVersionInfo.GetVersionInfo("yt-dlp.exe");
-                        currentVer = versionInfo.FileVersion.Replace(".", "");
-
-                        if (Convert.ToInt32(currentVer) < Convert.ToInt32(latestVer))
-                        {
-                            res = HandyControl.Controls.MessageBox.Ask($"Текущая версия: {currentVer} \nПоследняя версия: {latestVer}\nПодтвердите начало обновления.", "Доступна новая версия yt-dlp!");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        HandyControl.Controls.MessageBox.Error("При проверке обновлений не был найден файл yt-dlp!\nБудет загружена последняя версия.", "Ошибка!");
-                        fileNotFound = true;
-                    }
-
-                    if (res == MessageBoxResult.OK || fileNotFound)
-                    {
-                        foreach (var release in latest.Assets)
-                        {
-                            if (release.BrowserDownloadUrl.Contains("yt-dlp.exe"))
-                            {
-                                links = release.BrowserDownloadUrl;
-                            }
-
-                        }
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            ButDownload.IsEnabled = false;
-                            labelInfo.Content = "Идет загрузка обновления yt-dlp!";
-                        });
-
-                        var wc = new WebClient();
-
-                        wc.DownloadProgressChanged += (sender, args) =>
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                ProgressBarMain.Value = args.ProgressPercentage;
-                            });
-                        };
-
-                        wc.Headers.Add(HttpRequestHeader.UserAgent, "MyUserAgent");
-                        await wc.DownloadFileTaskAsync(new Uri(links), "yt-dlp.exe");
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            ProgressBarMain.Value = 0;
-                            labelInfo.Content = "";
-                            ButDownload.IsEnabled = true;
-                        });
-                        HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.TagName}", "Обновление завершено!");
-
-                    }
-                }).ConfigureAwait(false);
+            if (confirmed && info.DownloadUrl != null)
+            {
+                ButDownload.IsEnabled = false;
+                await _updateService.DownloadUpdateAsync(info.DownloadUrl);
+            }
         }
 
         private void CheckAudio_Checked(object sender, RoutedEventArgs e)
@@ -402,34 +307,24 @@ namespace VidDownload.WPF
         /// <returns></returns>
         public async Task<bool> CheckForInternetConnection(int timeoutMs = 1000, string url = null)
         {
-            bool result = false;
-            await Task.Run(() =>
+            try
             {
-                try
+                url ??= CultureInfo.InstalledUICulture switch
                 {
-                    url ??= CultureInfo.InstalledUICulture switch
-                    {
-                        //{ Name: var n } when n.StartsWith("fa") => // Iran
-                        //    "http://www.aparat.com",
-                        { Name: var n } when n.StartsWith("ru") => // Russian
-                            "https://ya.ru/",
-                        _ =>
-                            "http://www.gstatic.com/generate_204",
-                    };
+                    { Name: var n } when n.StartsWith("ru") =>
+                        "https://ya.ru/",
+                    _ =>
+                        "http://www.gstatic.com/generate_204",
+                };
 
-                    var request = (HttpWebRequest)WebRequest.Create(url); // Создание запроса
-                    request.KeepAlive = false; // Отключение KeepAlive для сокета
-                    request.Timeout = timeoutMs; // Установка таймаута
-                    using (var response = (HttpWebResponse)request.GetResponse()) // Получение ответа от сервера
-                        result = true;
-                }
-                catch
-                {
-                    result = false;
-                }
-            }).ConfigureAwait(false);
-
-            return result;
+                using var httpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(timeoutMs) };
+                using var response = await httpClient.GetAsync(url).ConfigureAwait(false);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
     }

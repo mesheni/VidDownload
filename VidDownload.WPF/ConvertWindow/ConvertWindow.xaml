@@ -18,7 +18,7 @@
         <Grid Grid.Row="0" Margin="20, 20, 0, 0">
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                 <Label Content="Выберите видеофайл:" Width="auto" Background="#FF1D1D1D" Foreground="White" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" FontSize="16" Height="36" FontWeight="Bold"/>
-                <Button x:Name="butChoiseVideo" Content="Обзор" Width="100" FontFamily="Cascadia Code" FontSize="14" Click="ButChoiseVideo_Click" />
+                <Button x:Name="butChooseVideo" Content="Обзор" Width="100" FontFamily="Cascadia Code" FontSize="14" Click="ButChooseVideo_Click" />
                 <hc:TextBox Name="LabelFileName" Text="Имя файла.mp4" Width="450" Height="100" Margin="10, 0, 0, 0" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" AllowDrop="True" TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Top"/>
             </StackPanel>
 

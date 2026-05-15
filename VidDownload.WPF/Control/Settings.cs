@@ -1,16 +1,13 @@
 namespace VidDownload.WPF.Control;
 
-/// <summary>
-/// Класс Settings определяет свойства для разрешения видео, кодеков и формата.
-/// Он содержит два конструктора - один для инициализации свойств и конструктор по умолчанию.
-/// Это позволяет создать экземпляр Settings со значениями по умолчанию или пользовательскими значениями.
-/// </summary>
-public class Settings
+public record Settings
 {
-    public string Resolution { get; set; } = "1080";
-    public string VideoCodec { get; set; } = "av01";
-    public string AudioCodec { get; set; } = "aac";
-    public string Format { get; set; } = "mp4";
+    public string Resolution { get; init; } = "1080";
+    public string VideoCodec { get; init; } = "av01";
+    public string AudioCodec { get; init; } = "aac";
+    public string Format { get; init; } = "mp4";
+
+    public Settings() { }
 
     public Settings(string resolution, string videoCodec, string audioCodec, string format)
     {
@@ -19,9 +16,4 @@ public class Settings
         AudioCodec = audioCodec;
         Format = format;
     }
-
-    public Settings() { }
-
-
-
 }

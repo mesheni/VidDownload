@@ -95,7 +95,7 @@ namespace VidDownload.WPF.ConvertWindow
 
             // Блокировка интерфейса на время конвертации
             ButConvert.IsEnabled = false;
-            butChoiseVideo.IsEnabled = false;
+            butChooseVideo.IsEnabled = false;
             ComboFormat.IsEnabled = false;
 
             try
@@ -129,13 +129,13 @@ namespace VidDownload.WPF.ConvertWindow
                 Dispatcher.Invoke(() =>
                 {
                     ButConvert.IsEnabled = true;
-                    butChoiseVideo.IsEnabled = true;
+                    butChooseVideo.IsEnabled = true;
                     ComboFormat.IsEnabled = true;
                 });
             }
         }
 
-        private void ButChoiseVideo_Click(object sender, RoutedEventArgs e)
+        private void ButChooseVideo_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new()
             {
