@@ -158,7 +158,9 @@ namespace VidDownload.WPF
                     else
                     {
                         labelInfo.Content = message;
-                        HandyControl.Controls.MessageBox.Error(message, "Ошибка!");
+                        // Не показывать ошибку если загрузка отменена пользователем
+                        if (message != "Загрузка отменена")
+                            HandyControl.Controls.MessageBox.Error(message, "Ошибка!");
                     }
                 });
             };
@@ -250,8 +252,18 @@ namespace VidDownload.WPF
                 proc.StartInfo.CreateNoWindow = true;
 
                 proc.Start();
+                
                 string output = await proc.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-                proc.WaitForExit(10000);
+                string error = await proc.StandardError.ReadToEndAsync().ConfigureAwait(false);
+                
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    Debug.WriteLine($"yt-dlp stdout: {output}");
+                    if (!string.IsNullOrEmpty(error))
+                        Debug.WriteLine($"yt-dlp stderr: {error}");
+                });
+
+                await proc.WaitForExitAsync().ConfigureAwait(false);
 
                 var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 if (lines.Length > 0 && !string.IsNullOrEmpty(lines[0]))
@@ -428,15 +440,36 @@ namespace VidDownload.WPF
                 ? "pack://application:,,,/HandyControl;component/Themes/SkinDark.xaml"
                 : "pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml";
 
-            for (int i = Application.Current.Resources.MergedDictionaries.Count - 1; i >= 0; i--)
+            int skinIndex = -1;
+            for (int i = 0; i < Application.Current.Resources.MergedDictionaries.Count; i++)
             {
                 var src = Application.Current.Resources.MergedDictionaries[i].Source?.OriginalString ?? "";
                 if (src.Contains("Skin"))
-                    Application.Current.Resources.MergedDictionaries.RemoveAt(i);
+                {
+                    skinIndex = i;
+                    break;
+                }
             }
 
-            Application.Current.Resources.MergedDictionaries.Add(
-                new ResourceDictionary { Source = new Uri(skinUri, UriKind.Absolute) });
+            if (skinIndex >= 0)
+            {
+                Application.Current.Resources.MergedDictionaries.RemoveAt(skinIndex);
+                Application.Current.Resources.MergedDictionaries.Insert(skinIndex,
+                    new ResourceDictionary { Source = new Uri(skinUri, UriKind.Absolute) });
+            }
+            else
+            {
+                // Если скин не найден, добавляем в начало (индекс 0)
+                Application.Current.Resources.MergedDictionaries.Insert(0,
+                    new ResourceDictionary { Source = new Uri(skinUri, UriKind.Absolute) });
+            }
+
+            // Обновляем StandaloneTheme для консистентности
+            foreach (var dict in Application.Current.Resources.MergedDictionaries)
+            {
+                if (dict is HandyControl.Themes.StandaloneTheme st)
+                    st.Skin = isDark ? HandyControl.Themes.SkinType.Dark : HandyControl.Themes.SkinType.Default;
+            }
         }
 
         // ===== ЯЗЫК =====
@@ -447,11 +480,35 @@ namespace VidDownload.WPF
             settings = settings with { Language = makeEnglish ? "en" : "ru" };
             settings.Save();
 
-            var label = makeEnglish
-                ? "Language changed to English. Restart to apply."
-                : "Язык изменён на русский. Перезапустите для применения.";
+            var result = HandyControl.Controls.MessageBox.Show(
+                makeEnglish
+                    ? "Language changed to English. Restart now?"
+                    : "Язык изменён на русский. Перезапустить сейчас?",
+                "Language / Язык",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Information);
 
-            HandyControl.Controls.MessageBox.Info(label, "Language / Язык");
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(
+                        new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = System.Reflection.Assembly.GetEntryAssembly().Location,
+                            UseShellExecute = true
+                        });
+                    Application.Current.Shutdown();
+                }
+                catch
+                {
+                    HandyControl.Controls.MessageBox.Info(
+                        makeEnglish
+                            ? "Please restart the application manually."
+                            : "Пожалуйста, перезапустите приложение вручную.",
+                        "Restart Required");
+                }
+            }
         }
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====

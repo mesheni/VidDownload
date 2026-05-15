@@ -1,43 +1,79 @@
+```gitignore
 # Build artifacts and binaries
 *.exe
 *.dll
 *.pdb
-*.nupkg
-**/bin/
-**/obj/
-**/Debug/
-**/Release/
+*.obj
+*.o
+*.out
+*.class
+*.jar
+*.war
+*.zip
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.7z
+*.rar
+*.gz
+*.bz2
+*.xz
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
 
 # Dependencies
 packages/
 node_modules/
-vendor/
-
-# Logs and temp files
-*.log
-*.tmp
-*.temp
-
-# User-specific files
-*.user
-*.userosscache
-*.suo
-*.userprefs
-
-# Environment
+venv/
+.venv/
 .env
 .env.local
-*.env.*
+.env.*
 
-# Editors
-.vs/
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS generated files
-.DS_Store
+*.tmp
+*.log
 Thumbs.db
-ehthumbs.db
-Icon?
+.DS_Store
+
+# Build and distribution directories
+bin/
+obj/
+Debug/
+Release/
+dist/
+build/
+target/
+out/
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.venv/
+venv/
+ENV/
+
+# .NET specific
+*.user
+*.userosscache
+*.suo
+*.userprefs
+[BuildOutputLog.txt]
+[BUILDLOG.htm]
+```
