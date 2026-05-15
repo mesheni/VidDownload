@@ -16,6 +16,7 @@ using System.Windows.Media.Animation;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;
 using HandyControl.Data;
+using HandyControl.Themes;
 
 namespace VidDownload.WPF
 {
