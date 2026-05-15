@@ -240,11 +240,12 @@ namespace VidDownload.WPF
             {
                 if (!File.Exists(@".\yt-dlp.exe"))
                 {
-                    item.Title = item.Url;
+                    await Dispatcher.InvokeAsync(() => item.Title = item.Url);
                     return;
                 }
 
-                var proc = new Process();
+                using var proc = new Process();
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                 proc.StartInfo.FileName = @".\yt-dlp.exe";
                 proc.StartInfo.Arguments = $"--no-warnings --print title --print thumbnail \"{item.Url}\"";
                 proc.StartInfo.UseShellExecute = false;
@@ -253,10 +254,31 @@ namespace VidDownload.WPF
                 proc.StartInfo.CreateNoWindow = true;
 
                 proc.Start();
-                
-                string output = await proc.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-                string error = await proc.StandardError.ReadToEndAsync().ConfigureAwait(false);
-                
+
+                Task<string> outputTask = proc.StandardOutput.ReadToEndAsync();
+                Task<string> errorTask = proc.StandardError.ReadToEndAsync();
+
+                try
+                {
+                    await proc.WaitForExitAsync(timeoutCts.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    Debug.WriteLine($"Timed out fetching video title for {item.Url}");
+                    try
+                    {
+                        if (!proc.HasExited)
+                            proc.Kill(entireProcessTree: true);
+                    }
+                    catch (Exception killEx)
+                    {
+                        Debug.WriteLine($"Failed to kill timed out yt-dlp process: {killEx.Message}");
+                    }
+                }
+
+                string output = await outputTask.ConfigureAwait(false);
+                string error = await errorTask.ConfigureAwait(false);
+
                 await Dispatcher.InvokeAsync(() =>
                 {
                     Debug.WriteLine($"yt-dlp stdout: {output}");
@@ -264,26 +286,31 @@ namespace VidDownload.WPF
                         Debug.WriteLine($"yt-dlp stderr: {error}");
                 });
 
-                await proc.WaitForExitAsync().ConfigureAwait(false);
-
+                bool titleReceived = false;
                 var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
                 if (lines.Length > 0 && !string.IsNullOrEmpty(lines[0]))
                 {
                     string title = lines[0].Trim();
                     if (title.Length > 120) title = title[..117] + "...";
                     await Dispatcher.InvokeAsync(() => item.Title = title);
+                    titleReceived = true;
                 }
 
                 if (lines.Length > 1 && !string.IsNullOrEmpty(lines[1]))
                 {
                     await Dispatcher.InvokeAsync(() => item.ThumbnailUrl = lines[1].Trim());
                 }
+
+                if (!titleReceived)
+                {
+                    await Dispatcher.InvokeAsync(() => item.Title = item.Url);
+                }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Failed to fetch video title: {ex.Message}");
                 if (string.IsNullOrEmpty(item.Title) || item.Title == item.Url)
-                    item.Title = item.Url;
+                    await Dispatcher.InvokeAsync(() => item.Title = item.Url);
             }
         }
 
