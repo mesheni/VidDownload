@@ -13,7 +13,7 @@
 - [x] 1.4 — **Заменить `async void` на `async Task`**: `Download()`, `CheckUpdateAsync()` — сейчас исключения теряются
 - [x] 1.5 — **Исправить смешивание sync/async**: `CheckForInternetConnection().Result` — блокирующий вызов; лишние `Task.Run` вокруг UI-работы
 - [x] 1.6 — **Вычистить неиспользуемые `using`**: `System.Collections.Generic`, `System.Linq` и др. в нескольких файлах
-- [ ] 1.7 — **Убрать лишние `Dispatcher.Invoke`**: в `Download()` вызовы `Dispatcher.Invoke` внутри `Task.Run` нарушают потоковую модель WPF
+- [x] 1.7 — **Убрать лишние `Dispatcher.Invoke`**: в `Download()` вызовы `Dispatcher.Invoke` внутри `Task.Run` нарушают потоковую модель WPF
 - [ ] 1.8 — **Включить `ImplicitUsings`**: `<ImplicitUsings>enable</ImplicitUsings>` в `.csproj`, убрать явные `using`
 - [ ] 1.9 — **Заменить `WebClient` (deprecated) на `HttpClient`**: `WebClient` устарел в .NET 6
 - [ ] 1.10 — **Добавить обработку ошибок**: нет try-catch в `Download()`, нет обработки ошибок запуска yt-dlp

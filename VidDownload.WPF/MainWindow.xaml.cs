@@ -103,52 +103,46 @@ namespace VidDownload.WPF
         /// <param name="PrograssBarMain">Шкала прогресса</param>
         public async Task Download(ProgressBar PrograssBarMain)
         {
-            // Блокировка кнопки загрузки
-            Dispatcher.Invoke(() => ButDownload.IsEnabled = false);
+            ButDownload.IsEnabled = false;
 
-            // Создание лога
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
             string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
 
             FileStream fs = new(log, System.IO.FileMode.CreateNew);
 
-            // Запуск yt-dlp и передача команды
+            string args;
+            bool isAudioChecked = CheckAudio.IsChecked == true;
+            string url = TextBoxURL.Text;
+            bool isPlaylist = CheckBoxPlaylist.IsChecked == true;
+            if (isAudioChecked)
+            {
+                args = Command.LoadAudio(settings, url, isPlaylist);
+            }
+            else
+            {
+                args = Command.LoadVideo(url, settings, isPlaylist, CheckCoder.IsChecked == true);
+            }
+
             await Task.Run(() =>
             {
-                Process proc = new(); // Создание процесса yt-dlp.
+                Process proc = new();
 
-                proc.StartInfo.FileName = @".\yt-dlp.exe"; // Путь к исполняемому файлу
-                proc.StartInfo.UseShellExecute = false; // Использовать командную строку
-                proc.StartInfo.RedirectStandardOutput = true; // Перенаправление вывода
-                proc.StartInfo.CreateNoWindow = true; // Не создавать окно
-
-                // Сборка команды и отправка в yt-dlp
-                if (Dispatcher.Invoke(() => CheckAudio.IsChecked == true))
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        proc.StartInfo.Arguments = Command.LoadAudio(settings, TextBoxURL.Text, CheckBoxPlaylist.IsChecked);
-                    });
-                }
-                else
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        proc.StartInfo.Arguments = Command.LoadVideo(TextBoxURL.Text, settings, CheckBoxPlaylist.IsChecked, CheckCoder.IsChecked);
-                    });
-                }
+                proc.StartInfo.FileName = @".\yt-dlp.exe";
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.Arguments = args;
 
                 StreamWriter w = new(fs, Encoding.Default);
-                // Логирование и запись логов в файл
                 proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
                     {
+                        w.WriteLine(e.Data);
                         Dispatcher.Invoke(() =>
                         {
-                            labelInfo.Content = e.Data; // Вывод логов в label
-                            w.WriteLine(e.Data); // Запись логов в файл
-                            ProgressBarMain.Value = ParseLog.Parse(e.Data); // Парсинг % загрузки
+                            labelInfo.Content = e.Data;
+                            ProgressBarMain.Value = ParseLog.Parse(e.Data);
                         });
                     }
                 });
@@ -158,23 +152,18 @@ namespace VidDownload.WPF
                 proc.WaitForExit();
                 proc.Close();
 
-                // Закрытие потока записи лога и разблокировка кнопки загрузки
                 w.Close();
                 fs.Close();
-
-                Dispatcher.Invoke(() =>
-                {
-                    ProgressBarMain.Value = 0;
-                    ComboCodec.Text = "";
-                    ComboRes.Text = "";
-                    ComboAudio.Text = "";
-                    ComboFormat.Text = "";
-                    TextBoxURL.Text = "";
-
-                    ButDownload.IsEnabled = true;
-                    labelInfo.Content = "";
-                });
             }).ConfigureAwait(true);
+
+            ProgressBarMain.Value = 0;
+            ComboCodec.Text = "";
+            ComboRes.Text = "";
+            ComboAudio.Text = "";
+            ComboFormat.Text = "";
+            TextBoxURL.Text = "";
+            ButDownload.IsEnabled = true;
+            labelInfo.Content = "";
         }
 
         /// <summary>
