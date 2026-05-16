@@ -57,34 +57,34 @@
                 conversion.SetOutput(outputPath);
 
                 // Добавляем параметры кодирования в зависимости от формата
-                switch (outputFormat.ToLower())
-                {
-                    case "mp4":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
-                        if (useNVENC)
-                        {
-                            conversion.AddParameter("-c:v h264_nvenc");
-                            conversion.AddParameter("-preset fast");
-                        }
-                        break;
-                    case "avi":
-                        conversion.SetVideoCodec(VideoCodec.mpeg4);
-                        conversion.SetAudioCodec(AudioCodec.mp3);
-                        break;
-                    case "mkv":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
-                        break;
-                    case "mov":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
-                        break;
-                    default:
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
-                        break;
-                }
+                //switch (outputFormat.ToLower())
+                //{
+                //    case "mp4":
+                //        conversion.SetVideoCodec(VideoCodec.h264);
+                //        conversion.SetAudioCodec(AudioCodec.aac);
+                //        if (useNVENC)
+                //        {
+                //            conversion.AddParameter("-c:v h264_nvenc");
+                //            conversion.AddParameter("-preset fast");
+                //        }
+                //        break;
+                //    case "avi":
+                //        conversion.SetVideoCodec(VideoCodec.mpeg4);
+                //        conversion.SetAudioCodec(AudioCodec.mp3);
+                //        break;
+                //    case "mkv":
+                //        conversion.SetVideoCodec(VideoCodec.h264);
+                //        conversion.SetAudioCodec(AudioCodec.aac);
+                //        break;
+                //    case "mov":
+                //        conversion.SetVideoCodec(VideoCodec.h264);
+                //        conversion.SetAudioCodec(AudioCodec.aac);
+                //        break;
+                //    default:
+                //        conversion.SetVideoCodec(VideoCodec.h264);
+                //        conversion.SetAudioCodec(AudioCodec.aac);
+                //        break;
+                //}
 
                 // Подписка на события прогресса
                 conversion.OnProgress += (sender, args) =>
