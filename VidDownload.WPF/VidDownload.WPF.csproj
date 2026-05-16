@@ -22,7 +22,7 @@
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AssemblyOriginatorKeyFile>VidDownload.WPF_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
     <DelaySign>True</DelaySign>
-    <ImplicitUsings>disable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>embedded</DebugType>

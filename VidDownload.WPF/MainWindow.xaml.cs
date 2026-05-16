@@ -1,15 +1,8 @@
 ﻿using Octokit;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Help;

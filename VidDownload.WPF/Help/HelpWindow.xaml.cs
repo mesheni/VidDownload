@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Windows;
-using System.Windows.Navigation;
 
 namespace VidDownload.WPF.Help
 {
