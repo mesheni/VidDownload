@@ -57,7 +57,7 @@ namespace VidDownload.WPF
         {
             InitializeComponent();
             InitApp();
-            CheckUpdateAsync();
+            _ = CheckUpdateAsync();
             //FFmpegDownloader.GetLatestVersion(FFmpegVersion.Shared);
         }
 
@@ -87,12 +87,12 @@ namespace VidDownload.WPF
                 // Проверка на пустое поле кодека
                 if (ComboCodec.Text.Length == 0 || !(codecList.Exists((i) => i == ComboCodec.Text.ToString())))
                 {
-                    await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
+                    await Download(ProgressBarMain).ConfigureAwait(true);
                 }
                 else
                 {
                     settings.VideoCodec = ComboCodec.Text;
-                    await Task.Run(() => Download(ProgressBarMain)).ConfigureAwait(true); // Загрузка видео
+                    await Download(ProgressBarMain).ConfigureAwait(true);
                 }
             }
         }
@@ -101,7 +101,7 @@ namespace VidDownload.WPF
         /// Асинхронная функция загрузки видео. 
         /// </summary>
         /// <param name="PrograssBarMain">Шкала прогресса</param>
-        public async void Download(ProgressBar PrograssBarMain)
+        public async Task Download(ProgressBar PrograssBarMain)
         {
             // Блокировка кнопки загрузки
             Dispatcher.Invoke(() => ButDownload.IsEnabled = false);
@@ -232,7 +232,7 @@ namespace VidDownload.WPF
         /// 
         /// </summary>
         /// <returns></returns>
-        private async void CheckUpdateAsync()
+        private async Task CheckUpdateAsync()
         {
             if (CheckForInternetConnection().Result)
                 await Task.Run(() =>
