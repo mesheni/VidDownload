@@ -73,7 +73,7 @@ namespace VidDownload.WPF
             // Проверка на пустое поле ссылки
             if (TextBoxURL.Text.Length == 0)
             {
-                await Task.Run(() => Dispatcher.Invoke(() => TextBoxAnimation())).ConfigureAwait(true);
+                TextBoxAnimation();
                 HandyControl.Controls.MessageBox.Error("Пустое поле ссылки!", "Ошибка!");
             }
             else
@@ -234,8 +234,8 @@ namespace VidDownload.WPF
         /// <returns></returns>
         private async Task CheckUpdateAsync()
         {
-            if (CheckForInternetConnection().Result)
-                await Task.Run(() =>
+            if (await CheckForInternetConnection())
+                await Task.Run(async () =>
                 {
                     bool fileNotFound = false;
                     string? links = "";
@@ -244,10 +244,9 @@ namespace VidDownload.WPF
 
                     var client = new GitHubClient(new Octokit.ProductHeaderValue("VidDownload"));
 
-                    var releases = client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
-                    var latest = releases;
+                    var latest = await client.Repository.Release.GetLatest("yt-dlp", "yt-dlp");
 
-                    string latestVer = latest.Result.TagName.Replace(".", "");
+                    string latestVer = latest.TagName.Replace(".", "");
 
                     try
                     {
@@ -267,7 +266,7 @@ namespace VidDownload.WPF
 
                     if (res == MessageBoxResult.OK || fileNotFound)
                     {
-                        foreach (var release in releases.Result.Assets)
+                        foreach (var release in latest.Assets)
                         {
                             if (release.BrowserDownloadUrl.Contains("yt-dlp.exe"))
                             {
@@ -303,7 +302,7 @@ namespace VidDownload.WPF
                                 labelInfo.Content = "";
                                 ButDownload.IsEnabled = true;
                             });
-                            HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.Result.TagName}", "Обновление завершено!");
+                            HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.TagName}", "Обновление завершено!");
 
                         };
 
