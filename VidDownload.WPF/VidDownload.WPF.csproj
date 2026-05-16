@@ -31,12 +31,6 @@
     <DebugType>embedded</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Update\**" />
-    <EmbeddedResource Remove="Update\**" />
-    <None Remove="Update\**" />
-    <Page Remove="Update\**" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="icon.png" />
     <None Remove="jojack.jpg" />
     <None Remove="license.txt" />
