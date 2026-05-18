@@ -33,8 +33,8 @@
   - [x] 2.1.2 — Создать `MainViewModel` со свойствами: `Url`, `SelectedResolution`, `SelectedCodec`, `SelectedAudioFormat`, `SelectedFormat`, `IsPlaylist`, `IsAudioOnly`, `IsReEncode`, `StatusMessage`, `ProgressPercent`, `IsDownloading`, `IsVideoOptionsVisible`, `IsAudioOptionsVisible`, `LinkLabelText` + `ObservableCollection` для списков выбора
   - [x] 2.1.3 — Создать `MainViewModel` команды: `DownloadCommand` (`AsyncRelayCommand`), `OpenFolderCommand`, `OpenConverterCommand`, `OpenHelpCommand`
   - [x] 2.1.4 — Создать `ConvertViewModel` со свойствами: `FilePath`, `SelectedFormat`, `StatusMessage`, `ProgressPercent`, `IsConverting` + команды: `ConvertCommand`, `BrowseFileCommand`
-  - [ ] 2.1.5 — Заменить `x:Name` в `MainWindow.xaml` на `{Binding ...}`: TextBoxURL, ComboBox'ы, CheckBox'ы, ProgressBar, Label, Button'ы (Command)
-  - [ ] 2.1.6 — Заменить `x:Name` в `ConvertWindow.xaml` на `{Binding ...}`: LabelFileName, ComboFormat, status-метки, прогресс, кнопки
+  - [x] 2.1.5 — Заменить `x:Name` в `MainWindow.xaml` на `{Binding ...}`: TextBoxURL, ComboBox'ы, CheckBox'ы, ProgressBar, Label, Button'ы (Command)
+  - [x] 2.1.6 — Заменить `x:Name` в `ConvertWindow.xaml` на `{Binding ...}`: LabelFileName, ComboFormat, status-метки, прогресс, кнопки
   - [ ] 2.1.7 — Заменить `CheckAudio_Checked/Unchecked` и `CheckBoxPlaylist_Checked/Unchecked` на привязку `Visibility` через конвертер или computed-свойства в MainViewModel
   - [ ] 2.1.8 — Перенести `InitApp()` в MainViewModel (заполнение `ObservableCollection`), инициализацию папок — в `App.xaml.cs` или бутстраппер
   - [ ] 2.1.9 — Очистить code-behind: `MainWindow.xaml.cs` и `ConvertWindow.xaml.cs` должны содержать только конструктор с `DataContext = new ...ViewModel(...)`

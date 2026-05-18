@@ -12,6 +12,7 @@ namespace VidDownload.WPF.ViewModels
         private readonly FFmpegAction _ffmpegAction;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ConvertCommand))]
         private string _filePath = string.Empty;
 
         [ObservableProperty]
@@ -24,6 +25,8 @@ namespace VidDownload.WPF.ViewModels
         private int _progressPercent;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(ConvertCommand))]
+        [NotifyCanExecuteChangedFor(nameof(BrowseFileCommand))]
         private bool _isConverting;
 
         public ObservableCollection<string> Formats { get; } = new()
@@ -46,6 +49,7 @@ namespace VidDownload.WPF.ViewModels
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
+                        HandyControl.Controls.MessageBox.Error(errorMessage, "Ошибка");
                         StatusMessage = string.Empty;
                         ProgressPercent = 0;
                     });
@@ -61,11 +65,16 @@ namespace VidDownload.WPF.ViewModels
             );
         }
 
+        private bool CanConvert() => !IsConverting && !string.IsNullOrEmpty(FilePath) && File.Exists(FilePath);
+
+        private bool CanBrowseFile() => !IsConverting;
+
         [RelayCommand]
         private async Task ConvertAsync()
         {
             if (string.IsNullOrEmpty(FilePath) || !File.Exists(FilePath))
             {
+                HandyControl.Controls.MessageBox.Warning("Пожалуйста, выберите видеофайл для конвертации.", "Ошибка");
                 return;
             }
 
@@ -75,16 +84,32 @@ namespace VidDownload.WPF.ViewModels
             string outputDirectory = Path.GetDirectoryName(FilePath) ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string outputPath = Path.Combine(outputDirectory, outputFileName);
 
+            if (File.Exists(outputPath))
+            {
+                var result = HandyControl.Controls.MessageBox.Ask($"Файл \"{outputFileName}\" уже существует. Перезаписать?", "Подтверждение");
+                if (result != MessageBoxResult.Yes)
+                    return;
+            }
+
             IsConverting = true;
 
             try
             {
-                await _ffmpegAction.ConvertVideoAsync(FilePath, outputPath, outputFormat, false).ConfigureAwait(false);
+                var resultPath = await _ffmpegAction.ConvertVideoAsync(FilePath, outputPath, outputFormat, false).ConfigureAwait(false);
+
+                if (resultPath != null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        HandyControl.Controls.MessageBox.Info($"Конвертация успешно завершена!\nФайл сохранён: {resultPath}", "Успех");
+                    });
+                }
             }
-            catch
+            catch (Exception ex)
             {
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
+                    HandyControl.Controls.MessageBox.Error($"Произошла ошибка при конвертации: {ex.Message}", "Ошибка");
                     StatusMessage = string.Empty;
                     ProgressPercent = 0;
                 });
