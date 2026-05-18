@@ -263,30 +263,34 @@ namespace VidDownload.WPF
                             labelInfo.Content = "Идет загрузка обновления yt-dlp!";
                         });
 
-                        var wc = new WebClient();
+                        using var httpClient = new HttpClient();
+                        httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("MyUserAgent");
 
-                        wc.DownloadProgressChanged += (sender, args) =>
+                        using var response = await httpClient.GetAsync(links, HttpCompletionOption.ResponseHeadersRead);
+                        var totalBytes = response.Content.Headers.ContentLength ?? -1;
+                        using var contentStream = await response.Content.ReadAsStreamAsync();
+                        using var fileStream = new FileStream("yt-dlp.exe", FileMode.Create, FileAccess.Write);
+
+                        var buffer = new byte[8192];
+                        long totalRead = 0;
+                        int bytesRead;
+                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                         {
-                            Dispatcher.Invoke(() =>
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalRead += bytesRead;
+                            if (totalBytes > 0)
                             {
-                                ProgressBarMain.Value = args.ProgressPercentage;
-                            });
-                        };
+                                Dispatcher.Invoke(() => ProgressBarMain.Value = (int)(totalRead * 100 / totalBytes));
+                            }
+                        }
 
-                        wc.Headers.Add(HttpRequestHeader.UserAgent, "MyUserAgent");
-                        wc.DownloadFileAsync(new Uri(links), "yt-dlp.exe");
-
-                        wc.DownloadFileCompleted += (sender, args) =>
+                        Dispatcher.Invoke(() =>
                         {
-                            Dispatcher.Invoke(() =>
-                            {
-                                ProgressBarMain.Value = 0;
-                                labelInfo.Content = "";
-                                ButDownload.IsEnabled = true;
-                            });
-                            HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.TagName}", "Обновление завершено!");
-
-                        };
+                            ProgressBarMain.Value = 0;
+                            labelInfo.Content = "";
+                            ButDownload.IsEnabled = true;
+                        });
+                        HandyControl.Controls.MessageBox.Info($"Версия yt-dlp обновлена до {latest.TagName}", "Обновление завершено!");
 
                     }
                 }).ConfigureAwait(false);
