@@ -87,13 +87,6 @@ namespace VidDownload.WPF.ViewModels
             {
                 _codecList.Add(item);
             }
-
-            string videoPath = @".\MyVideos\";
-            string logPath = @".\log\";
-            if (!Directory.Exists(videoPath))
-                Directory.CreateDirectory(videoPath);
-            if (!Directory.Exists(logPath))
-                Directory.CreateDirectory(logPath);
         }
 
         partial void OnIsAudioOnlyChanged(bool value)
