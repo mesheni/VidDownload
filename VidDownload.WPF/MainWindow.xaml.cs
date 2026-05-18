@@ -109,8 +109,6 @@ namespace VidDownload.WPF
                     Directory.CreateDirectory(logDir);
                 }
 
-                FileStream fs = new(log, System.IO.FileMode.CreateNew);
-
                 string args;
                 bool isAudioChecked = CheckAudio.IsChecked == true;
                 string url = TextBoxURL.Text;
@@ -136,7 +134,9 @@ namespace VidDownload.WPF
 
                     try
                     {
-                        StreamWriter w = new(fs, Encoding.Default);
+                        using FileStream fs = new(log, System.IO.FileMode.CreateNew);
+                        using StreamWriter w = new(fs, Encoding.Default);
+
                         proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                         {
                             if (!string.IsNullOrEmpty(e.Data))
@@ -161,8 +161,6 @@ namespace VidDownload.WPF
                                 HandyControl.Controls.MessageBox.Error($"yt-dlp завершился с ошибкой (код: {proc.ExitCode}). Проверьте логи.", "Ошибка загрузки");
                             });
                         }
-
-                        w.Close();
                     }
                     catch (Exception ex)
                     {
@@ -174,7 +172,6 @@ namespace VidDownload.WPF
                     finally
                     {
                         proc.Close();
-                        fs.Close();
                     }
                 }).ConfigureAwait(true);
             }
