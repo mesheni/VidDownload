@@ -37,7 +37,7 @@
   - [x] 2.1.6 — Заменить `x:Name` в `ConvertWindow.xaml` на `{Binding ...}`: LabelFileName, ComboFormat, status-метки, прогресс, кнопки
   - [x] 2.1.7 — Заменить `CheckAudio_Checked/Unchecked` и `CheckBoxPlaylist_Checked/Unchecked` на привязку `Visibility` через конвертер или computed-свойства в MainViewModel
   - [x] 2.1.8 — Перенести `InitApp()` в MainViewModel (заполнение `ObservableCollection`), инициализацию папок — в `App.xaml.cs` или бутстраппер
-  - [ ] 2.1.9 — Очистить code-behind: `MainWindow.xaml.cs` и `ConvertWindow.xaml.cs` должны содержать только конструктор с `DataContext = new ...ViewModel(...)`
+  - [x] 2.1.9 — Очистить code-behind: `MainWindow.xaml.cs` и `ConvertWindow.xaml.cs` должны содержать только конструктор с `DataContext = new ...ViewModel(...)`
 - [ ] 2.2 — **Выделить сервис yt-dlp**: `Download()` и проверка обновлений — в отдельный `YtDlpService`
 - [ ] 2.3 — **Выделить сервис обновлений**: GitHub API (Octokit) — в `UpdateService`
 - [ ] 2.4 — **Добавить DI-контейнер**: `Microsoft.Extensions.DependencyInjection` для внедрения зависимостей

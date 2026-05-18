@@ -87,6 +87,7 @@ namespace VidDownload.WPF.ViewModels
             {
                 _codecList.Add(item);
             }
+            _ = CheckUpdateAsync();
         }
 
         partial void OnIsAudioOnlyChanged(bool value)

@@ -7,9 +7,7 @@ namespace VidDownload.WPF
         public MainWindow()
         {
             InitializeComponent();
-            var vm = new MainViewModel();
-            DataContext = vm;
-            _ = vm.CheckUpdateAsync();
+            DataContext = new MainViewModel();
         }
     }
 }
