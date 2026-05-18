@@ -22,7 +22,7 @@
 ### Критичные баги (в рамках этапа 1)
 
 - [x] 1.12 — **Утечка ресурсов**: `FileStream` и `StreamWriter` не обёрнуты в `using` — при исключении не освободятся
-- [ ] 1.13 — **Потенциальный deadlock**: `CheckForInternetConnection().Result` в контексте синхронизации WPF
+- [x] 1.13 — **Потенциальный deadlock**: `CheckForInternetConnection().Result` в контексте синхронизации WPF
 
 ---
 
