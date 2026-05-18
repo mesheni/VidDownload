@@ -98,65 +98,101 @@ namespace VidDownload.WPF
         {
             ButDownload.IsEnabled = false;
 
-            string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
-            string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
-
-            FileStream fs = new(log, System.IO.FileMode.CreateNew);
-
-            string args;
-            bool isAudioChecked = CheckAudio.IsChecked == true;
-            string url = TextBoxURL.Text;
-            bool isPlaylist = CheckBoxPlaylist.IsChecked == true;
-            if (isAudioChecked)
+            try
             {
-                args = Command.LoadAudio(settings, url, isPlaylist);
-            }
-            else
-            {
-                args = Command.LoadVideo(url, settings, isPlaylist, CheckCoder.IsChecked == true);
-            }
+                string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
+                string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
 
-            await Task.Run(() =>
-            {
-                Process proc = new();
-
-                proc.StartInfo.FileName = @".\yt-dlp.exe";
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.CreateNoWindow = true;
-                proc.StartInfo.Arguments = args;
-
-                StreamWriter w = new(fs, Encoding.Default);
-                proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+                string logDir = System.IO.Path.GetDirectoryName(log);
+                if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
                 {
-                    if (!string.IsNullOrEmpty(e.Data))
+                    Directory.CreateDirectory(logDir);
+                }
+
+                FileStream fs = new(log, System.IO.FileMode.CreateNew);
+
+                string args;
+                bool isAudioChecked = CheckAudio.IsChecked == true;
+                string url = TextBoxURL.Text;
+                bool isPlaylist = CheckBoxPlaylist.IsChecked == true;
+                if (isAudioChecked)
+                {
+                    args = Command.LoadAudio(settings, url, isPlaylist);
+                }
+                else
+                {
+                    args = Command.LoadVideo(url, settings, isPlaylist, CheckCoder.IsChecked == true);
+                }
+
+                await Task.Run(() =>
+                {
+                    Process proc = new();
+
+                    proc.StartInfo.FileName = @".\yt-dlp.exe";
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.RedirectStandardOutput = true;
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.Arguments = args;
+
+                    try
                     {
-                        w.WriteLine(e.Data);
+                        StreamWriter w = new(fs, Encoding.Default);
+                        proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
+                        {
+                            if (!string.IsNullOrEmpty(e.Data))
+                            {
+                                w.WriteLine(e.Data);
+                                Dispatcher.Invoke(() =>
+                                {
+                                    labelInfo.Content = e.Data;
+                                    ProgressBarMain.Value = ParseLog.Parse(e.Data);
+                                });
+                            }
+                        });
+
+                        proc.Start();
+                        proc.BeginOutputReadLine();
+                        proc.WaitForExit();
+
+                        if (proc.ExitCode != 0)
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                HandyControl.Controls.MessageBox.Error($"yt-dlp завершился с ошибкой (код: {proc.ExitCode}). Проверьте логи.", "Ошибка загрузки");
+                            });
+                        }
+
+                        w.Close();
+                    }
+                    catch (Exception ex)
+                    {
                         Dispatcher.Invoke(() =>
                         {
-                            labelInfo.Content = e.Data;
-                            ProgressBarMain.Value = ParseLog.Parse(e.Data);
+                            HandyControl.Controls.MessageBox.Error($"Ошибка при выполнении yt-dlp: {ex.Message}", "Ошибка");
                         });
                     }
-                });
-
-                proc.Start();
-                proc.BeginOutputReadLine();
-                proc.WaitForExit();
-                proc.Close();
-
-                w.Close();
-                fs.Close();
-            }).ConfigureAwait(true);
-
-            ProgressBarMain.Value = 0;
-            ComboCodec.Text = "";
-            ComboRes.Text = "";
-            ComboAudio.Text = "";
-            ComboFormat.Text = "";
-            TextBoxURL.Text = "";
-            ButDownload.IsEnabled = true;
-            labelInfo.Content = "";
+                    finally
+                    {
+                        proc.Close();
+                        fs.Close();
+                    }
+                }).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                HandyControl.Controls.MessageBox.Error($"Ошибка: {ex.Message}", "Ошибка");
+            }
+            finally
+            {
+                ProgressBarMain.Value = 0;
+                ComboCodec.Text = "";
+                ComboRes.Text = "";
+                ComboAudio.Text = "";
+                ComboFormat.Text = "";
+                TextBoxURL.Text = "";
+                ButDownload.IsEnabled = true;
+                labelInfo.Content = "";
+            }
         }
 
         /// <summary>
