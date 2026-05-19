@@ -1,6 +1,7 @@
 ﻿namespace VidDownload.WPF.Control
 {
     using System.Diagnostics;
+    using System.IO;
     using Xabe.FFmpeg;
 
     /// <summary>
@@ -56,8 +57,8 @@
                 switch (outputFormat.ToLower())
                 {
                     case "mp4":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter("-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         if (useNVENC)
                         {
                             conversion.AddParameter("-c:v h264_nvenc");
@@ -65,20 +66,20 @@
                         }
                         break;
                     case "avi":
-                        conversion.SetVideoCodec(VideoCodec.mpeg4);
-                        conversion.SetAudioCodec(AudioCodec.mp3);
+                        conversion.AddParameter("-c:v mpeg4");
+                        conversion.AddParameter("-c:a mp3");
                         break;
                     case "mkv":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter("-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         break;
                     case "mov":
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter("-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         break;
                     default:
-                        conversion.SetVideoCodec(VideoCodec.h264);
-                        conversion.SetAudioCodec(AudioCodec.aac);
+                        conversion.AddParameter("-c:v libx264");
+                        conversion.AddParameter("-c:a aac");
                         break;
                 }
 

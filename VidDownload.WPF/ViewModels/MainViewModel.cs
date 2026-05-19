@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Octokit;
@@ -144,9 +146,9 @@ namespace VidDownload.WPF.ViewModels
                 string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
                 string logDir = System.IO.Path.GetDirectoryName(log);
 
-                if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
+                if (!string.IsNullOrEmpty(logDir) && !System.IO.Directory.Exists(logDir))
                 {
-                    Directory.CreateDirectory(logDir);
+                    System.IO.Directory.CreateDirectory(logDir);
                 }
 
                 string args;
@@ -171,8 +173,8 @@ namespace VidDownload.WPF.ViewModels
 
                     try
                     {
-                        using FileStream fs = new(log, System.IO.FileMode.CreateNew);
-                        using StreamWriter w = new(fs, Encoding.Default);
+                        using System.IO.FileStream fs = new(log, System.IO.FileMode.CreateNew);
+                        using System.IO.StreamWriter w = new(fs, Encoding.Default);
 
                         proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
                         {
@@ -233,9 +235,9 @@ namespace VidDownload.WPF.ViewModels
         private void OpenFolder()
         {
             string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
-            if (!Directory.Exists(path))
+            if (!System.IO.Directory.Exists(path))
             {
-                Directory.CreateDirectory(path);
+                System.IO.Directory.CreateDirectory(path);
             }
             Process.Start("explorer.exe", "/open, \"" + path);
         }
@@ -243,7 +245,7 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private void OpenConverter()
         {
-            ConvertWindow convert = new();
+            ConvertWindow.ConvertWindow convert = new();
             convert.ShowDialog();
         }
 
@@ -306,7 +308,7 @@ namespace VidDownload.WPF.ViewModels
                         using var response = await httpClient.GetAsync(links, HttpCompletionOption.ResponseHeadersRead);
                         var totalBytes = response.Content.Headers.ContentLength ?? -1;
                         using var contentStream = await response.Content.ReadAsStreamAsync();
-                        using var fileStream = new FileStream("yt-dlp.exe", FileMode.Create, FileAccess.Write);
+                        using var fileStream = new System.IO.FileStream("yt-dlp.exe", System.IO.FileMode.Create, System.IO.FileAccess.Write);
 
                         var buffer = new byte[8192];
                         long totalRead = 0;
