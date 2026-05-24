@@ -53,12 +53,8 @@ namespace VidDownload.WPF.Services
                         if (!string.IsNullOrEmpty(e.Data))
                         {
                             w.WriteLine(e.Data);
-                            double parsedProgress = ParseLog.Parse(e.Data);
-                            progress?.Report(new DownloadProgress
-                            {
-                                Percent = (int)parsedProgress,
-                                StatusMessage = e.Data
-                            });
+                            var parsed = ParseLog.ParseProgressLine(e.Data);
+                            progress?.Report(parsed);
                         }
                     };
 

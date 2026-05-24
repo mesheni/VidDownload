@@ -66,6 +66,15 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private string _linkLabelText = "Поле для ссылки на видео:";
 
+        [ObservableProperty]
+        private string _speedText = "--";
+
+        [ObservableProperty]
+        private string _etaText = "--";
+
+        [ObservableProperty]
+        private string _totalSizeText = "--";
+
         public ObservableCollection<string> Resolutions { get; } = new()
         {
             "", "144", "240", "360", "480", "720", "1080", "1440", "2160"
@@ -158,6 +167,9 @@ namespace VidDownload.WPF.ViewModels
                 {
                     StatusMessage = p.StatusMessage;
                     ProgressPercent = p.Percent;
+                    SpeedText = p.Speed;
+                    EtaText = p.Eta;
+                    TotalSizeText = p.TotalSize;
                 });
 
                 await _ytDlpService.DownloadAsync(downloadUrl, _settings, IsPlaylist, IsAudioOnly, IsReEncode, progress, CancellationToken.None).ConfigureAwait(true);
@@ -185,6 +197,9 @@ namespace VidDownload.WPF.ViewModels
                 Url = "";
                 IsDownloading = false;
                 StatusMessage = "";
+                SpeedText = "--";
+                EtaText = "--";
+                TotalSizeText = "--";
             }
         }
 
