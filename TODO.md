@@ -48,7 +48,12 @@
   - [x] 2.3.2 — Создать модель `UpdateInfo` с полями: `Version`, `DownloadUrl`, `ReleaseNotes`, `IsPreRelease`
   - [x] 2.3.3 — Перенести всю логику работы с Octokit (вызов GitHub Releases API, проверка версий, парсинг тегов) в `UpdateService.cs`
   - [x] 2.3.4 — Внедрить `IUpdateService` в `MainViewModel` через конструктор и заменить прямые вызовы Octokit на вызовы сервиса
-- [ ] 2.4 — **Добавить DI-контейнер**: `Microsoft.Extensions.DependencyInjection` для внедрения зависимостей
+- [x] 2.4 — **Добавить DI-контейнер**: `Microsoft.Extensions.DependencyInjection` для внедрения зависимостей
+  - [x] 2.4.1 — Добавить NuGet-пакет `Microsoft.Extensions.DependencyInjection`
+  - [x] 2.4.2 — Создать статический класс `AppServices` (или настроить в `App.xaml.cs`) с `IServiceProvider`, зарегистрировать все сервисы (`IYtDlpService`, `IUpdateService`) и ViewModels (`MainViewModel`, `ConvertViewModel`)
+  - [x] 2.4.3 — Переделать `MainWindow` и `ConvertWindow` для разрешения через DI: получать `DataContext` из контейнера
+  - [x] 2.4.4 — В конструкторах ViewModel убрать fallback `?? new ...()`, оставить только обязательное внедрение через DI
+  - [x] 2.4.5 — Заменить ручное создание окон (`new ConvertWindow()`, `new HelpWindow()`) на фабрику из контейнера или через `IServiceProvider`
 - [ ] 2.5 — **Привязать прогресс через Binding**: вместо ручного `Dispatcher.Invoke` — `IProgress<double>` и binding
 - [ ] 2.6 — **Настройки сохранять между сессиями**: JSON-файл или `Properties.Settings` для выбранных форматов/кодеков
 - [ ] 2.7 — **Внедрить IMessageService / IDialogService** для абстракции всплывающих сообщений и диалоговых окон (избавление ViewModels от зависимости от HandyControl)

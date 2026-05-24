@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using VidDownload.WPF.Services;
 
 namespace VidDownload.WPF
 {
@@ -13,6 +15,11 @@ namespace VidDownload.WPF
                 Directory.CreateDirectory(videoPath);
             if (!Directory.Exists(logPath))
                 Directory.CreateDirectory(logPath);
+
+            AppServices.Initialize();
+
+            var mainWindow = AppServices.ServiceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
 
             base.OnStartup(e);
         }

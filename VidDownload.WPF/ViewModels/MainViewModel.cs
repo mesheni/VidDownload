@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.ConvertWindow;
 using VidDownload.WPF.Help;
@@ -81,10 +82,10 @@ namespace VidDownload.WPF.ViewModels
             "", "avi", "mkv", "mp4", "webm"
         };
 
-        public MainViewModel(IYtDlpService? ytDlpService = null, IUpdateService? updateService = null)
+        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService)
         {
-            _ytDlpService = ytDlpService ?? new YtDlpService();
-            _updateService = updateService ?? new UpdateService(_ytDlpService);
+            _ytDlpService = ytDlpService;
+            _updateService = updateService;
             foreach (var item in Codecs)
             {
                 _codecList.Add(item);
@@ -181,14 +182,14 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private void OpenConverter()
         {
-            ConvertWindow.ConvertWindow convert = new();
+            var convert = AppServices.ServiceProvider.GetRequiredService<ConvertWindow.ConvertWindow>();
             convert.ShowDialog();
         }
 
         [RelayCommand]
         private void OpenHelp()
         {
-            HelpWindow help = new();
+            var help = AppServices.ServiceProvider.GetRequiredService<HelpWindow>();
             help.ShowDialog();
         }
 

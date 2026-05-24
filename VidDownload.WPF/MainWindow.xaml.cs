@@ -1,4 +1,6 @@
-﻿using VidDownload.WPF.ViewModels;
+﻿using Microsoft.Extensions.DependencyInjection;
+using VidDownload.WPF.Services;
+using VidDownload.WPF.ViewModels;
 
 namespace VidDownload.WPF
 {
@@ -7,7 +9,7 @@ namespace VidDownload.WPF
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            DataContext = AppServices.ServiceProvider.GetRequiredService<MainViewModel>();
         }
     }
 }

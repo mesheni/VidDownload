@@ -1,4 +1,6 @@
-﻿using VidDownload.WPF.ViewModels;
+﻿using Microsoft.Extensions.DependencyInjection;
+using VidDownload.WPF.Services;
+using VidDownload.WPF.ViewModels;
 
 namespace VidDownload.WPF.ConvertWindow
 {
@@ -7,7 +9,7 @@ namespace VidDownload.WPF.ConvertWindow
         public ConvertWindow()
         {
             InitializeComponent();
-            DataContext = new ConvertViewModel();
+            DataContext = AppServices.ServiceProvider.GetRequiredService<ConvertViewModel>();
         }
     }
 }
