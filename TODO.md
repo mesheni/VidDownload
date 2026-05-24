@@ -73,7 +73,14 @@
   - [x] 2.7.4 — Зарегистрировать `IMessageService` и `IDialogService` в DI-контейнере
   - [x] 2.7.5 — Внедрить `IMessageService` и `IDialogService` во все ViewModel и заменить все прямые вызовы `HandyControl.Controls.MessageBox.*` на методы сервисов
   - [x] 2.7.6 — Удалить неиспользуемые `using HandyControl;` из ViewModel-файлов
-- [ ] 2.9 — **История загрузок**: сохранять список последних ссылок с возможностью повторного скачивания (вынести из формата настроек в отдельную историю)
+- [x] 2.9 — **История загрузок**: сохранять список последних ссылок с возможностью повторного скачивания (вынести из формата настроек в отдельную историю)
+  - [x] 2.9.1 — Создать модель `DownloadHistoryEntry` (Id, Url, Title, FilePath, Timestamp, Status)
+  - [x] 2.9.2 — Создать интерфейс `IDownloadHistoryService` с методами: `AddEntryAsync`, `GetRecentEntriesAsync(int count)`, `ClearHistoryAsync`, `RemoveEntryAsync(Guid id)`
+  - [x] 2.9.3 — Реализовать `JsonDownloadHistoryService` (хранение в отдельном JSON-файле `%APPDATA%/download-history.json`)
+  - [x] 2.9.4 — Зарегистрировать `IDownloadHistoryService` в DI-контейнере
+  - [x] 2.9.5 — Создать View/ViewModel для отображения истории загрузок (список с датой, названием, статусом)
+  - [x] 2.9.6 — Реализовать повторное скачивание: кнопка "Download again" в списке истории
+  - [x] 2.9.7 — Перенести старые «последние ссылки» из настроек в новую историю (миграция) — не требуется, старые ссылки в настройках отсутствуют
 - [ ] 2.8 — **Использовать ArgumentList вместо конкатенации строк** при запуске `yt-dlp` через ProcessStartInfo для безопасности путей и параметров
 
 ---

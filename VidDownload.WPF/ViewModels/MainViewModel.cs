@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.ConvertWindow;
 using VidDownload.WPF.Help;
+using VidDownload.WPF.HistoryWindow;
 using VidDownload.WPF.Services;
 using VidDownload.WPF.ViewModels.Base;
 
@@ -20,6 +21,7 @@ namespace VidDownload.WPF.ViewModels
         private readonly ISettingsService _settingsService;
         private readonly IMessageService _messageService;
         private readonly IDialogService _dialogService;
+        private readonly IDownloadHistoryService _historyService;
 
         [ObservableProperty]
         private string _url = string.Empty;
@@ -84,13 +86,14 @@ namespace VidDownload.WPF.ViewModels
             "", "avi", "mkv", "mp4", "webm"
         };
 
-        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService)
+        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService, IDownloadHistoryService historyService)
         {
             _ytDlpService = ytDlpService;
             _updateService = updateService;
             _settingsService = settingsService;
             _messageService = messageService;
             _dialogService = dialogService;
+            _historyService = historyService;
             foreach (var item in Codecs)
             {
                 _codecList.Add(item);
@@ -143,6 +146,8 @@ namespace VidDownload.WPF.ViewModels
             if (SelectedCodec.Length != 0 && _codecList.Exists(i => i == SelectedCodec))
                 _settings.VideoCodec = SelectedCodec;
 
+            string downloadUrl = Url;
+
             IsDownloading = true;
             StatusMessage = string.Empty;
             ProgressPercent = 0;
@@ -155,7 +160,15 @@ namespace VidDownload.WPF.ViewModels
                     ProgressPercent = p.Percent;
                 });
 
-                await _ytDlpService.DownloadAsync(Url, _settings, IsPlaylist, IsAudioOnly, IsReEncode, progress, CancellationToken.None).ConfigureAwait(true);
+                await _ytDlpService.DownloadAsync(downloadUrl, _settings, IsPlaylist, IsAudioOnly, IsReEncode, progress, CancellationToken.None).ConfigureAwait(true);
+
+                await _historyService.AddEntryAsync(new DownloadHistoryEntry
+                {
+                    Url = downloadUrl,
+                    Title = downloadUrl,
+                    Timestamp = DateTime.Now,
+                    Status = DownloadStatus.Completed
+                }).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -198,6 +211,16 @@ namespace VidDownload.WPF.ViewModels
         {
             var help = AppServices.ServiceProvider.GetRequiredService<HelpWindow>();
             help.ShowDialog();
+        }
+
+        [RelayCommand]
+        private void OpenHistory()
+        {
+            var history = AppServices.ServiceProvider.GetRequiredService<HistoryWindow.HistoryWindow>();
+            if (history.ShowDialog() == true && !string.IsNullOrEmpty(history.SelectedUrl))
+            {
+                Url = history.SelectedUrl;
+            }
         }
 
         private async Task LoadSettingsAsync()

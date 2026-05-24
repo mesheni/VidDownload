@@ -1,0 +1,73 @@
+<Window x:Class="VidDownload.WPF.HistoryWindow.HistoryWindow"
+        x:Name="HistoryWin"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        mc:Ignorable="d"
+        Title="История загрузок" Height="500" Width="800" WindowStartupLocation="CenterScreen"
+        Icon="/icon.png" ResizeMode="CanResize" Loaded="OnLoaded">
+    <Grid Background="#FF1D1D1D">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ListView Grid.Row="0" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}"
+                  Margin="10" Background="#FF2B2B2B" Foreground="White" BorderThickness="0"
+                  FontFamily="Cascadia Code" FontSize="13">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Дата" Width="160">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                           Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="URL / Название" Width="380">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Title}" Foreground="#FFBAF79F"
+                                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center" Margin="5,0" ToolTip="{Binding Url}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Статус" Width="80">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Status}" Foreground="White"
+                                           VerticalAlignment="Center" Margin="5,0"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Скачать" Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
+                                        CommandParameter="{Binding}" Width="80" Height="25"
+                                        FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold"
+                                        Background="#FFFF4F4F" Foreground="White" BorderThickness="0"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Grid Grid.Row="1" Margin="10,0,10,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Очистить историю" Command="{Binding ClearHistoryCommand}"
+                    Width="150" Height="30" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold"
+                    Background="#FF75FFAF" Foreground="Black" BorderThickness="0"/>
+            <Button Grid.Column="2" Content="Закрыть" Click="CloseButton_Click"
+                    Width="100" Height="30" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold"
+                    Background="#FF888888" Foreground="White" BorderThickness="0"/>
+        </Grid>
+    </Grid>
+</Window>

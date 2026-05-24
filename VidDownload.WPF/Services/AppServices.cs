@@ -19,12 +19,15 @@ namespace VidDownload.WPF.Services
             services.AddSingleton<ISettingsService, JsonSettingsService>();
             services.AddSingleton<IMessageService, HandyControlMessageService>();
             services.AddSingleton<IDialogService, HandyControlDialogService>();
+            services.AddSingleton<IDownloadHistoryService, JsonDownloadHistoryService>();
 
             services.AddTransient<MainViewModel>();
             services.AddTransient<ConvertViewModel>();
+            services.AddTransient<HistoryViewModel>();
 
             services.AddTransient<VidDownload.WPF.MainWindow>();
             services.AddTransient<ConvertWindow.ConvertWindow>();
+            services.AddTransient<HistoryWindow.HistoryWindow>();
             services.AddTransient<HelpWindow>();
 
             ServiceProvider = services.BuildServiceProvider();
