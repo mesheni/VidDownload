@@ -38,11 +38,17 @@
   - [x] 2.1.7 — Заменить `CheckAudio_Checked/Unchecked` и `CheckBoxPlaylist_Checked/Unchecked` на привязку `Visibility` через конвертер или computed-свойства в MainViewModel
   - [x] 2.1.8 — Перенести `InitApp()` в MainViewModel (заполнение `ObservableCollection`), инициализацию папок — в `App.xaml.cs` или бутстраппер
   - [x] 2.1.9 — Очистить code-behind: `MainWindow.xaml.cs` и `ConvertWindow.xaml.cs` должны содержать только конструктор с `DataContext = new ...ViewModel(...)`
-- [ ] 2.2 — **Выделить сервис yt-dlp**: `Download()` и проверка обновлений — в отдельный `YtDlpService`
+- [] 2.2 — **Выделить сервис yt-dlp: создать `YtDlpService`**
+  - [x] 2.2.1 — Создать интерфейс `IYtDlpService` в новой папке `Services/` с методами: `Task DownloadAsync(...)` для загрузки контента и `Task<string> GetLocalVersionAsync()` для получения текущей версии `yt-dlp.exe`.
+  - [] 2.2.2 — Создать модель `DownloadProgress`, передающую процент прогресса и текущее состояние.
+  - [] 2.2.3 — Перенести всю логику конфигурации и запуска процесса `yt-dlp.exe`, обработки stdout и записи логов в `YtDlpService.cs`.
+  - [] 2.2.4 — Внедрить `IYtDlpService` в `MainViewModel` через конструктор и переписать метод `DownloadAsync()` на вызовы сервиса.
 - [ ] 2.3 — **Выделить сервис обновлений**: GitHub API (Octokit) — в `UpdateService`
 - [ ] 2.4 — **Добавить DI-контейнер**: `Microsoft.Extensions.DependencyInjection` для внедрения зависимостей
 - [ ] 2.5 — **Привязать прогресс через Binding**: вместо ручного `Dispatcher.Invoke` — `IProgress<double>` и binding
 - [ ] 2.6 — **Настройки сохранять между сессиями**: JSON-файл или `Properties.Settings` для выбранных форматов/кодеков
+- [ ] 2.7 — **Внедрить IMessageService / IDialogService** для абстракции всплывающих сообщений и диалоговых окон (избавление ViewModels от зависимости от HandyControl)
+- [ ] 2.8 — **Использовать ArgumentList вместо конкатенации строк** при запуске `yt-dlp` через ProcessStartInfo для безопасности путей и параметров
 
 ---
 
@@ -58,6 +64,9 @@
 - [ ] 3.8 — **Скачивание субтитров**: опция `--write-subs --write-auto-subs` в yt-dlp
 - [ ] 3.9 — **Выбор конкретных потоков**: ручной ввод формата (не только через `-S`)
 - [ ] 3.10 — **Обновление ffmpeg через GUI**: проверка/обновление FFmpeg аналогично yt-dlp
+- [ ] 3.11 — **Безопасные пути сохранения по умолчанию**: использовать стандартную системную папку «Видео» пользователя (`Environment.SpecialFolder.MyVideos`) вместо `./MyVideos/` для избежания `UnauthorizedAccessException`
+- [ ] 3.12 — **Кнопка «Вставить из буфера» (Paste from Clipboard)** с автоматической валидацией URL-адреса
+- [ ] 3.13 — **Поддержка тем оформления (Темная / Светлая)** с сохранением предпочтения в настройках
 
 ---
 
@@ -66,6 +75,15 @@
 - [ ] 4.1 — **Миграция на .NET 8**: `net8.0-windows` вместо `net6.0-windows10.0.22621.0`
 - [ ] 4.2 — **Обновить пакеты NuGet**: HandyControl, Octokit, Xabe.FFmpeg до последних версий
 - [ ] 4.3 — **Понизить целевой SDK**: `Windows10.0.19041.0` вместо `22621.0` (для совместимости с Windows 10)
+
+---
+
+## Этап 5: Автоматическое тестирование и CI/CD
+
+- [ ] 5.1 — **Создать тестовый проект на xUnit или NUnit** для покрытия бизнес-логики
+- [ ] 5.2 — **Покрыть тестами парсер логов (ParseLog)** для валидации различных форматов вывода yt-dlp
+- [ ] 5.3 — **Реализовать модульные тесты для YtDlpService и UpdateService** с использованием Mock-объектов
+- [ ] 5.4 — **Настроить пайплайн GitHub Actions** для автоматической сборки проекта и запуска тестов при Push/PR
 
 ---
 

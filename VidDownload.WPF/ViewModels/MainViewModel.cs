@@ -11,6 +11,7 @@ using Octokit;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.ConvertWindow;
 using VidDownload.WPF.Help;
+using VidDownload.WPF.Services;
 using VidDownload.WPF.ViewModels.Base;
 
 namespace VidDownload.WPF.ViewModels
@@ -19,6 +20,7 @@ namespace VidDownload.WPF.ViewModels
     {
         private readonly Settings _settings = new();
         private static readonly List<string> _codecList = new();
+        private readonly IYtDlpService _ytDlpService;
 
         [ObservableProperty]
         private string _url = string.Empty;
@@ -83,8 +85,9 @@ namespace VidDownload.WPF.ViewModels
             "", "avi", "mkv", "mp4", "webm"
         };
 
-        public MainViewModel()
+        public MainViewModel(IYtDlpService? ytDlpService = null)
         {
+            _ytDlpService = ytDlpService ?? new YtDlpService();
             foreach (var item in Codecs)
             {
                 _codecList.Add(item);
@@ -142,77 +145,13 @@ namespace VidDownload.WPF.ViewModels
 
             try
             {
-                string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
-                string log = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
-                string logDir = System.IO.Path.GetDirectoryName(log);
-
-                if (!string.IsNullOrEmpty(logDir) && !System.IO.Directory.Exists(logDir))
+                var progress = new Progress<DownloadProgress>(p =>
                 {
-                    System.IO.Directory.CreateDirectory(logDir);
-                }
+                    StatusMessage = p.StatusMessage;
+                    ProgressPercent = p.Percent;
+                });
 
-                string args;
-                if (IsAudioOnly)
-                {
-                    args = Command.LoadAudio(_settings, Url, IsPlaylist);
-                }
-                else
-                {
-                    args = Command.LoadVideo(Url, _settings, IsPlaylist, IsReEncode);
-                }
-
-                await Task.Run(() =>
-                {
-                    Process proc = new();
-
-                    proc.StartInfo.FileName = @".\yt-dlp.exe";
-                    proc.StartInfo.UseShellExecute = false;
-                    proc.StartInfo.RedirectStandardOutput = true;
-                    proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.Arguments = args;
-
-                    try
-                    {
-                        using System.IO.FileStream fs = new(log, System.IO.FileMode.CreateNew);
-                        using System.IO.StreamWriter w = new(fs, Encoding.Default);
-
-                        proc.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
-                        {
-                            if (!string.IsNullOrEmpty(e.Data))
-                            {
-                                w.WriteLine(e.Data);
-                                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    StatusMessage = e.Data;
-                                    ProgressPercent = (int)ParseLog.Parse(e.Data);
-                                });
-                            }
-                        });
-
-                        proc.Start();
-                        proc.BeginOutputReadLine();
-                        proc.WaitForExit();
-
-                        if (proc.ExitCode != 0)
-                        {
-                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                HandyControl.Controls.MessageBox.Error($"yt-dlp завершился с ошибкой (код: {proc.ExitCode}). Проверьте логи.", "Ошибка загрузки");
-                            });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            HandyControl.Controls.MessageBox.Error($"Ошибка при выполнении yt-dlp: {ex.Message}", "Ошибка");
-                        });
-                    }
-                    finally
-                    {
-                        proc.Close();
-                    }
-                }).ConfigureAwait(true);
+                await _ytDlpService.DownloadAsync(Url, _settings, IsPlaylist, IsAudioOnly, IsReEncode, progress, CancellationToken.None).ConfigureAwait(true);
             }
             catch (Exception ex)
             {
@@ -272,10 +211,9 @@ namespace VidDownload.WPF.ViewModels
 
                     try
                     {
-                        var versionInfo = FileVersionInfo.GetVersionInfo("yt-dlp.exe");
-                        currentVer = versionInfo.FileVersion.Replace(".", "");
+                        currentVer = (await _ytDlpService.GetLocalVersionAsync()).Replace(".", "");
 
-                        if (Convert.ToInt32(currentVer) < Convert.ToInt32(latestVer))
+                        if (string.IsNullOrEmpty(currentVer) || Convert.ToInt32(currentVer) < Convert.ToInt32(latestVer))
                         {
                             res = HandyControl.Controls.MessageBox.Ask($"Текущая версия: {currentVer} \nПоследняя версия: {latestVer}\nПодтвердите начало обновления.", "Доступна новая версия yt-dlp!");
                         }
