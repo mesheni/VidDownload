@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using VidDownload.WPF.Control;
+using VidDownload.WPF.Services;
 using VidDownload.WPF.ViewModels.Base;
 
 namespace VidDownload.WPF.ViewModels
@@ -38,33 +39,7 @@ namespace VidDownload.WPF.ViewModels
 
         public ConvertViewModel()
         {
-            _ffmpegAction = new FFmpegAction(
-                onProgress: (percent, message) =>
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        StatusMessage = message;
-                        ProgressPercent = percent;
-                    });
-                },
-                onError: (errorMessage) =>
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        HandyControl.Controls.MessageBox.Error(errorMessage, "Ошибка");
-                        StatusMessage = string.Empty;
-                        ProgressPercent = 0;
-                    });
-                },
-                onCompleted: () =>
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        StatusMessage = "Конвертация завершена!";
-                        ProgressPercent = 100;
-                    });
-                }
-            );
+            _ffmpegAction = new FFmpegAction();
         }
 
         private bool CanConvert() => !IsConverting && !string.IsNullOrEmpty(FilePath) && File.Exists(FilePath);
@@ -81,7 +56,6 @@ namespace VidDownload.WPF.ViewModels
             }
 
             string outputFormat = string.IsNullOrEmpty(SelectedFormat) ? "mp4" : SelectedFormat.ToLower();
-            string inputExtension = Path.GetExtension(FilePath);
             string outputFileName = Path.GetFileNameWithoutExtension(FilePath) + "." + outputFormat;
             string outputDirectory = Path.GetDirectoryName(FilePath) ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string outputPath = Path.Combine(outputDirectory, outputFileName);
@@ -97,31 +71,28 @@ namespace VidDownload.WPF.ViewModels
 
             try
             {
-                var resultPath = await _ffmpegAction.ConvertVideoAsync(FilePath, outputPath, outputFormat, false).ConfigureAwait(false);
+                var progress = new Progress<DownloadProgress>(p =>
+                {
+                    StatusMessage = p.StatusMessage;
+                    ProgressPercent = p.Percent;
+                });
+
+                var resultPath = await _ffmpegAction.ConvertVideoAsync(FilePath, outputPath, outputFormat, false, progress);
 
                 if (resultPath != null)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        HandyControl.Controls.MessageBox.Info($"Конвертация успешно завершена!\nФайл сохранён: {resultPath}", "Успех");
-                    });
+                    HandyControl.Controls.MessageBox.Info($"Конвертация успешно завершена!\nФайл сохранён: {resultPath}", "Успех");
                 }
             }
             catch (Exception ex)
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    HandyControl.Controls.MessageBox.Error($"Произошла ошибка при конвертации: {ex.Message}", "Ошибка");
-                    StatusMessage = string.Empty;
-                    ProgressPercent = 0;
-                });
+                HandyControl.Controls.MessageBox.Error($"Произошла ошибка при конвертации: {ex.Message}", "Ошибка");
+                StatusMessage = string.Empty;
+                ProgressPercent = 0;
             }
             finally
             {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    IsConverting = false;
-                });
+                IsConverting = false;
             }
         }
 
