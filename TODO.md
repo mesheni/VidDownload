@@ -38,12 +38,16 @@
   - [x] 2.1.7 — Заменить `CheckAudio_Checked/Unchecked` и `CheckBoxPlaylist_Checked/Unchecked` на привязку `Visibility` через конвертер или computed-свойства в MainViewModel
   - [x] 2.1.8 — Перенести `InitApp()` в MainViewModel (заполнение `ObservableCollection`), инициализацию папок — в `App.xaml.cs` или бутстраппер
   - [x] 2.1.9 — Очистить code-behind: `MainWindow.xaml.cs` и `ConvertWindow.xaml.cs` должны содержать только конструктор с `DataContext = new ...ViewModel(...)`
-- [] 2.2 — **Выделить сервис yt-dlp: создать `YtDlpService`**
+- [x] 2.2 — **Выделить сервис yt-dlp: создать `YtDlpService`**
   - [x] 2.2.1 — Создать интерфейс `IYtDlpService` в новой папке `Services/` с методами: `Task DownloadAsync(...)` для загрузки контента и `Task<string> GetLocalVersionAsync()` для получения текущей версии `yt-dlp.exe`.
-  - [] 2.2.2 — Создать модель `DownloadProgress`, передающую процент прогресса и текущее состояние.
-  - [] 2.2.3 — Перенести всю логику конфигурации и запуска процесса `yt-dlp.exe`, обработки stdout и записи логов в `YtDlpService.cs`.
-  - [] 2.2.4 — Внедрить `IYtDlpService` в `MainViewModel` через конструктор и переписать метод `DownloadAsync()` на вызовы сервиса.
-- [ ] 2.3 — **Выделить сервис обновлений**: GitHub API (Octokit) — в `UpdateService`
+  - [x] 2.2.2 — Создать модель `DownloadProgress`, передающую процент прогресса и текущее состояние.
+  - [x] 2.2.3 — Перенести всю логику конфигурации и запуска процесса `yt-dlp.exe`, обработки stdout и записи логов в `YtDlpService.cs`.
+  - [x] 2.2.4 — Внедрить `IYtDlpService` в `MainViewModel` через конструктор и переписать метод `DownloadAsync()` на вызовы сервиса.
+- [x] 2.3 — **Выделить сервис обновлений**: GitHub API (Octokit) — в `UpdateService`
+  - [x] 2.3.1 — Создать интерфейс `IUpdateService` в `Services/` с методами: `Task<UpdateInfo> CheckForUpdateAsync()`, `Task DownloadUpdateAsync(UpdateInfo info, IProgress<DownloadProgress> progress)`, `Task<string> GetCurrentVersionAsync()`
+  - [x] 2.3.2 — Создать модель `UpdateInfo` с полями: `Version`, `DownloadUrl`, `ReleaseNotes`, `IsPreRelease`
+  - [x] 2.3.3 — Перенести всю логику работы с Octokit (вызов GitHub Releases API, проверка версий, парсинг тегов) в `UpdateService.cs`
+  - [x] 2.3.4 — Внедрить `IUpdateService` в `MainViewModel` через конструктор и заменить прямые вызовы Octokit на вызовы сервиса
 - [ ] 2.4 — **Добавить DI-контейнер**: `Microsoft.Extensions.DependencyInjection` для внедрения зависимостей
 - [ ] 2.5 — **Привязать прогресс через Binding**: вместо ручного `Dispatcher.Invoke` — `IProgress<double>` и binding
 - [ ] 2.6 — **Настройки сохранять между сессиями**: JSON-файл или `Properties.Settings` для выбранных форматов/кодеков
