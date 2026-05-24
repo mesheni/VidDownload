@@ -16,6 +16,7 @@ namespace VidDownload.WPF.Services
 
             services.AddSingleton<IYtDlpService, YtDlpService>();
             services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<ISettingsService, JsonSettingsService>();
 
             services.AddTransient<MainViewModel>();
             services.AddTransient<ConvertViewModel>();

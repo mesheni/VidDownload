@@ -18,6 +18,7 @@ namespace VidDownload.WPF.ViewModels
         private static readonly List<string> _codecList = new();
         private readonly IYtDlpService _ytDlpService;
         private readonly IUpdateService _updateService;
+        private readonly ISettingsService _settingsService;
 
         [ObservableProperty]
         private string _url = string.Empty;
@@ -82,15 +83,17 @@ namespace VidDownload.WPF.ViewModels
             "", "avi", "mkv", "mp4", "webm"
         };
 
-        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService)
+        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, ISettingsService settingsService)
         {
             _ytDlpService = ytDlpService;
             _updateService = updateService;
+            _settingsService = settingsService;
             foreach (var item in Codecs)
             {
                 _codecList.Add(item);
             }
             _ = CheckUpdateAsync();
+            _ = LoadSettingsAsync();
         }
 
         partial void OnIsAudioOnlyChanged(bool value)
@@ -157,6 +160,7 @@ namespace VidDownload.WPF.ViewModels
             }
             finally
             {
+                await SaveSettingsAsync();
                 ProgressPercent = 0;
                 SelectedCodec = "";
                 SelectedResolution = "";
@@ -191,6 +195,33 @@ namespace VidDownload.WPF.ViewModels
         {
             var help = AppServices.ServiceProvider.GetRequiredService<HelpWindow>();
             help.ShowDialog();
+        }
+
+        private async Task LoadSettingsAsync()
+        {
+            var userSettings = await _settingsService.LoadAsync();
+            if (!string.IsNullOrEmpty(userSettings.Resolution))
+                SelectedResolution = userSettings.Resolution;
+            if (!string.IsNullOrEmpty(userSettings.VideoCodec))
+                SelectedCodec = userSettings.VideoCodec;
+            if (!string.IsNullOrEmpty(userSettings.AudioCodec))
+                SelectedAudioFormat = userSettings.AudioCodec;
+            if (!string.IsNullOrEmpty(userSettings.Format))
+                SelectedFormat = userSettings.Format;
+            if (!string.IsNullOrEmpty(userSettings.LastUrl))
+                Url = userSettings.LastUrl;
+        }
+
+        private async Task SaveSettingsAsync()
+        {
+            await _settingsService.SaveAsync(new UserSettings
+            {
+                Resolution = _settings.Resolution,
+                VideoCodec = _settings.VideoCodec,
+                AudioCodec = _settings.AudioCodec,
+                Format = _settings.Format,
+                LastUrl = Url
+            });
         }
 
         public async Task CheckUpdateAsync()

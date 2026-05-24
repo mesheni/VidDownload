@@ -60,7 +60,12 @@
   - [x] 2.5.3 — Переделать `FFmpegAction.ConvertVideoAsync()`: принимать `IProgress<DownloadProgress>` вместо делегатов `Action<string, int>`
   - [x] 2.5.4 — Прогресс-бар в `ConvertWindow.xaml` привязать через `{Binding ProgressPercent}` (если ещё нет) и удалить ручное обновление через `Dispatcher.Invoke`
   - [x] 2.5.5 — Проверить отсутствие `Dispatcher.Invoke` в MainViewModel и ConvertViewModel — если остались, удалить
-- [ ] 2.6 — **Настройки сохранять между сессиями**: JSON-файл или `Properties.Settings` для выбранных форматов/кодеков
+- [x] 2.6 — **Настройки сохранять между сессиями**: JSON-файл или `Properties.Settings` для выбранных форматов/кодеков
+  - [x] 2.6.1 — Создать модель `UserSettings` с полями для сохранения: `Resolution`, `VideoCodec`, `AudioCodec`, `Format`, последняя ссылка (`LastUrl`)
+  - [x] 2.6.2 — Создать интерфейс `ISettingsService` с методами `Task<UserSettings> LoadAsync()`, `Task SaveAsync(UserSettings settings)`
+  - [x] 2.6.3 — Реализовать `JsonSettingsService`: сериализация/десериализация `UserSettings` в JSON-файл (`%APPDATA%/VidDownload/settings.json` или рядом с .exe)
+  - [x] 2.6.4 — Зарегистрировать `ISettingsService` в DI-контейнере (AppServices)
+  - [x] 2.6.5 — В `MainViewModel`: загружать настройки при старте (`LoadAsync`), применять к выбранным полям; сохранять после каждой загрузки (`SaveAsync` с текущими значениями)
 - [ ] 2.7 — **Внедрить IMessageService / IDialogService** для абстракции всплывающих сообщений и диалоговых окон (избавление ViewModels от зависимости от HandyControl)
 - [ ] 2.8 — **Использовать ArgumentList вместо конкатенации строк** при запуске `yt-dlp` через ProcessStartInfo для безопасности путей и параметров
 
