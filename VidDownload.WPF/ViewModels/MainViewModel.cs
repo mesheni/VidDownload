@@ -208,8 +208,6 @@ namespace VidDownload.WPF.ViewModels
                 SelectedAudioFormat = userSettings.AudioCodec;
             if (!string.IsNullOrEmpty(userSettings.Format))
                 SelectedFormat = userSettings.Format;
-            if (!string.IsNullOrEmpty(userSettings.LastUrl))
-                Url = userSettings.LastUrl;
         }
 
         private async Task SaveSettingsAsync()
@@ -219,8 +217,7 @@ namespace VidDownload.WPF.ViewModels
                 Resolution = _settings.Resolution,
                 VideoCodec = _settings.VideoCodec,
                 AudioCodec = _settings.AudioCodec,
-                Format = _settings.Format,
-                LastUrl = Url
+                Format = _settings.Format
             });
         }
 

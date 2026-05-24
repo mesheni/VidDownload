@@ -6,6 +6,5 @@ namespace VidDownload.WPF.Services
         public string VideoCodec { get; set; } = string.Empty;
         public string AudioCodec { get; set; } = string.Empty;
         public string Format { get; set; } = string.Empty;
-        public string LastUrl { get; set; } = string.Empty;
     }
 }
