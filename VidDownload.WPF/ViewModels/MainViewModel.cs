@@ -168,7 +168,7 @@ namespace VidDownload.WPF.ViewModels
                     Title = downloadUrl,
                     Timestamp = DateTime.Now,
                     Status = DownloadStatus.Completed
-                }).ConfigureAwait(false);
+                });
             }
             catch (Exception ex)
             {
