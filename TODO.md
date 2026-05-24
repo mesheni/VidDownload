@@ -66,7 +66,13 @@
   - [x] 2.6.3 — Реализовать `JsonSettingsService`: сериализация/десериализация `UserSettings` в JSON-файл (`%APPDATA%/VidDownload/settings.json` или рядом с .exe)
   - [x] 2.6.4 — Зарегистрировать `ISettingsService` в DI-контейнере (AppServices)
   - [x] 2.6.5 — В `MainViewModel`: загружать настройки при старте (`LoadAsync`), применять к выбранным полям; сохранять после каждой загрузки (`SaveAsync` с текущими значениями)
-- [ ] 2.7 — **Внедрить IMessageService / IDialogService** для абстракции всплывающих сообщений и диалоговых окон (избавление ViewModels от зависимости от HandyControl)
+- [x] 2.7 — **Внедрить IMessageService / IDialogService** для абстракции всплывающих сообщений и диалоговых окон (избавление ViewModels от зависимости от HandyControl)
+  - [x] 2.7.1 — Создать интерфейс `IMessageService` с методами: `Info(string)`, `Warning(string)`, `Error(string)`
+  - [x] 2.7.2 — Создать интерфейс `IDialogService` с методами: `Task<bool> AskAsync(string, string)`, `Task<bool> ConfirmAsync(string, string)` и т.п.
+  - [x] 2.7.3 — Реализовать `HandyControlMessageService` и `HandyControlDialogService`, оборачивающие `HandyControl.Controls.MessageBox.*`
+  - [x] 2.7.4 — Зарегистрировать `IMessageService` и `IDialogService` в DI-контейнере
+  - [x] 2.7.5 — Внедрить `IMessageService` и `IDialogService` во все ViewModel и заменить все прямые вызовы `HandyControl.Controls.MessageBox.*` на методы сервисов
+  - [x] 2.7.6 — Удалить неиспользуемые `using HandyControl;` из ViewModel-файлов
 - [ ] 2.9 — **История загрузок**: сохранять список последних ссылок с возможностью повторного скачивания (вынести из формата настроек в отдельную историю)
 - [ ] 2.8 — **Использовать ArgumentList вместо конкатенации строк** при запуске `yt-dlp` через ProcessStartInfo для безопасности путей и параметров
 

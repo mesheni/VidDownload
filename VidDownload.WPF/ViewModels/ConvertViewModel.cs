@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
@@ -13,6 +12,8 @@ namespace VidDownload.WPF.ViewModels
     public partial class ConvertViewModel : ViewModelBase
     {
         private readonly FFmpegAction _ffmpegAction;
+        private readonly IMessageService _messageService;
+        private readonly IDialogService _dialogService;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ConvertCommand))]
@@ -37,9 +38,11 @@ namespace VidDownload.WPF.ViewModels
             "", "AVI", "MP4", "MKV", "MOV"
         };
 
-        public ConvertViewModel()
+        public ConvertViewModel(IMessageService messageService, IDialogService dialogService)
         {
             _ffmpegAction = new FFmpegAction();
+            _messageService = messageService;
+            _dialogService = dialogService;
         }
 
         private bool CanConvert() => !IsConverting && !string.IsNullOrEmpty(FilePath) && File.Exists(FilePath);
@@ -51,7 +54,7 @@ namespace VidDownload.WPF.ViewModels
         {
             if (string.IsNullOrEmpty(FilePath) || !File.Exists(FilePath))
             {
-                HandyControl.Controls.MessageBox.Warning("Пожалуйста, выберите видеофайл для конвертации.", "Ошибка");
+                _messageService.Warning("Пожалуйста, выберите видеофайл для конвертации.", "Ошибка");
                 return;
             }
 
@@ -62,8 +65,7 @@ namespace VidDownload.WPF.ViewModels
 
             if (File.Exists(outputPath))
             {
-                var result = HandyControl.Controls.MessageBox.Ask($"Файл \"{outputFileName}\" уже существует. Перезаписать?", "Подтверждение");
-                if (result != MessageBoxResult.Yes)
+                if (!await _dialogService.AskAsync($"Файл \"{outputFileName}\" уже существует. Перезаписать?", "Подтверждение"))
                     return;
             }
 
@@ -81,12 +83,12 @@ namespace VidDownload.WPF.ViewModels
 
                 if (resultPath != null)
                 {
-                    HandyControl.Controls.MessageBox.Info($"Конвертация успешно завершена!\nФайл сохранён: {resultPath}", "Успех");
+                    _messageService.Info($"Конвертация успешно завершена!\nФайл сохранён: {resultPath}", "Успех");
                 }
             }
             catch (Exception ex)
             {
-                HandyControl.Controls.MessageBox.Error($"Произошла ошибка при конвертации: {ex.Message}", "Ошибка");
+                _messageService.Error($"Произошла ошибка при конвертации: {ex.Message}", "Ошибка");
                 StatusMessage = string.Empty;
                 ProgressPercent = 0;
             }

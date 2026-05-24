@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +18,8 @@ namespace VidDownload.WPF.ViewModels
         private readonly IYtDlpService _ytDlpService;
         private readonly IUpdateService _updateService;
         private readonly ISettingsService _settingsService;
+        private readonly IMessageService _messageService;
+        private readonly IDialogService _dialogService;
 
         [ObservableProperty]
         private string _url = string.Empty;
@@ -83,11 +84,13 @@ namespace VidDownload.WPF.ViewModels
             "", "avi", "mkv", "mp4", "webm"
         };
 
-        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, ISettingsService settingsService)
+        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService)
         {
             _ytDlpService = ytDlpService;
             _updateService = updateService;
             _settingsService = settingsService;
+            _messageService = messageService;
+            _dialogService = dialogService;
             foreach (var item in Codecs)
             {
                 _codecList.Add(item);
@@ -156,7 +159,7 @@ namespace VidDownload.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                HandyControl.Controls.MessageBox.Error($"Ошибка: {ex.Message}", "Ошибка");
+                _messageService.Error($"Ошибка: {ex.Message}", "Ошибка");
             }
             finally
             {
@@ -242,9 +245,9 @@ namespace VidDownload.WPF.ViewModels
             string displayCurrent = fileNotFound ? "не найдена" : currentVer;
 
             if (!fileNotFound &&
-                HandyControl.Controls.MessageBox.Ask(
+                !await _dialogService.AskAsync(
                     $"Текущая версия: {displayCurrent}\nПоследняя версия: {info.Version}\nПодтвердите начало обновления.",
-                    "Доступна новая версия yt-dlp!") != MessageBoxResult.OK)
+                    "Доступна новая версия yt-dlp!"))
             {
                 return;
             }
@@ -262,7 +265,7 @@ namespace VidDownload.WPF.ViewModels
 
                 await _updateService.DownloadUpdateAsync(info, progress);
 
-                HandyControl.Controls.MessageBox.Info(
+                _messageService.Info(
                     $"Версия yt-dlp обновлена до {info.Version}",
                     "Обновление завершено!");
             }
