@@ -72,7 +72,10 @@
                             <Label Content="{Binding TotalSizeText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
                         </StackPanel>
                     </Grid>
-                    <Button Content="Скачать" Command="{Binding DownloadCommand}" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="350" hc:Theme.Skin="Dark" Background="#FFBB1818" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 10">
+                        <Button Content="Скачать" Command="{Binding DownloadCommand}" Height="45" Width="250" hc:Theme.Skin="Dark" Background="#FFBB1818" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" FontWeight="Bold" Margin="0,0,10,0"/>
+                        <Button Content="Отмена" Command="{Binding CancelCommand}" Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVis}}" Height="45" Width="100" Background="#FF444444" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="20" FontWeight="Bold"/>
+                    </StackPanel>
                     <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>

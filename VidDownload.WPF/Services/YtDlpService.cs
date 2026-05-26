@@ -75,11 +75,16 @@ namespace VidDownload.WPF.Services
                     {
                         await Task.Run(() => proc.WaitForExit()).ConfigureAwait(false);
                     }
-                }
 
-                if (proc.ExitCode != 0)
-                {
-                    throw new Exception($"yt-dlp завершился с ошибкой (код: {proc.ExitCode}). Проверьте логи.");
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException(cancellationToken);
+                    }
+
+                    if (proc.ExitCode != 0)
+                    {
+                        throw new Exception($"yt-dlp завершился с ошибкой (код: {proc.ExitCode}). Проверьте логи.");
+                    }
                 }
             }
         }

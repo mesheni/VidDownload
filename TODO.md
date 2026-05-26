@@ -99,7 +99,16 @@
   - [x] 3.1.5 — В `MainViewModel`: добавить свойства `SpeedText`, `EtaText`, `TotalSizeText` с привязкой к UI
   - [x] 3.1.6 — Обновить `MainWindow.xaml`: добавить Label/TextBlock для отображения скорости и ETA рядом с ProgressBar
   - [x] 3.1.7 — Обработать краевые случаи: отсутствие информации о скорости/ETA — показывать прочерк или "--"
-- [ ] 3.2 — **Отмена загрузки**: кнопка «Отмена» при активной загрузке (kill процесса yt-dlp)
+- [x] 3.2 — **Отмена загрузки**: кнопка «Отмена» при активной загрузке (kill процесса yt-dlp)
+  - [x] 3.2.1 — Добавить свойство `CancellationTokenSource` в `MainViewModel` для сигнализации отмены
+  - [x] 3.2.2 — Создать команду `CancelCommand` (`AsyncRelayCommand`) в `MainViewModel`: отменяет токен и убивает процесс yt-dlp
+  - [x] 3.2.3 — Дополнить интерфейс `IYtDlpService`: добавить метод `KillAsync()` или свойство `Process` для внешней остановки (уже был `CancellationToken` в `DownloadAsync`)
+  - [x] 3.2.4 — В `YtDlpService.DownloadAsync()`: принимать `CancellationToken`, передавать в `WaitForExitAsync()` и стрим-ридеры; при отмене — `proc.Kill()` + throw `OperationCanceledException`
+  - [x] 3.2.5 — Добавить кнопку «Отмена» в `MainWindow.xaml` рядом с кнопкой «Скачать»; видимость привязана к `IsDownloading`
+  - [x] 3.2.6 — В `MainViewModel`: блокировать кнопку «Скачать» пока активна загрузка (`IsDownloading = true` → CanExecute=false)
+  - [x] 3.2.7 — Добавить диалог подтверждения: «Вы уверены, что хотите отменить загрузку?» через `IDialogService.ConfirmAsync()`
+  - [x] 3.2.8 — Восстанавливать состояние после отмены: очистить прогресс, снять флаг `IsDownloading`, вывести сообщение «Загрузка отменена»
+  - [x] 3.2.9 — Обработать краевые случаи: попытка отмены уже завершённой загрузки; повторный вызов `Cancel()` (проверка `IsCancellationRequested`)
 - [ ] 3.3 — **История загрузок**: список последних ссылок с повторным скачиванием
 - [ ] 3.4 — **Выбор папки сохранения**: `FolderBrowserDialog` вместо фиксированной `MyVideos/`
 - [ ] 3.5 — **Включить FFmpeg auto-download**: раскомментировать `FFmpegDownloader.GetLatestVersion()`

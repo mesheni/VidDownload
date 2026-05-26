@@ -10,5 +10,11 @@ namespace VidDownload.WPF.Services
             var result = HandyControl.Controls.MessageBox.Ask(message, title);
             return Task.FromResult(result == MessageBoxResult.OK || result == MessageBoxResult.Yes);
         }
+
+        public Task<bool> ConfirmAsync(string message, string title)
+        {
+            var result = HandyControl.Controls.MessageBox.Ask(message, title);
+            return Task.FromResult(result == MessageBoxResult.OK || result == MessageBoxResult.Yes);
+        }
     }
 }

@@ -22,6 +22,8 @@ namespace VidDownload.WPF.ViewModels
         private readonly IMessageService _messageService;
         private readonly IDialogService _dialogService;
         private readonly IDownloadHistoryService _historyService;
+        private CancellationTokenSource? _cts;
+        private bool _wasCancelled;
 
         [ObservableProperty]
         private string _url = string.Empty;
@@ -55,6 +57,7 @@ namespace VidDownload.WPF.ViewModels
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(DownloadCommand))]
+        [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
         private bool _isDownloading;
 
         [ObservableProperty]
@@ -157,6 +160,10 @@ namespace VidDownload.WPF.ViewModels
 
             string downloadUrl = Url;
 
+            _cts?.Dispose();
+            _cts = new CancellationTokenSource();
+            _wasCancelled = false;
+
             IsDownloading = true;
             StatusMessage = string.Empty;
             ProgressPercent = 0;
@@ -165,14 +172,14 @@ namespace VidDownload.WPF.ViewModels
             {
                 var progress = new Progress<DownloadProgress>(p =>
                 {
-                    //StatusMessage = p.StatusMessage;
+                    StatusMessage = p.StatusMessage;
                     ProgressPercent = p.Percent;
                     SpeedText = p.Speed;
                     EtaText = p.Eta;
                     TotalSizeText = p.TotalSize;
                 });
 
-                await _ytDlpService.DownloadAsync(downloadUrl, _settings, IsPlaylist, IsAudioOnly, IsReEncode, progress, CancellationToken.None).ConfigureAwait(true);
+                await _ytDlpService.DownloadAsync(downloadUrl, _settings, IsPlaylist, IsAudioOnly, IsReEncode, progress, _cts.Token).ConfigureAwait(true);
 
                 await _historyService.AddEntryAsync(new DownloadHistoryEntry
                 {
@@ -181,6 +188,10 @@ namespace VidDownload.WPF.ViewModels
                     Timestamp = DateTime.Now,
                     Status = DownloadStatus.Completed
                 });
+            }
+            catch (OperationCanceledException)
+            {
+                _wasCancelled = true;
             }
             catch (Exception ex)
             {
@@ -195,6 +206,9 @@ namespace VidDownload.WPF.ViewModels
             }
             finally
             {
+                _cts?.Dispose();
+                _cts = null;
+
                 await SaveSettingsAsync();
                 ProgressPercent = 0;
                 SelectedCodec = "";
@@ -203,11 +217,28 @@ namespace VidDownload.WPF.ViewModels
                 SelectedFormat = "";
                 Url = "";
                 IsDownloading = false;
-                StatusMessage = "";
+                StatusMessage = _wasCancelled ? "Загрузка отменена" : "";
                 SpeedText = "--";
                 EtaText = "--";
                 TotalSizeText = "--";
             }
+        }
+
+        private bool CanCancel() => IsDownloading;
+
+        [RelayCommand(CanExecute = nameof(CanCancel))]
+        private async Task CancelAsync()
+        {
+            if (_cts == null || _cts.IsCancellationRequested)
+                return;
+
+            bool confirmed = await _dialogService.ConfirmAsync(
+                "Вы уверены, что хотите отменить загрузку?", "Подтверждение отмены");
+
+            if (!confirmed)
+                return;
+
+            _cts.Cancel();
         }
 
         [RelayCommand]
