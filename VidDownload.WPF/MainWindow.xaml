@@ -20,8 +20,8 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0" Height="auto">
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <Label Content="{Binding LinkLabelText}" Height="40" Margin="20, 0" FontFamily="Cascadia Code" FontSize="22" Foreground="White" FontWeight="Bold" Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderThickness="0,0,0,0" Panel.ZIndex="0"/>
-                    <TextBox Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}" Margin="20, 0" VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Cascadia Code SemiLight" VerticalContentAlignment="Center" SelectionBrush="#FDFF5252" Width="610" Background="White"/>
+                    <Label Content="{Binding LinkLabelText}" hc:Theme.Skin="Dark" Height="40" Margin="20, 0" FontFamily="Cascadia Code" FontSize="22" Foreground="White" FontWeight="Bold" Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderThickness="0,0,0,0" Panel.ZIndex="0"/>
+                    <TextBox Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}" hc:Theme.Skin="Dark" Margin="20, 0" VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Cascadia Code SemiLight" VerticalContentAlignment="Center" SelectionBrush="#FDFF5252" Width="610"/>
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,30,0,0">
@@ -60,19 +60,19 @@
                             <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal">
-                            <Label Content="Скорость: " Foreground="#FFAAAAAA" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0"/>
-                            <Label Content="{Binding SpeedText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0"/>
+                            <Label Content="Скорость: " Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
+                            <Label Content="{Binding SpeedText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Label Content="ETA: " Foreground="#FFAAAAAA" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0"/>
-                            <Label Content="{Binding EtaText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0"/>
+                            <Label Content="ETA: " Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
+                            <Label Content="{Binding EtaText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <Label Content="Размер: " Foreground="#FFAAAAAA" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0"/>
-                            <Label Content="{Binding TotalSizeText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0"/>
+                            <Label Content="Размер: " Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
+                            <Label Content="{Binding TotalSizeText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
                         </StackPanel>
                     </Grid>
-                    <Button Content="Скачать" Command="{Binding DownloadCommand}" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="350" Background="#FFFF4F4F" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" FontWeight="Bold"/>
+                    <Button Content="Скачать" Command="{Binding DownloadCommand}" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="350" hc:Theme.Skin="Dark" Background="#FFBB1818" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" FontWeight="Bold"/>
                     <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
@@ -84,10 +84,10 @@
                             <Button Content="Открыть папку с видео" Command="{Binding OpenFolderCommand}" VerticalAlignment="Top" Height="30" Width="200" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold"/>
                         </Grid>
                         <Grid Grid.Column="1" Margin="0, 0, 10, 0">
-                            <Button Content="История" Command="{Binding OpenHistoryCommand}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" Background="#FF75FFAF" FontSize="14"/>
+                            <Button Content="История" Command="{Binding OpenHistoryCommand}" hc:Theme.Skin="Dark" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
                         </Grid>
                         <Grid Grid.Column="2" Margin="0, 0, 10, 0">
-                            <Button Content="Конвертер" Command="{Binding OpenConverterCommand}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" Background="#FF75FFAF" FontSize="14"/>
+                            <Button Content="Конвертер" Command="{Binding OpenConverterCommand}" hc:Theme.Skin="Dark" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
                         </Grid>
                         <Grid Grid.Column="3">
                             <Button Content="?" Command="{Binding OpenHelpCommand}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="30" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>

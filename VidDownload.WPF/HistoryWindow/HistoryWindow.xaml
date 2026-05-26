@@ -4,52 +4,103 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="История загрузок" Height="500" Width="800" WindowStartupLocation="CenterScreen"
-        Icon="/icon.png" ResizeMode="CanResize" Loaded="OnLoaded">
+        Title="История загрузок" Height="500" Width="900" WindowStartupLocation="CenterScreen"
+        Icon="/icon.png" ResizeMode="NoResize"  Loaded="OnLoaded"
+        Background="#FF1D1D1D" Foreground="White">
+    <Window.Resources>
+        <converters:DownloadStatusToColorConverter x:Key="StatusColor"/>
+
+        <Style x:Key="DarkGridViewColumnHeader" TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="#FF2B2B2B"/>
+            <Setter Property="Foreground" Value="#FFE0E0E0"/>
+            <Setter Property="FontFamily" Value="Cascadia Code"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              TextBlock.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <Grid Background="#FF1D1D1D">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <ListView Grid.Row="0" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}"
-                  Margin="10" Background="#FF2B2B2B" Foreground="White" BorderThickness="0"
-                  FontFamily="Cascadia Code" FontSize="13">
+                  Margin="10" BorderThickness="1" BorderBrush="#FF3A3A3A"
+                  FontFamily="Cascadia Code" FontSize="13"
+                  Background="#FF1A1A1A" Foreground="#FFE0E0E0"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Standard"
+                  SizeChanged="OnListViewSizeChanged">
+            <ListView.Resources>
+                <SolidColorBrush x:Key="PrimaryBrush" Color="#FF3A3A3A" />
+                <SolidColorBrush x:Key="ThirdRegionBrush" Color="#FF282828" />
+
+                <SolidColorBrush x:Key="PrimaryTextBrush" Color="#FFE0E0E0" />
+                <SolidColorBrush x:Key="TextIconBrush" Color="#FFE0E0E0" />
+
+                <SolidColorBrush x:Key="SecondaryRegionBrush" Color="#FF282828" />
+
+                <SolidColorBrush x:Key="RegionBrush" Color="Transparent" />
+
+                <SolidColorBrush x:Key="DarkMaskBrush" Color="#FF303030" />
+                <SolidColorBrush x:Key="HoverBrush" Color="#FF282828" />
+            </ListView.Resources>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Дата" Width="160">
+                    <GridViewColumn Header="Дата" Width="Auto" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                           Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
+                                           Foreground="#FFE0E0E0" VerticalAlignment="Center"
+                                           HorizontalAlignment="Center" Margin="8"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="URL / Название" Width="380">
+                    <GridViewColumn Header="URL / Название" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Title}" Foreground="#FFBAF79F"
+                                <TextBlock Text="{Binding Title}" Foreground="#FF8DFD51"
                                            TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
-                                           VerticalAlignment="Center" Margin="5,0" ToolTip="{Binding Url}"/>
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8" ToolTip="{Binding Url}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Статус" Width="80">
+                    <GridViewColumn Header="Статус" Width="Auto"  HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Status}" Foreground="White"
-                                           VerticalAlignment="Center" Margin="5,0"/>
+                                <TextBlock Text="{Binding Status}" Foreground="{Binding Status, Converter={StaticResource StatusColor}}"
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="8"
+                                           FontWeight="SemiBold"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="" Width="100">
+                    <GridViewColumn Header="" Width="Auto" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Content="Скачать" Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
-                                        CommandParameter="{Binding}" Width="80" Height="25"
+                                        CommandParameter="{Binding}" Width="80" Height="26"
                                         FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold"
-                                        Background="#FFFF4F4F" Foreground="White" BorderThickness="0"/>
+                                        Background="#FFFF4F4F" Foreground="White" BorderThickness="0"
+                                        Cursor="Hand" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
@@ -64,10 +115,11 @@
             </Grid.ColumnDefinitions>
             <Button Grid.Column="0" Content="Очистить историю" Command="{Binding ClearHistoryCommand}"
                     Width="150" Height="30" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold"
-                    Background="#FF75FFAF" Foreground="Black" BorderThickness="0"/>
+                    Background="#FFFF4F4F" Foreground="White" BorderThickness="0" Cursor="Hand"/>
             <Button Grid.Column="2" Content="Закрыть" Click="CloseButton_Click"
                     Width="100" Height="30" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold"
-                    Background="#FF888888" Foreground="White" BorderThickness="0"/>
+                    Background="#FF3A3A3A" Foreground="White" BorderThickness="1" BorderBrush="#FF555555"
+                    Cursor="Hand"/>
         </Grid>
     </Grid>
 </Window>

@@ -165,7 +165,7 @@ namespace VidDownload.WPF.ViewModels
             {
                 var progress = new Progress<DownloadProgress>(p =>
                 {
-                    StatusMessage = p.StatusMessage;
+                    //StatusMessage = p.StatusMessage;
                     ProgressPercent = p.Percent;
                     SpeedText = p.Speed;
                     EtaText = p.Eta;
@@ -184,6 +184,13 @@ namespace VidDownload.WPF.ViewModels
             }
             catch (Exception ex)
             {
+                await _historyService.AddEntryAsync(new DownloadHistoryEntry
+                {
+                    Url = downloadUrl,
+                    Title = downloadUrl,
+                    Timestamp = DateTime.Now,
+                    Status = DownloadStatus.Failed
+                });
                 _messageService.Error($"Ошибка: {ex.Message}", "Ошибка");
             }
             finally

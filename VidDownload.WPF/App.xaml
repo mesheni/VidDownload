@@ -10,9 +10,13 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
-                <hc:StandaloneTheme AccentColor="Red" />
+                <hc:StandaloneTheme AccentColor="#FFFFEFEF" />
 
-                <hc:Theme AccentColor="#ff4f4f" />
+                
+                
+                <hc:Theme Skin="Dark" />
+
+                <hc:Theme SyncWithSystem="True"/>
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>

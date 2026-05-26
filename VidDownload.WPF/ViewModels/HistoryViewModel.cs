@@ -32,7 +32,7 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private async Task ClearHistoryAsync()
         {
-            await _historyService.ClearHistoryAsync().ConfigureAwait(false);
+            await _historyService.ClearHistoryAsync();
             Entries.Clear();
         }
 
@@ -40,7 +40,7 @@ namespace VidDownload.WPF.ViewModels
         private async Task RemoveEntryAsync(DownloadHistoryEntry? entry)
         {
             if (entry == null) return;
-            await _historyService.RemoveEntryAsync(entry.Id).ConfigureAwait(false);
+            await _historyService.RemoveEntryAsync(entry.Id);
             Entries.Remove(entry);
         }
     }
