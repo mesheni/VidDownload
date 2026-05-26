@@ -114,7 +114,20 @@
 - [ ] 3.5 — **Включить FFmpeg auto-download**: раскомментировать `FFmpegDownloader.GetLatestVersion()`
 - [ ] 3.6 — **NVENC-переключатель в UI**: добавить checkbox в ConvertWindow (сейчас `useNVENC = false` жёстко)
 - [ ] 3.7 — **Drag-and-drop ссылок**: перетаскивание URL в TextBox
-- [ ] 3.8 — **Скачивание субтитров**: опция `--write-subs --write-auto-subs` в yt-dlp
+- [x] 3.8 — **Скачивание субтитров**: опция `--write-subs --write-auto-subs` в yt-dlp
+  - [x] 3.8.1 — Добавить свойство `IsDownloadSubtitles` (bool) в `MainViewModel`
+  - [x] 3.8.2 — Добавить `SubtitleLanguage` (string) в `MainViewModel` для выбора языка субтитров (по умолчанию `"all"` или пусто)
+  - [x] 3.8.3 — Добавить `IsEmbedSubtitles` (bool) в `MainViewModel`: флаг `--embed-subs` для встраивания субтитров в файл
+  - [x] 3.8.4 — Добавить `ObservableCollection<string> SubtitleLanguages` в `MainViewModel` со списком: `""`, `"all"`, `"en"`, `"ru"`, `"de"`, `"fr"`, `"es"`, `"ja"`, `"zh-Hans"`, `"ar"`, `"pt"`
+  - [x] 3.8.5 — Добавить чекбокс «Скачать субтитры» в `MainWindow.xaml` (группа опций справа)
+  - [x] 3.8.6 — Добавить ComboBox выбора языка субтитров рядом с чекбоксом (видимость привязана к `IsDownloadSubtitles`)
+  - [x] 3.8.7 — Добавить чекбокс «Встроить субтитры» (`--embed-subs`) под выбором языка (видимость привязана к `IsDownloadSubtitles`)
+  - [x] 3.8.8 — Дополнить `Command.LoadAudio()` и `Command.LoadVideo()`: добавить `bool downloadSubtitles, string subLang, bool embedSubs` параметры; генерировать `--write-subs`, `--write-auto-subs`, `--sub-langs`, `--embed-subs`
+  - [x] 3.8.9 — Обновить вызов `Command.LoadAudio()` / `Command.LoadVideo()` в `YtDlpService.DownloadAsync()` с передачей новых флагов (читает из `settings`, сигнатура не изменилась)
+  - [x] 3.8.10 — Добавить поля `DownloadSubtitles`, `SubtitleLanguage`, `EmbedSubtitles` в модель `Settings` для проброса параметров через сервис
+  - [x] 3.8.11 — Добавить поля `DownloadSubtitles`, `SubtitleLanguage`, `EmbedSubtitles` в `UserSettings` для сохранения между сессиями
+  - [x] 3.8.12 — Обновить `MainViewModel.DownloadAsync()`: заполнять новые поля `_settings` перед вызовом
+  - [x] 3.8.13 — Проверить совместимость `--embed-subs` с `--remux-video` / `--recode-video`; если конфликт — дать предупреждение
 - [ ] 3.9 — **Выбор конкретных потоков**: ручной ввод формата (не только через `-S`)
 - [ ] 3.10 — **Обновление ffmpeg через GUI**: проверка/обновление FFmpeg аналогично yt-dlp
 - [ ] 3.11 — **Безопасные пути сохранения по умолчанию**: использовать стандартную системную папку «Видео» пользователя (`Environment.SpecialFolder.MyVideos`) вместо `./MyVideos/` для избежания `UnauthorizedAccessException`

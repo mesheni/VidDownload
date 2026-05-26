@@ -15,6 +15,21 @@ namespace VidDownload.WPF.Control
                 "--audio-format", _acodec
             };
 
+            if (settings.DownloadSubtitles)
+            {
+                args.Add("--write-subs");
+                args.Add("--write-auto-subs");
+                if (!string.IsNullOrEmpty(settings.SubtitleLanguage))
+                {
+                    args.Add("--sub-langs");
+                    args.Add(settings.SubtitleLanguage);
+                }
+                if (settings.EmbedSubtitles)
+                {
+                    args.Add("--embed-subs");
+                }
+            }
+
             if (_isPlaylist)
             {
                 args.Add("-o");
@@ -53,6 +68,21 @@ namespace VidDownload.WPF.Control
 
             args.Add("-S");
             args.Add($"+codec:{_vcodec},res:{_res},fps");
+
+            if (settings.DownloadSubtitles)
+            {
+                args.Add("--write-subs");
+                args.Add("--write-auto-subs");
+                if (!string.IsNullOrEmpty(settings.SubtitleLanguage))
+                {
+                    args.Add("--sub-langs");
+                    args.Add(settings.SubtitleLanguage);
+                }
+                if (settings.EmbedSubtitles)
+                {
+                    args.Add("--embed-subs");
+                }
+            }
 
             if (_isPlaylist)
             {

@@ -78,6 +78,15 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private string _totalSizeText = "--";
 
+        [ObservableProperty]
+        private bool _isDownloadSubtitles;
+
+        [ObservableProperty]
+        private string _selectedSubtitleLanguage = "all";
+
+        [ObservableProperty]
+        private bool _isEmbedSubtitles;
+
         public ObservableCollection<string> Resolutions { get; } = new()
         {
             "", "144", "240", "360", "480", "720", "1080", "1440", "2160"
@@ -96,6 +105,11 @@ namespace VidDownload.WPF.ViewModels
         public ObservableCollection<string> Formats { get; } = new()
         {
             "", "avi", "mkv", "mp4", "webm"
+        };
+
+        public ObservableCollection<string> SubtitleLanguages { get; } = new()
+        {
+            "", "all", "en", "ru", "de", "fr", "es", "ja", "zh-Hans", "ar", "pt"
         };
 
         public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService, IDownloadHistoryService historyService)
@@ -157,6 +171,26 @@ namespace VidDownload.WPF.ViewModels
                 _settings.Format = SelectedFormat;
             if (SelectedCodec.Length != 0 && _codecList.Exists(i => i == SelectedCodec))
                 _settings.VideoCodec = SelectedCodec;
+
+            _settings.DownloadSubtitles = IsDownloadSubtitles;
+            _settings.SubtitleLanguage = SelectedSubtitleLanguage;
+            _settings.EmbedSubtitles = IsEmbedSubtitles;
+
+            if (IsEmbedSubtitles && IsAudioOnly)
+            {
+                _messageService.Warning("Встраивание субтитров недоступно для аудио.", "Предупреждение");
+                IsEmbedSubtitles = false;
+                _settings.EmbedSubtitles = false;
+            }
+            else if (IsEmbedSubtitles && SelectedFormat == "avi")
+            {
+                if (!await _dialogService.AskAsync(
+                    "Формат AVI может не поддерживать встроенные субтитры. Продолжить?",
+                    "Предупреждение"))
+                {
+                    return;
+                }
+            }
 
             string downloadUrl = Url;
 
@@ -287,6 +321,10 @@ namespace VidDownload.WPF.ViewModels
                 SelectedAudioFormat = userSettings.AudioCodec;
             if (!string.IsNullOrEmpty(userSettings.Format))
                 SelectedFormat = userSettings.Format;
+            IsDownloadSubtitles = userSettings.DownloadSubtitles;
+            if (!string.IsNullOrEmpty(userSettings.SubtitleLanguage))
+                SelectedSubtitleLanguage = userSettings.SubtitleLanguage;
+            IsEmbedSubtitles = userSettings.EmbedSubtitles;
         }
 
         private async Task SaveSettingsAsync()
@@ -296,7 +334,10 @@ namespace VidDownload.WPF.ViewModels
                 Resolution = _settings.Resolution,
                 VideoCodec = _settings.VideoCodec,
                 AudioCodec = _settings.AudioCodec,
-                Format = _settings.Format
+                Format = _settings.Format,
+                DownloadSubtitles = _settings.DownloadSubtitles,
+                SubtitleLanguage = _settings.SubtitleLanguage,
+                EmbedSubtitles = _settings.EmbedSubtitles
             });
         }
 
