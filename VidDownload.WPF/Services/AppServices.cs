@@ -16,6 +16,7 @@ namespace VidDownload.WPF.Services
 
             services.AddSingleton<IYtDlpService, YtDlpService>();
             services.AddSingleton<IUpdateService, UpdateService>();
+            services.AddSingleton<IFFmpegService, FFmpegService>();
             services.AddSingleton<ISettingsService, JsonSettingsService>();
             services.AddSingleton<IMessageService, HandyControlMessageService>();
             services.AddSingleton<IDialogService, HandyControlDialogService>();

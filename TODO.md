@@ -129,7 +129,18 @@
   - [x] 3.8.12 — Обновить `MainViewModel.DownloadAsync()`: заполнять новые поля `_settings` перед вызовом
   - [x] 3.8.13 — Проверить совместимость `--embed-subs` с `--remux-video` / `--recode-video`; если конфликт — дать предупреждение
 - [ ] 3.9 — **Выбор конкретных потоков**: ручной ввод формата (не только через `-S`)
-- [ ] 3.10 — **Обновление ffmpeg через GUI**: проверка/обновление FFmpeg аналогично yt-dlp
+- [x] 3.10 — **Обновление ffmpeg через GUI**: проверка/обновление FFmpeg аналогично yt-dlp
+  - [x] 3.10.1 — Создать интерфейс `IFFmpegService` в `Services/` с методами: `GetLocalVersionAsync()`, `CheckForUpdateAsync()`, `DownloadUpdateAsync(IProgress<DownloadProgress>)`, `GetFFmpegPathAsync()`
+  - [x] 3.10.2 — Создать модель `FFmpegInfo` с полями: `LocalVersion`, `LatestVersion`, `DownloadUrl`, `IsUpdateAvailable`
+  - [x] 3.10.3 — Реализовать `FFmpegService.GetLocalVersionAsync()`: получать версию через `FileVersionInfo.GetVersionInfo("ffmpeg.exe")` или вывод `ffmpeg -version`
+  - [x] 3.10.4 — Реализовать `FFmpegService.CheckForUpdateAsync()`: проверять релизы FFmpeg через GitHub API (Octokit, `BtbN/FFmpeg-Builds`); сравнивать сохранённый тег с последним релизом
+  - [x] 3.10.5 — Реализовать `FFmpegService.DownloadUpdateAsync()`: скачивать архив с актуальной сборкой FFmpeg, распаковывать в папку приложения, заменять `ffmpeg.exe`
+  - [x] 3.10.6 — Добавить свойства в `MainViewModel`: `FfmpegVersion` (string), `IsFfmpegChecking` (bool), `IsFfmpegUpdateAvailable` (bool), `FfmpegStatusMessage` (string)
+  - [x] 3.10.7 — Добавить команду `CheckFFmpegUpdateCommand` (AsyncRelayCommand) в `MainViewModel`: проверяет обновление, при наличии — предлагает скачать через `IDialogService`, скачивает с прогрессом
+  - [x] 3.10.8 — Добавить UI-элементы в `MainWindow.xaml`: отображение версии FFmpeg и кнопка «Проверить обновление FFmpeg» рядом с блоком yt-dlp (аналогично)
+  - [x] 3.10.9 — Зарегистрировать `IFFmpegService` в DI-контейнере (`AppServices.cs`)
+  - [x] 3.10.10 — Проверить совместимость: после замены `ffmpeg.exe` Xabe.FFmpeg должен корректно подхватывать новую версию (бинарный в той же папке)
+  - [x] 3.10.11 — Обработать краевые случаи: отсутствие `ffmpeg.exe` (первичная загрузка вместо обновления), ошибки сети, отмена загрузки, повреждённый архив
 - [ ] 3.11 — **Безопасные пути сохранения по умолчанию**: использовать стандартную системную папку «Видео» пользователя (`Environment.SpecialFolder.MyVideos`) вместо `./MyVideos/` для избежания `UnauthorizedAccessException`
 - [ ] 3.12 — **Кнопка «Вставить из буфера» (Paste from Clipboard)** с автоматической валидацией URL-адреса
 - [ ] 3.13 — **Поддержка тем оформления (Темная / Светлая)** с сохранением предпочтения в настройках

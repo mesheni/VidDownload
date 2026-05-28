@@ -18,6 +18,7 @@ namespace VidDownload.WPF.ViewModels
         private static readonly List<string> _codecList = new();
         private readonly IYtDlpService _ytDlpService;
         private readonly IUpdateService _updateService;
+        private readonly IFFmpegService _ffmpegService;
         private readonly ISettingsService _settingsService;
         private readonly IMessageService _messageService;
         private readonly IDialogService _dialogService;
@@ -79,6 +80,18 @@ namespace VidDownload.WPF.ViewModels
         private string _totalSizeText = "--";
 
         [ObservableProperty]
+        private string _ffmpegVersion = "проверка...";
+
+        [ObservableProperty]
+        private bool _isFfmpegChecking = true;
+
+        [ObservableProperty]
+        private bool _isFfmpegUpdateAvailable;
+
+        [ObservableProperty]
+        private string _ffmpegStatusMessage = string.Empty;
+
+        [ObservableProperty]
         private bool _isDownloadSubtitles;
 
         [ObservableProperty]
@@ -112,10 +125,11 @@ namespace VidDownload.WPF.ViewModels
             "", "all", "en", "ru", "de", "fr", "es", "ja", "zh-Hans", "ar", "pt"
         };
 
-        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService, IDownloadHistoryService historyService)
+        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, IFFmpegService ffmpegService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService, IDownloadHistoryService historyService)
         {
             _ytDlpService = ytDlpService;
             _updateService = updateService;
+            _ffmpegService = ffmpegService;
             _settingsService = settingsService;
             _messageService = messageService;
             _dialogService = dialogService;
@@ -125,6 +139,7 @@ namespace VidDownload.WPF.ViewModels
                 _codecList.Add(item);
             }
             _ = CheckUpdateAsync();
+            _ = CheckFFmpegUpdateAsync();
             _ = LoadSettingsAsync();
         }
 
@@ -339,6 +354,69 @@ namespace VidDownload.WPF.ViewModels
                 SubtitleLanguage = _settings.SubtitleLanguage,
                 EmbedSubtitles = _settings.EmbedSubtitles
             });
+        }
+
+        [RelayCommand]
+        private async Task CheckFFmpegUpdateAsync()
+        {
+            if (IsFfmpegChecking)
+                return;
+
+            IsFfmpegChecking = true;
+            IsFfmpegUpdateAvailable = false;
+            FfmpegStatusMessage = "Поиск обновлений FFmpeg...";
+
+            try
+            {
+                var info = await _ffmpegService.CheckForUpdateAsync();
+
+                string localVer = await _ffmpegService.GetLocalVersionAsync();
+                FfmpegVersion = string.IsNullOrEmpty(localVer) ? "не установлен" : localVer;
+
+                if (info.IsUpdateAvailable)
+                {
+                    IsFfmpegUpdateAvailable = true;
+                    FfmpegStatusMessage = $"Доступна версия {info.LatestVersion}";
+
+                    if (await _dialogService.AskAsync(
+                        $"Текущая версия: {(string.IsNullOrEmpty(localVer) ? "не найдена" : localVer)}\n" +
+                        $"Последняя версия: {info.LatestVersion}\nЗагрузить и установить?",
+                        "Доступно обновление FFmpeg!"))
+                    {
+                        IsFfmpegChecking = true;
+                        FfmpegVersion = "обновление...";
+
+                        var progress = new Progress<DownloadProgress>(p =>
+                        {
+                            if (!string.IsNullOrEmpty(p.StatusMessage))
+                                FfmpegStatusMessage = p.StatusMessage;
+                        });
+
+                        await _ffmpegService.DownloadUpdateAsync(info, progress);
+
+                        string newVer = await _ffmpegService.GetLocalVersionAsync();
+                        FfmpegVersion = string.IsNullOrEmpty(newVer) ? "установлен" : newVer;
+                        IsFfmpegUpdateAvailable = false;
+                        FfmpegStatusMessage = "FFmpeg успешно обновлён";
+                    }
+                }
+                else if (!string.IsNullOrEmpty(localVer))
+                {
+                    FfmpegStatusMessage = "FFmpeg актуален";
+                }
+                else
+                {
+                    FfmpegStatusMessage = "FFmpeg не найден";
+                }
+            }
+            catch
+            {
+                FfmpegStatusMessage = "Ошибка проверки обновления FFmpeg";
+            }
+            finally
+            {
+                IsFfmpegChecking = false;
+            }
         }
 
         public async Task CheckUpdateAsync()

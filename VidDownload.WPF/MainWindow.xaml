@@ -83,6 +83,11 @@
                         <Button Content="Скачать" Command="{Binding DownloadCommand}" Height="45" Width="250" hc:Theme.Skin="Dark" Background="#FFBB1818" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" FontWeight="Bold" Margin="0,0,10,0"/>
                         <Button Content="Отмена" Command="{Binding CancelCommand}" Visibility="{Binding IsDownloading, Converter={StaticResource BoolToVis}}" Height="45" Width="100" Background="#FF444444" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="20" FontWeight="Bold"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 5">
+                        <Label Content="FFmpeg: " Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
+                        <Label Content="{Binding FfmpegVersion}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
+                        <Button Content="Проверить обновление" Command="{Binding CheckFFmpegUpdateCommand}" Height="24" Padding="5,0" Margin="10,0,0,0" FontFamily="Cascadia Code" FontSize="11" FontWeight="Bold"/>
+                    </StackPanel>
                     <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
