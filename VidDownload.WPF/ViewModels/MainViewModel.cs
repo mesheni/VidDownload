@@ -83,7 +83,7 @@ namespace VidDownload.WPF.ViewModels
         private string _ffmpegVersion = "проверка...";
 
         [ObservableProperty]
-        private bool _isFfmpegChecking = true;
+        private bool _isFfmpegChecking;
 
         [ObservableProperty]
         private bool _isFfmpegUpdateAvailable;
@@ -373,45 +373,65 @@ namespace VidDownload.WPF.ViewModels
                 string localVer = await _ffmpegService.GetLocalVersionAsync();
                 FfmpegVersion = string.IsNullOrEmpty(localVer) ? "не установлен" : localVer;
 
-                if (info.IsUpdateAvailable)
+                if (!info.IsUpdateAvailable)
                 {
-                    IsFfmpegUpdateAvailable = true;
-                    FfmpegStatusMessage = $"Доступна версия {info.LatestVersion}";
-
-                    if (await _dialogService.AskAsync(
-                        $"Текущая версия: {(string.IsNullOrEmpty(localVer) ? "не найдена" : localVer)}\n" +
-                        $"Последняя версия: {info.LatestVersion}\nЗагрузить и установить?",
-                        "Доступно обновление FFmpeg!"))
-                    {
-                        IsFfmpegChecking = true;
-                        FfmpegVersion = "обновление...";
-
-                        var progress = new Progress<DownloadProgress>(p =>
-                        {
-                            if (!string.IsNullOrEmpty(p.StatusMessage))
-                                FfmpegStatusMessage = p.StatusMessage;
-                        });
-
-                        await _ffmpegService.DownloadUpdateAsync(info, progress);
-
-                        string newVer = await _ffmpegService.GetLocalVersionAsync();
-                        FfmpegVersion = string.IsNullOrEmpty(newVer) ? "установлен" : newVer;
-                        IsFfmpegUpdateAvailable = false;
-                        FfmpegStatusMessage = "FFmpeg успешно обновлён";
-                    }
+                    if (!string.IsNullOrEmpty(localVer))
+                        FfmpegStatusMessage = "FFmpeg актуален";
+                    else
+                        FfmpegStatusMessage = "FFmpeg не найден";
+                    return;
                 }
-                else if (!string.IsNullOrEmpty(localVer))
+
+                if (string.IsNullOrEmpty(info.DownloadUrl))
                 {
-                    FfmpegStatusMessage = "FFmpeg актуален";
+                    _messageService.Error(
+                        "Не удалось найти ссылку для скачивания архива FFmpeg.",
+                        "Ошибка обновления");
+                    FfmpegStatusMessage = "Ошибка: ссылка не найдена";
+                    return;
                 }
-                else
+
+                IsFfmpegUpdateAvailable = true;
+                string displayLatest = info.LatestVersion.Length > 30
+                    ? info.LatestVersion[..27] + "..."
+                    : info.LatestVersion;
+                FfmpegStatusMessage = $"Доступна версия {displayLatest}";
+
+                string displayCurrent = string.IsNullOrEmpty(localVer) ? "не найдена" : localVer;
+                if (!await _dialogService.AskAsync(
+                    $"Текущая версия: {displayCurrent}\n" +
+                    $"Последняя сборка: {displayLatest}\nЗагрузить и установить?",
+                    "Доступно обновление FFmpeg!"))
                 {
-                    FfmpegStatusMessage = "FFmpeg не найден";
+                    return;
                 }
+
+                IsFfmpegChecking = true;
+                FfmpegVersion = "обновление...";
+
+                var progress = new Progress<DownloadProgress>(p =>
+                {
+                    if (!string.IsNullOrEmpty(p.StatusMessage))
+                        FfmpegStatusMessage = p.StatusMessage;
+                });
+
+                await _ffmpegService.DownloadUpdateAsync(info, progress);
+
+                string newVer = await _ffmpegService.GetLocalVersionAsync();
+                FfmpegVersion = string.IsNullOrEmpty(newVer) ? "установлен" : newVer;
+                IsFfmpegUpdateAvailable = false;
+                FfmpegStatusMessage = "FFmpeg успешно обновлён";
+
+                _messageService.Info(
+                    $"FFmpeg обновлён до {displayLatest}\nВерсия: {newVer}",
+                    "Обновление FFmpeg завершено");
             }
-            catch
+            catch (Exception ex)
             {
-                FfmpegStatusMessage = "Ошибка проверки обновления FFmpeg";
+                FfmpegStatusMessage = $"Ошибка: {ex.Message}";
+                _messageService.Error(
+                    $"Не удалось обновить FFmpeg: {ex.Message}",
+                    "Ошибка обновления");
             }
             finally
             {

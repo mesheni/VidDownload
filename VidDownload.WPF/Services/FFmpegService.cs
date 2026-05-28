@@ -13,7 +13,6 @@ namespace VidDownload.WPF.Services
     {
         private const string Owner = "BtbN";
         private const string Repo = "FFmpeg-Builds";
-        private const string AssetName = "ffmpeg-master-latest-win64-gpl.zip";
         private const string FfmpegExeName = "ffmpeg.exe";
         private const string VersionFileName = "ffmpeg_version.txt";
         private static readonly string AppDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -121,7 +120,11 @@ namespace VidDownload.WPF.Services
 
                 foreach (var asset in latest.Assets)
                 {
-                    if (asset.BrowserDownloadUrl.Contains(AssetName))
+                    string name = asset.Name;
+                    if (name.Contains("win64", StringComparison.OrdinalIgnoreCase) &&
+                        name.Contains("gpl", StringComparison.OrdinalIgnoreCase) &&
+                        name.Contains("shared", StringComparison.OrdinalIgnoreCase) &&
+                        name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                     {
                         info.DownloadUrl = asset.BrowserDownloadUrl;
                         break;
@@ -150,27 +153,30 @@ namespace VidDownload.WPF.Services
 
                 using var response = await httpClient.GetAsync(new Uri(info.DownloadUrl), HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
                 var totalBytes = response.Content.Headers.ContentLength ?? -1;
-                using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                using var fileStream = new FileStream(tempZip, System.IO.FileMode.Create, System.IO.FileAccess.Write);
 
-                var buffer = new byte[8192];
-                long totalRead = 0;
-                int bytesRead;
-                while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
                 {
-                    await fileStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
-                    totalRead += bytesRead;
-                    if (totalBytes > 0)
+                    using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                    using var fileStream = new FileStream(tempZip, System.IO.FileMode.Create, System.IO.FileAccess.Write);
+
+                    var buffer = new byte[8192];
+                    long totalRead = 0;
+                    int bytesRead;
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
                     {
-                        progress?.Report(new DownloadProgress
+                        await fileStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                        totalRead += bytesRead;
+                        if (totalBytes > 0)
                         {
-                            Percent = (int)(totalRead * 100 / totalBytes),
-                            StatusMessage = $"Загрузка FFmpeg... {totalRead * 100 / totalBytes}%"
-                        });
+                            progress?.Report(new DownloadProgress
+                            {
+                                Percent = (int)(totalRead * 100 / totalBytes),
+                                StatusMessage = $"Загрузка FFmpeg... {totalRead * 100 / totalBytes}%"
+                            });
+                        }
                     }
                 }
 
-                progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = "Извлечение ffmpeg.exe..." });
+                progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = "Извлечение FFmpeg..." });
 
                 string extractDir = Path.Combine(AppDir, "ffmpeg_extract");
                 if (Directory.Exists(extractDir))
@@ -179,12 +185,20 @@ namespace VidDownload.WPF.Services
 
                 ZipFile.ExtractToDirectory(tempZip, extractDir);
 
-                string[] exeFiles = Directory.GetFiles(extractDir, FfmpegExeName, SearchOption.AllDirectories);
-                if (exeFiles.Length == 0)
-                    throw new InvalidOperationException("ffmpeg.exe не найден в архиве");
+                string[] binDirs = Directory.GetDirectories(extractDir, "bin", SearchOption.AllDirectories);
+                if (binDirs.Length == 0)
+                    throw new InvalidOperationException("Папка bin не найдена в архиве");
 
-                string destPath = Path.Combine(AppDir, FfmpegExeName);
-                File.Copy(exeFiles[0], destPath, overwrite: true);
+                string binDir = binDirs[0];
+                foreach (string file in Directory.GetFiles(binDir))
+                {
+                    string destPath = Path.Combine(AppDir, Path.GetFileName(file));
+                    File.Copy(file, destPath, overwrite: true);
+                }
+
+                string exePath = Path.Combine(AppDir, FfmpegExeName);
+                if (!File.Exists(exePath))
+                    throw new InvalidOperationException("ffmpeg.exe не найден после извлечения");
 
                 StoreTag(info.LatestVersion);
 
