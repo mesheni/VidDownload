@@ -4,6 +4,7 @@
     using System.Diagnostics;
     using System.IO;
     using System.Threading.Tasks;
+    using Res = VidDownload.WPF.Resources.Res;
     using VidDownload.WPF.Services;
     using Xabe.FFmpeg;
 
@@ -21,7 +22,7 @@
                 progress?.Report(new DownloadProgress
                 {
                     Percent = 0,
-                    StatusMessage = $"Входной файл не найден: {inputPath}"
+                    StatusMessage = string.Format(Res.InputFileNotFound, inputPath)
                 });
                 return null;
             }

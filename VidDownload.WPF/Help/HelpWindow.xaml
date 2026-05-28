@@ -3,24 +3,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:VidDownload.WPF.Help"
+        xmlns:res="clr-namespace:VidDownload.WPF.Resources"
         mc:Ignorable="d"
-        Title="Помощь" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Width="440" Height="450">
+        Title="{x:Static res:Res.HelpWindowTitle}" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Width="440" Height="450">
     <Grid Background="#FF1F1F1F">
         <StackPanel>
-            <Label x:Name="LabelHelp" Content="by mesh"  VerticalAlignment="Top" FontFamily="Cascadia Code" Foreground="White" FontSize="20" FontWeight="Bold" Background="{x:Null}" Height="36" Padding="0,0,0,0" BorderThickness="0,0,0,0" Margin="0,10,0,0"/>
+            <Label x:Name="LabelHelp" Content="{x:Static res:Res.HelpAuthorLabel}"  VerticalAlignment="Top" FontFamily="Cascadia Code" Foreground="White" FontSize="20" FontWeight="Bold" Background="{x:Null}" Height="36" Padding="0,0,0,0" BorderThickness="0,0,0,0" Margin="0,10,0,0"/>
 
-            <Label Content="v0.7 2026 г." HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Cascadia Code" Foreground="White" FontSize="18" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" Margin="0,10,0,0"/>
+            <Label Content="{x:Static res:Res.HelpVersionLabel}" HorizontalAlignment="Center" VerticalAlignment="Top" FontFamily="Cascadia Code" Foreground="White" FontSize="18" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" Margin="0,10,0,0"/>
 
             <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="16" FontFamily="Cascadia Code" FontWeight="Bold" Margin="0,50,0,0">
                 <Hyperlink NavigateUri="https://vk.com/me_sheni" RequestNavigate="Hyperlink_Vk" TextDecorations="None">
-                    CСЫЛКА НА ПАБЛИК ВК
+                    <Run Text="{x:Static res:Res.VkLinkText}" />
                 </Hyperlink>
             </TextBlock>
 
             <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="16" FontFamily="Cascadia Code" FontWeight="Bold" Margin="0,10,0,0">
                 <Hyperlink NavigateUri="https://github.com/mesheni" RequestNavigate="Hyperlink_Gh" TextDecorations="None">
-                    ССЫЛКА НА GITHUB
+                    <Run Text="{x:Static res:Res.GitHubLinkText}" />
                 </Hyperlink>
             </TextBlock>
 

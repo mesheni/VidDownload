@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">text/microsoft-resx</resheader>
+  <resheader name="version">2.0</resheader>
+  <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</resheader>
+  <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</resheader>
+  <data name="MainWindowTitle" xml:space="preserve"><value>VidDownload</value></data>
+  <data name="ResolutionLabel" xml:space="preserve"><value>Resolution:</value></data>
+  <data name="CodecLabel" xml:space="preserve"><value>Codec:</value></data>
+  <data name="AudioFormatLabel" xml:space="preserve"><value>Audio format:</value></data>
+  <data name="FileExtensionLabel" xml:space="preserve"><value>File extension:</value></data>
+  <data name="DownloadPlaylist" xml:space="preserve"><value>Download entire playlist</value></data>
+  <data name="AudioOnly" xml:space="preserve"><value>Audio only</value></data>
+  <data name="ReEncodeVideo" xml:space="preserve"><value>Re-encode video</value></data>
+  <data name="DownloadSubtitles" xml:space="preserve"><value>Download subtitles</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Language:</value></data>
+  <data name="EmbedSubtitles" xml:space="preserve"><value>Embed subtitles</value></data>
+  <data name="SpeedLabel" xml:space="preserve"><value>Speed: </value></data>
+  <data name="ETALabel" xml:space="preserve"><value>ETA: </value></data>
+  <data name="SizeLabel" xml:space="preserve"><value>Size: </value></data>
+  <data name="FFmpegLabel" xml:space="preserve"><value>FFmpeg: </value></data>
+  <data name="DownloadButton" xml:space="preserve"><value>Download</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancel</value></data>
+  <data name="CheckUpdateButton" xml:space="preserve"><value>Check for update</value></data>
+  <data name="OpenVideoFolderButton" xml:space="preserve"><value>Open video folder</value></data>
+  <data name="HistoryButton" xml:space="preserve"><value>History</value></data>
+  <data name="ConverterButton" xml:space="preserve"><value>Converter</value></data>
+  <data name="HelpButton" xml:space="preserve"><value>?</value></data>
+  <data name="ConvertWindowTitle" xml:space="preserve"><value>Converter</value></data>
+  <data name="SelectVideoFileLabel" xml:space="preserve"><value>Select video file:</value></data>
+  <data name="BrowseButton" xml:space="preserve"><value>Browse</value></data>
+  <data name="ExtensionLabel" xml:space="preserve"><value>Extension:</value></data>
+  <data name="ConvertButton" xml:space="preserve"><value>Convert</value></data>
+  <data name="HelpWindowTitle" xml:space="preserve"><value>Help</value></data>
+  <data name="HelpAuthorLabel" xml:space="preserve"><value>by mesh</value></data>
+  <data name="HelpVersionLabel" xml:space="preserve"><value>v0.7 2026</value></data>
+  <data name="VkLinkText" xml:space="preserve"><value>VK PUBLIC PAGE</value></data>
+  <data name="GitHubLinkText" xml:space="preserve"><value>GITHUB PAGE</value></data>
+  <data name="HistoryWindowTitle" xml:space="preserve"><value>Download History</value></data>
+  <data name="DateColumn" xml:space="preserve"><value>Date</value></data>
+  <data name="UrlNameColumn" xml:space="preserve"><value>URL / Name</value></data>
+  <data name="StatusColumn" xml:space="preserve"><value>Status</value></data>
+  <data name="DownloadActionColumn" xml:space="preserve"><value>Download</value></data>
+  <data name="ClearHistoryButton" xml:space="preserve"><value>Clear history</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Close</value></data>
+  <data name="LinkLabelVideo" xml:space="preserve"><value>Link field for video:</value></data>
+  <data name="LinkLabelPlaylist" xml:space="preserve"><value>Link field for playlist:</value></data>
+  <data name="EmptyLink" xml:space="preserve"><value>Empty link field!</value></data>
+  <data name="FFmpegChecking" xml:space="preserve"><value>checking...</value></data>
+  <data name="SubtitleEmbedNotForAudio" xml:space="preserve"><value>Subtitle embedding is not available for audio.</value></data>
+  <data name="WarningTitle" xml:space="preserve"><value>Warning</value></data>
+  <data name="AviSubtitleWarning" xml:space="preserve"><value>AVI format may not support embedded subtitles. Continue?</value></data>
+  <data name="NoSaveFolderAccess" xml:space="preserve"><value>No access to save folder. Choose another folder.</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>Error</value></data>
+  <data name="DownloadCancelled" xml:space="preserve"><value>Download cancelled</value></data>
+  <data name="ConfirmCancelDownload" xml:space="preserve"><value>Are you sure you want to cancel the download?</value></data>
+  <data name="CancelConfirmTitle" xml:space="preserve"><value>Cancel confirmation</value></data>
+  <data name="NoVideoFolderAccess" xml:space="preserve"><value>No access to standard Videos folder. Using app folder.</value></data>
+  <data name="CheckingFFmpeg" xml:space="preserve"><value>Checking for FFmpeg updates...</value></data>
+  <data name="FFmpegNotInstalled" xml:space="preserve"><value>not installed</value></data>
+  <data name="FFmpegUpToDate" xml:space="preserve"><value>FFmpeg is up to date</value></data>
+  <data name="FFmpegNotFound" xml:space="preserve"><value>FFmpeg not found</value></data>
+  <data name="FFmpegDownloadLinkError" xml:space="preserve"><value>Failed to find download link for FFmpeg archive.</value></data>
+  <data name="UpdateErrorTitle" xml:space="preserve"><value>Update error</value></data>
+  <data name="FFmpegUpdateDialog" xml:space="preserve"><value>Current version: {0}\nLatest build: {1}\nDownload and install?</value></data>
+  <data name="FFmpegUpdateAvailableTitle" xml:space="preserve"><value>FFmpeg update available!</value></data>
+  <data name="FFmpegUpdating" xml:space="preserve"><value>updating...</value></data>
+  <data name="FFmpegInstalled" xml:space="preserve"><value>installed</value></data>
+  <data name="FFmpegUpdated" xml:space="preserve"><value>FFmpeg successfully updated</value></data>
+  <data name="ErrorWithMessage" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="FFmpegUpdateFailed" xml:space="preserve"><value>Failed to update FFmpeg: {0}</value></data>
+  <data name="YtDlpUpdateDialog" xml:space="preserve"><value>Current version: {0}\nLatest version: {1}\nConfirm update start.</value></data>
+  <data name="YtDlpUpdateAvailableTitle" xml:space="preserve"><value>New yt-dlp version available!</value></data>
+  <data name="YtDlpDownloading" xml:space="preserve"><value>Downloading yt-dlp update!</value></data>
+  <data name="YtDlpUpdated" xml:space="preserve"><value>yt-dlp updated to {0}</value></data>
+  <data name="UpdateCompletedTitle" xml:space="preserve"><value>Update completed!</value></data>
+  <data name="FFmpegUpdateInfoMessage" xml:space="preserve"><value>FFmpeg updated to {0}\nVersion: {1}</value></data>
+  <data name="FFmpegUpdateInfoTitle" xml:space="preserve"><value>FFmpeg update completed</value></data>
+  <data name="FFmpegLinkNotFound" xml:space="preserve"><value>Error: link not found</value></data>
+  <data name="FFmpegVersionAvailable" xml:space="preserve"><value>Version {0} available</value></data>
+  <data name="VersionNotFound" xml:space="preserve"><value>not found</value></data>
+  <data name="SelectFileForConversion" xml:space="preserve"><value>Please select a video file to convert.</value></data>
+  <data name="FileExistsOverwrite" xml:space="preserve"><value>File "{0}" already exists. Overwrite?</value></data>
+  <data name="ConfirmationTitle" xml:space="preserve"><value>Confirmation</value></data>
+  <data name="ConversionSuccess" xml:space="preserve"><value>Conversion completed successfully!\nFile saved: {0}</value></data>
+  <data name="SuccessTitle" xml:space="preserve"><value>Success</value></data>
+  <data name="ConversionError" xml:space="preserve"><value>An error occurred during conversion: {0}</value></data>
+  <data name="SelectVideoFileDialogTitle" xml:space="preserve"><value>Select video file to convert</value></data>
+  <data name="VideoFileFilter" xml:space="preserve"><value>Video files (*.mp4;*.avi;*.wmv;*.mkv;*.mov)|*.mp4;*.avi;*.wmv;*.mkv;*.mov|All files (*.*)|*.*</value></data>
+  <data name="YtDlpProcessError" xml:space="preserve"><value>yt-dlp finished with error (code: {0}). Check logs.</value></data>
+  <data name="DownloadingFFmpegProgress" xml:space="preserve"><value>Downloading FFmpeg... {0}%</value></data>
+  <data name="ExtractingFFmpeg" xml:space="preserve"><value>Extracting FFmpeg...</value></data>
+  <data name="BinFolderNotFound" xml:space="preserve"><value>bin folder not found in archive</value></data>
+  <data name="FFmpegExeNotFound" xml:space="preserve"><value>ffmpeg.exe not found after extraction</value></data>
+  <data name="FFmpegUpdatedShort" xml:space="preserve"><value>FFmpeg updated</value></data>
+  <data name="InputFileNotFound" xml:space="preserve"><value>Input file not found: {0}</value></data>
+  <data name="DownloadingProgress" xml:space="preserve"><value>Downloading {0}... {1}%</value></data>
+</root>

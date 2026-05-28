@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Octokit;
+using Res = VidDownload.WPF.Resources.Res;
 
 namespace VidDownload.WPF.Services
 {
@@ -170,13 +171,13 @@ namespace VidDownload.WPF.Services
                             progress?.Report(new DownloadProgress
                             {
                                 Percent = (int)(totalRead * 100 / totalBytes),
-                                StatusMessage = $"Загрузка FFmpeg... {totalRead * 100 / totalBytes}%"
+                                StatusMessage = string.Format(Res.DownloadingFFmpegProgress, totalRead * 100 / totalBytes)
                             });
                         }
                     }
                 }
 
-                progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = "Извлечение FFmpeg..." });
+                progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = Res.ExtractingFFmpeg });
 
                 string extractDir = Path.Combine(AppDir, "ffmpeg_extract");
                 if (Directory.Exists(extractDir))
@@ -187,7 +188,7 @@ namespace VidDownload.WPF.Services
 
                 string[] binDirs = Directory.GetDirectories(extractDir, "bin", SearchOption.AllDirectories);
                 if (binDirs.Length == 0)
-                    throw new InvalidOperationException("Папка bin не найдена в архиве");
+                    throw new InvalidOperationException(Res.BinFolderNotFound);
 
                 string binDir = binDirs[0];
                 foreach (string file in Directory.GetFiles(binDir))
@@ -198,11 +199,11 @@ namespace VidDownload.WPF.Services
 
                 string exePath = Path.Combine(AppDir, FfmpegExeName);
                 if (!File.Exists(exePath))
-                    throw new InvalidOperationException("ffmpeg.exe не найден после извлечения");
+                    throw new InvalidOperationException(Res.FFmpegExeNotFound);
 
                 StoreTag(info.LatestVersion);
 
-                progress?.Report(new DownloadProgress { Percent = 100, StatusMessage = "FFmpeg обновлён" });
+                progress?.Report(new DownloadProgress { Percent = 100, StatusMessage = Res.FFmpegUpdatedShort });
             }
             finally
             {

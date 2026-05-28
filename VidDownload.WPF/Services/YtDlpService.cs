@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using VidDownload.WPF.Control;
+using Res = VidDownload.WPF.Resources.Res;
 
 namespace VidDownload.WPF.Services
 {
@@ -83,7 +84,7 @@ namespace VidDownload.WPF.Services
 
                     if (proc.ExitCode != 0)
                     {
-                        throw new Exception($"yt-dlp завершился с ошибкой (код: {proc.ExitCode}). Проверьте логи.");
+                        throw new Exception(string.Format(Res.YtDlpProcessError, proc.ExitCode));
                     }
                 }
             }

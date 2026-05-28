@@ -8,6 +8,7 @@ using VidDownload.WPF.ConvertWindow;
 using VidDownload.WPF.Help;
 using VidDownload.WPF.HistoryWindow;
 using VidDownload.WPF.Services;
+using Res = VidDownload.WPF.Resources.Res;
 using VidDownload.WPF.ViewModels.Base;
 
 namespace VidDownload.WPF.ViewModels
@@ -69,7 +70,7 @@ namespace VidDownload.WPF.ViewModels
         private bool _isAudioOptionsVisible;
 
         [ObservableProperty]
-        private string _linkLabelText = "Поле для ссылки на видео:";
+        private string _linkLabelText = Res.LinkLabelVideo;
 
         [ObservableProperty]
         private string _speedText = "--";
@@ -81,7 +82,7 @@ namespace VidDownload.WPF.ViewModels
         private string _totalSizeText = "--";
 
         [ObservableProperty]
-        private string _ffmpegVersion = "проверка...";
+        private string _ffmpegVersion = Res.FFmpegChecking;
 
         [ObservableProperty]
         private bool _isFfmpegChecking;
@@ -152,7 +153,7 @@ namespace VidDownload.WPF.ViewModels
 
         partial void OnIsPlaylistChanged(bool value)
         {
-            LinkLabelText = value ? "Поле для ссылки на плейлист:" : "Поле для ссылки на видео:";
+            LinkLabelText = value ? Res.LinkLabelPlaylist : Res.LinkLabelVideo;
         }
 
         partial void OnIsReEncodeChanged(bool value)
@@ -175,7 +176,7 @@ namespace VidDownload.WPF.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Url))
             {
-                StatusMessage = "Пустое поле ссылки!";
+                StatusMessage = Res.EmptyLink;
                 return;
             }
 
@@ -195,15 +196,15 @@ namespace VidDownload.WPF.ViewModels
 
             if (IsEmbedSubtitles && IsAudioOnly)
             {
-                _messageService.Warning("Встраивание субтитров недоступно для аудио.", "Предупреждение");
+                _messageService.Warning(Res.SubtitleEmbedNotForAudio, Res.WarningTitle);
                 IsEmbedSubtitles = false;
                 _settings.EmbedSubtitles = false;
             }
             else if (IsEmbedSubtitles && SelectedFormat == "avi")
             {
                 if (!await _dialogService.AskAsync(
-                    "Формат AVI может не поддерживать встроенные субтитры. Продолжить?",
-                    "Предупреждение"))
+                    Res.AviSubtitleWarning,
+                    Res.WarningTitle))
                 {
                     return;
                 }
@@ -226,7 +227,7 @@ namespace VidDownload.WPF.ViewModels
             }
             catch (UnauthorizedAccessException)
             {
-                _messageService.Warning("Нет доступа к папке сохранения. Выберите другую папку.", "Ошибка");
+                _messageService.Warning(Res.NoSaveFolderAccess, Res.ErrorTitle);
                 IsDownloading = false;
                 return;
             }
@@ -265,7 +266,7 @@ namespace VidDownload.WPF.ViewModels
                     Timestamp = DateTime.Now,
                     Status = DownloadStatus.Failed
                 });
-                _messageService.Error($"Ошибка: {ex.Message}", "Ошибка");
+                _messageService.Error(string.Format(Res.ErrorWithMessage, ex.Message), Res.ErrorTitle);
             }
             finally
             {
@@ -280,7 +281,7 @@ namespace VidDownload.WPF.ViewModels
                 SelectedFormat = "";
                 Url = "";
                 IsDownloading = false;
-                StatusMessage = _wasCancelled ? "Загрузка отменена" : "";
+                StatusMessage = _wasCancelled ? Res.DownloadCancelled : "";
                 SpeedText = "--";
                 EtaText = "--";
                 TotalSizeText = "--";
@@ -296,7 +297,7 @@ namespace VidDownload.WPF.ViewModels
                 return;
 
             bool confirmed = await _dialogService.ConfirmAsync(
-                "Вы уверены, что хотите отменить загрузку?", "Подтверждение отмены");
+                Res.ConfirmCancelDownload, Res.CancelConfirmTitle);
 
             if (!confirmed)
                 return;
@@ -366,8 +367,8 @@ namespace VidDownload.WPF.ViewModels
                 _savePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VidDownload");
                 System.IO.Directory.CreateDirectory(_savePath);
                 _messageService.Warning(
-                    "Нет доступа к стандартной папке Видео. Используется папка приложения.",
-                    "Предупреждение");
+                    Res.NoVideoFolderAccess,
+                    Res.WarningTitle);
             }
         }
 
@@ -394,30 +395,30 @@ namespace VidDownload.WPF.ViewModels
 
             IsFfmpegChecking = true;
             IsFfmpegUpdateAvailable = false;
-            FfmpegStatusMessage = "Поиск обновлений FFmpeg...";
+            FfmpegStatusMessage = Res.CheckingFFmpeg;
 
             try
             {
                 var info = await _ffmpegService.CheckForUpdateAsync();
 
                 string localVer = await _ffmpegService.GetLocalVersionAsync();
-                FfmpegVersion = string.IsNullOrEmpty(localVer) ? "не установлен" : localVer;
+                FfmpegVersion = string.IsNullOrEmpty(localVer) ? Res.FFmpegNotInstalled : localVer;
 
                 if (!info.IsUpdateAvailable)
                 {
                     if (!string.IsNullOrEmpty(localVer))
-                        FfmpegStatusMessage = "FFmpeg актуален";
+                        FfmpegStatusMessage = Res.FFmpegUpToDate;
                     else
-                        FfmpegStatusMessage = "FFmpeg не найден";
+                        FfmpegStatusMessage = Res.FFmpegNotFound;
                     return;
                 }
 
                 if (string.IsNullOrEmpty(info.DownloadUrl))
                 {
                     _messageService.Error(
-                        "Не удалось найти ссылку для скачивания архива FFmpeg.",
-                        "Ошибка обновления");
-                    FfmpegStatusMessage = "Ошибка: ссылка не найдена";
+                        Res.FFmpegDownloadLinkError,
+                        Res.UpdateErrorTitle);
+                    FfmpegStatusMessage = Res.FFmpegLinkNotFound;
                     return;
                 }
 
@@ -425,19 +426,18 @@ namespace VidDownload.WPF.ViewModels
                 string displayLatest = info.LatestVersion.Length > 30
                     ? info.LatestVersion[..27] + "..."
                     : info.LatestVersion;
-                FfmpegStatusMessage = $"Доступна версия {displayLatest}";
+                FfmpegStatusMessage = string.Format(Res.FFmpegVersionAvailable, displayLatest);
 
-                string displayCurrent = string.IsNullOrEmpty(localVer) ? "не найдена" : localVer;
+                string displayCurrent = string.IsNullOrEmpty(localVer) ? Res.VersionNotFound : localVer;
                 if (!await _dialogService.AskAsync(
-                    $"Текущая версия: {displayCurrent}\n" +
-                    $"Последняя сборка: {displayLatest}\nЗагрузить и установить?",
-                    "Доступно обновление FFmpeg!"))
+                    string.Format(Res.FFmpegUpdateDialog, displayCurrent, displayLatest),
+                    Res.FFmpegUpdateAvailableTitle))
                 {
                     return;
                 }
 
                 IsFfmpegChecking = true;
-                FfmpegVersion = "обновление...";
+                FfmpegVersion = Res.FFmpegUpdating;
 
                 var progress = new Progress<DownloadProgress>(p =>
                 {
@@ -448,20 +448,20 @@ namespace VidDownload.WPF.ViewModels
                 await _ffmpegService.DownloadUpdateAsync(info, progress);
 
                 string newVer = await _ffmpegService.GetLocalVersionAsync();
-                FfmpegVersion = string.IsNullOrEmpty(newVer) ? "установлен" : newVer;
+                FfmpegVersion = string.IsNullOrEmpty(newVer) ? Res.FFmpegInstalled : newVer;
                 IsFfmpegUpdateAvailable = false;
-                FfmpegStatusMessage = "FFmpeg успешно обновлён";
+                FfmpegStatusMessage = Res.FFmpegUpdated;
 
                 _messageService.Info(
-                    $"FFmpeg обновлён до {displayLatest}\nВерсия: {newVer}",
-                    "Обновление FFmpeg завершено");
+                    string.Format(Res.FFmpegUpdateInfoMessage, displayLatest, newVer),
+                    Res.FFmpegUpdateInfoTitle);
             }
             catch (Exception ex)
             {
-                FfmpegStatusMessage = $"Ошибка: {ex.Message}";
+                FfmpegStatusMessage = string.Format(Res.ErrorWithMessage, ex.Message);
                 _messageService.Error(
-                    $"Не удалось обновить FFmpeg: {ex.Message}",
-                    "Ошибка обновления");
+                    string.Format(Res.FFmpegUpdateFailed, ex.Message),
+                    Res.UpdateErrorTitle);
             }
             finally
             {
@@ -487,18 +487,18 @@ namespace VidDownload.WPF.ViewModels
 
             string currentVer = await _updateService.GetCurrentVersionAsync();
             bool fileNotFound = string.IsNullOrEmpty(currentVer);
-            string displayCurrent = fileNotFound ? "не найдена" : currentVer;
+            string displayCurrent = fileNotFound ? Res.VersionNotFound : currentVer;
 
             if (!fileNotFound &&
                 !await _dialogService.AskAsync(
-                    $"Текущая версия: {displayCurrent}\nПоследняя версия: {info.Version}\nПодтвердите начало обновления.",
-                    "Доступна новая версия yt-dlp!"))
+                    string.Format(Res.YtDlpUpdateDialog, displayCurrent, info.Version),
+                    Res.YtDlpUpdateAvailableTitle))
             {
                 return;
             }
 
             IsDownloading = true;
-            StatusMessage = "Идет загрузка обновления yt-dlp!";
+            StatusMessage = Res.YtDlpDownloading;
 
             try
             {
@@ -511,8 +511,8 @@ namespace VidDownload.WPF.ViewModels
                 await _updateService.DownloadUpdateAsync(info, progress);
 
                 _messageService.Info(
-                    $"Версия yt-dlp обновлена до {info.Version}",
-                    "Обновление завершено!");
+                    string.Format(Res.YtDlpUpdated, info.Version),
+                    Res.UpdateCompletedTitle);
             }
             finally
             {

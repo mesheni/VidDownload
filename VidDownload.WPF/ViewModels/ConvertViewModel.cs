@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Services;
+using Res = VidDownload.WPF.Resources.Res;
 using VidDownload.WPF.ViewModels.Base;
 
 namespace VidDownload.WPF.ViewModels
@@ -54,7 +55,7 @@ namespace VidDownload.WPF.ViewModels
         {
             if (string.IsNullOrEmpty(FilePath) || !File.Exists(FilePath))
             {
-                _messageService.Warning("Пожалуйста, выберите видеофайл для конвертации.", "Ошибка");
+                _messageService.Warning(Res.SelectFileForConversion, Res.ErrorTitle);
                 return;
             }
 
@@ -65,7 +66,7 @@ namespace VidDownload.WPF.ViewModels
 
             if (File.Exists(outputPath))
             {
-                if (!await _dialogService.AskAsync($"Файл \"{outputFileName}\" уже существует. Перезаписать?", "Подтверждение"))
+                if (!await _dialogService.AskAsync(string.Format(Res.FileExistsOverwrite, outputFileName), Res.ConfirmationTitle))
                     return;
             }
 
@@ -83,12 +84,12 @@ namespace VidDownload.WPF.ViewModels
 
                 if (resultPath != null)
                 {
-                    _messageService.Info($"Конвертация успешно завершена!\nФайл сохранён: {resultPath}", "Успех");
+                    _messageService.Info(string.Format(Res.ConversionSuccess, resultPath), Res.SuccessTitle);
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Error($"Произошла ошибка при конвертации: {ex.Message}", "Ошибка");
+                _messageService.Error(string.Format(Res.ConversionError, ex.Message), Res.ErrorTitle);
                 StatusMessage = string.Empty;
                 ProgressPercent = 0;
             }
@@ -103,8 +104,8 @@ namespace VidDownload.WPF.ViewModels
         {
             OpenFileDialog openFileDialog = new()
             {
-                Filter = "Video files (*.mp4;*.avi;*.wmv;*.mkv;*.mov)|*.mp4;*.avi;*.wmv;*.mkv;*.mov|All files (*.*)|*.*",
-                Title = "Выберите видеофайл для конвертации"
+                Filter = Res.VideoFileFilter,
+                Title = Res.SelectVideoFileDialogTitle
             };
 
             if (openFileDialog.ShowDialog() == true)

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Octokit;
+using Res = VidDownload.WPF.Resources.Res;
 
 namespace VidDownload.WPF.Services
 {
@@ -79,7 +80,7 @@ namespace VidDownload.WPF.Services
                     progress?.Report(new DownloadProgress
                     {
                         Percent = (int)(totalRead * 100 / totalBytes),
-                        StatusMessage = $"Загрузка {ExeName}... {totalRead * 100 / totalBytes}%"
+                        StatusMessage = string.Format(Res.DownloadingProgress, ExeName, totalRead * 100 / totalBytes)
                     });
                 }
             }

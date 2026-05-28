@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">text/microsoft-resx</resheader>
+  <resheader name="version">2.0</resheader>
+  <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</resheader>
+  <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</resheader>
+  <data name="MainWindowTitle" xml:space="preserve"><value>VidDownload</value></data>
+  <data name="ResolutionLabel" xml:space="preserve"><value>Разрешение:</value></data>
+  <data name="CodecLabel" xml:space="preserve"><value>Кодек:</value></data>
+  <data name="AudioFormatLabel" xml:space="preserve"><value>Аудио формат:</value></data>
+  <data name="FileExtensionLabel" xml:space="preserve"><value>Расширение файла:</value></data>
+  <data name="DownloadPlaylist" xml:space="preserve"><value>Скачать весь плейлист</value></data>
+  <data name="AudioOnly" xml:space="preserve"><value>Только аудио</value></data>
+  <data name="ReEncodeVideo" xml:space="preserve"><value>Перекодировать видео</value></data>
+  <data name="DownloadSubtitles" xml:space="preserve"><value>Скачать субтитры</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Язык:</value></data>
+  <data name="EmbedSubtitles" xml:space="preserve"><value>Встроить субтитры</value></data>
+  <data name="SpeedLabel" xml:space="preserve"><value>Скорость: </value></data>
+  <data name="ETALabel" xml:space="preserve"><value>ETA: </value></data>
+  <data name="SizeLabel" xml:space="preserve"><value>Размер: </value></data>
+  <data name="FFmpegLabel" xml:space="preserve"><value>FFmpeg: </value></data>
+  <data name="DownloadButton" xml:space="preserve"><value>Скачать</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Отмена</value></data>
+  <data name="CheckUpdateButton" xml:space="preserve"><value>Проверить обновление</value></data>
+  <data name="OpenVideoFolderButton" xml:space="preserve"><value>Открыть папку с видео</value></data>
+  <data name="HistoryButton" xml:space="preserve"><value>История</value></data>
+  <data name="ConverterButton" xml:space="preserve"><value>Конвертер</value></data>
+  <data name="HelpButton" xml:space="preserve"><value>?</value></data>
+  <data name="ConvertWindowTitle" xml:space="preserve"><value>Конвертер</value></data>
+  <data name="SelectVideoFileLabel" xml:space="preserve"><value>Выберите видеофайл:</value></data>
+  <data name="BrowseButton" xml:space="preserve"><value>Обзор</value></data>
+  <data name="ExtensionLabel" xml:space="preserve"><value>Расширение:</value></data>
+  <data name="ConvertButton" xml:space="preserve"><value>Конвертировать</value></data>
+  <data name="HelpWindowTitle" xml:space="preserve"><value>Помощь</value></data>
+  <data name="HelpAuthorLabel" xml:space="preserve"><value>by mesh</value></data>
+  <data name="HelpVersionLabel" xml:space="preserve"><value>v0.7 2026 г.</value></data>
+  <data name="VkLinkText" xml:space="preserve"><value>ССЫЛКА НА ПАБЛИК ВК</value></data>
+  <data name="GitHubLinkText" xml:space="preserve"><value>ССЫЛКА НА GITHUB</value></data>
+  <data name="HistoryWindowTitle" xml:space="preserve"><value>История загрузок</value></data>
+  <data name="DateColumn" xml:space="preserve"><value>Дата</value></data>
+  <data name="UrlNameColumn" xml:space="preserve"><value>URL / Название</value></data>
+  <data name="StatusColumn" xml:space="preserve"><value>Статус</value></data>
+  <data name="DownloadActionColumn" xml:space="preserve"><value>Скачать</value></data>
+  <data name="ClearHistoryButton" xml:space="preserve"><value>Очистить историю</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="LinkLabelVideo" xml:space="preserve"><value>Поле для ссылки на видео:</value></data>
+  <data name="LinkLabelPlaylist" xml:space="preserve"><value>Поле для ссылки на плейлист:</value></data>
+  <data name="EmptyLink" xml:space="preserve"><value>Пустое поле ссылки!</value></data>
+  <data name="FFmpegChecking" xml:space="preserve"><value>проверка...</value></data>
+  <data name="SubtitleEmbedNotForAudio" xml:space="preserve"><value>Встраивание субтитров недоступно для аудио.</value></data>
+  <data name="WarningTitle" xml:space="preserve"><value>Предупреждение</value></data>
+  <data name="AviSubtitleWarning" xml:space="preserve"><value>Формат AVI может не поддерживать встроенные субтитры. Продолжить?</value></data>
+  <data name="NoSaveFolderAccess" xml:space="preserve"><value>Нет доступа к папке сохранения. Выберите другую папку.</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="DownloadCancelled" xml:space="preserve"><value>Загрузка отменена</value></data>
+  <data name="ConfirmCancelDownload" xml:space="preserve"><value>Вы уверены, что хотите отменить загрузку?</value></data>
+  <data name="CancelConfirmTitle" xml:space="preserve"><value>Подтверждение отмены</value></data>
+  <data name="NoVideoFolderAccess" xml:space="preserve"><value>Нет доступа к стандартной папке Видео. Используется папка приложения.</value></data>
+  <data name="CheckingFFmpeg" xml:space="preserve"><value>Поиск обновлений FFmpeg...</value></data>
+  <data name="FFmpegNotInstalled" xml:space="preserve"><value>не установлен</value></data>
+  <data name="FFmpegUpToDate" xml:space="preserve"><value>FFmpeg актуален</value></data>
+  <data name="FFmpegNotFound" xml:space="preserve"><value>FFmpeg не найден</value></data>
+  <data name="FFmpegDownloadLinkError" xml:space="preserve"><value>Не удалось найти ссылку для скачивания архива FFmpeg.</value></data>
+  <data name="UpdateErrorTitle" xml:space="preserve"><value>Ошибка обновления</value></data>
+  <data name="FFmpegUpdateDialog" xml:space="preserve"><value>Текущая версия: {0}\nПоследняя сборка: {1}\nЗагрузить и установить?</value></data>
+  <data name="FFmpegUpdateAvailableTitle" xml:space="preserve"><value>Доступно обновление FFmpeg!</value></data>
+  <data name="FFmpegUpdating" xml:space="preserve"><value>обновление...</value></data>
+  <data name="FFmpegInstalled" xml:space="preserve"><value>установлен</value></data>
+  <data name="FFmpegUpdated" xml:space="preserve"><value>FFmpeg успешно обновлён</value></data>
+  <data name="ErrorWithMessage" xml:space="preserve"><value>Ошибка: {0}</value></data>
+  <data name="FFmpegUpdateFailed" xml:space="preserve"><value>Не удалось обновить FFmpeg: {0}</value></data>
+  <data name="YtDlpUpdateDialog" xml:space="preserve"><value>Текущая версия: {0}\nПоследняя версия: {1}\nПодтвердите начало обновления.</value></data>
+  <data name="YtDlpUpdateAvailableTitle" xml:space="preserve"><value>Доступна новая версия yt-dlp!</value></data>
+  <data name="YtDlpDownloading" xml:space="preserve"><value>Идет загрузка обновления yt-dlp!</value></data>
+  <data name="YtDlpUpdated" xml:space="preserve"><value>Версия yt-dlp обновлена до {0}</value></data>
+  <data name="UpdateCompletedTitle" xml:space="preserve"><value>Обновление завершено!</value></data>
+  <data name="FFmpegUpdateInfoMessage" xml:space="preserve"><value>FFmpeg обновлён до {0}\nВерсия: {1}</value></data>
+  <data name="FFmpegUpdateInfoTitle" xml:space="preserve"><value>Обновление FFmpeg завершено</value></data>
+  <data name="FFmpegLinkNotFound" xml:space="preserve"><value>Ошибка: ссылка не найдена</value></data>
+  <data name="FFmpegVersionAvailable" xml:space="preserve"><value>Доступна версия {0}</value></data>
+  <data name="VersionNotFound" xml:space="preserve"><value>не найдена</value></data>
+  <data name="SelectFileForConversion" xml:space="preserve"><value>Пожалуйста, выберите видеофайл для конвертации.</value></data>
+  <data name="FileExistsOverwrite" xml:space="preserve"><value>Файл "{0}" уже существует. Перезаписать?</value></data>
+  <data name="ConfirmationTitle" xml:space="preserve"><value>Подтверждение</value></data>
+  <data name="ConversionSuccess" xml:space="preserve"><value>Конвертация успешно завершена!\nФайл сохранён: {0}</value></data>
+  <data name="SuccessTitle" xml:space="preserve"><value>Успех</value></data>
+  <data name="ConversionError" xml:space="preserve"><value>Произошла ошибка при конвертации: {0}</value></data>
+  <data name="SelectVideoFileDialogTitle" xml:space="preserve"><value>Выберите видеофайл для конвертации</value></data>
+  <data name="VideoFileFilter" xml:space="preserve"><value>Video files (*.mp4;*.avi;*.wmv;*.mkv;*.mov)|*.mp4;*.avi;*.wmv;*.mkv;*.mov|All files (*.*)|*.*</value></data>
+  <data name="YtDlpProcessError" xml:space="preserve"><value>yt-dlp завершился с ошибкой (код: {0}). Проверьте логи.</value></data>
+  <data name="DownloadingFFmpegProgress" xml:space="preserve"><value>Загрузка FFmpeg... {0}%</value></data>
+  <data name="ExtractingFFmpeg" xml:space="preserve"><value>Извлечение FFmpeg...</value></data>
+  <data name="BinFolderNotFound" xml:space="preserve"><value>Папка bin не найдена в архиве</value></data>
+  <data name="FFmpegExeNotFound" xml:space="preserve"><value>ffmpeg.exe не найден после извлечения</value></data>
+  <data name="FFmpegUpdatedShort" xml:space="preserve"><value>FFmpeg обновлён</value></data>
+  <data name="InputFileNotFound" xml:space="preserve"><value>Входной файл не найден: {0}</value></data>
+  <data name="DownloadingProgress" xml:space="preserve"><value>Загрузка {0}... {1}%</value></data>
+</root>
