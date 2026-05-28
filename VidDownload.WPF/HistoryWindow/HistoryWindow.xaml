@@ -40,7 +40,7 @@
     <Grid Background="#FF1D1D1D">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="900"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <ListView Grid.Row="0" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}"
                   Margin="0" BorderThickness="1" BorderBrush="#FF3A3A3A"
