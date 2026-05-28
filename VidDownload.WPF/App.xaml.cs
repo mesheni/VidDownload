@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.Services;
@@ -9,10 +10,7 @@ namespace VidDownload.WPF
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            string videoPath = @".\MyVideos\";
-            string logPath = @".\log\";
-            if (!Directory.Exists(videoPath))
-                Directory.CreateDirectory(videoPath);
+            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log");
             if (!Directory.Exists(logPath))
                 Directory.CreateDirectory(logPath);
 

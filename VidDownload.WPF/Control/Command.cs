@@ -33,12 +33,12 @@ namespace VidDownload.WPF.Control
             if (_isPlaylist)
             {
                 args.Add("-o");
-                args.Add("./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
+                args.Add($"{settings.SavePath}/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
             }
             else
             {
                 args.Add("-P");
-                args.Add("./MyVideos");
+                args.Add(settings.SavePath);
             }
 
             args.Add(reference);
@@ -87,12 +87,12 @@ namespace VidDownload.WPF.Control
             if (_isPlaylist)
             {
                 args.Add("-o");
-                args.Add("./MyVideos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
+                args.Add($"{settings.SavePath}/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
             }
             else
             {
                 args.Add("-P");
-                args.Add("./MyVideos");
+                args.Add(settings.SavePath);
             }
 
             args.Add(reference);

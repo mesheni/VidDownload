@@ -14,6 +14,7 @@ public class Settings
     public bool DownloadSubtitles { get; set; }
     public string SubtitleLanguage { get; set; } = "all";
     public bool EmbedSubtitles { get; set; }
+    public string SavePath { get; set; } = string.Empty;
 
     public Settings(string resolution, string videoCodec, string audioCodec, string format)
     {

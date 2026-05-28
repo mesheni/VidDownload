@@ -25,6 +25,7 @@ namespace VidDownload.WPF.ViewModels
         private readonly IDownloadHistoryService _historyService;
         private CancellationTokenSource? _cts;
         private bool _wasCancelled;
+        private string _savePath = UserSettings.DefaultDownloadPath;
 
         [ObservableProperty]
         private string _url = string.Empty;
@@ -190,6 +191,7 @@ namespace VidDownload.WPF.ViewModels
             _settings.DownloadSubtitles = IsDownloadSubtitles;
             _settings.SubtitleLanguage = SelectedSubtitleLanguage;
             _settings.EmbedSubtitles = IsEmbedSubtitles;
+            _settings.SavePath = _savePath;
 
             if (IsEmbedSubtitles && IsAudioOnly)
             {
@@ -216,6 +218,18 @@ namespace VidDownload.WPF.ViewModels
             IsDownloading = true;
             StatusMessage = string.Empty;
             ProgressPercent = 0;
+
+            try
+            {
+                if (!System.IO.Directory.Exists(_savePath))
+                    System.IO.Directory.CreateDirectory(_savePath);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _messageService.Warning("Нет доступа к папке сохранения. Выберите другую папку.", "Ошибка");
+                IsDownloading = false;
+                return;
+            }
 
             try
             {
@@ -293,12 +307,11 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private void OpenFolder()
         {
-            string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"MyVideos\");
-            if (!System.IO.Directory.Exists(path))
+            if (!System.IO.Directory.Exists(_savePath))
             {
-                System.IO.Directory.CreateDirectory(path);
+                System.IO.Directory.CreateDirectory(_savePath);
             }
-            Process.Start("explorer.exe", "/open, \"" + path);
+            Process.Start("explorer.exe", "/open, \"" + _savePath);
         }
 
         [RelayCommand]
@@ -340,6 +353,22 @@ namespace VidDownload.WPF.ViewModels
             if (!string.IsNullOrEmpty(userSettings.SubtitleLanguage))
                 SelectedSubtitleLanguage = userSettings.SubtitleLanguage;
             IsEmbedSubtitles = userSettings.EmbedSubtitles;
+            _savePath = !string.IsNullOrEmpty(userSettings.SavePath)
+                ? userSettings.SavePath
+                : UserSettings.DefaultDownloadPath;
+            try
+            {
+                if (!System.IO.Directory.Exists(_savePath))
+                    System.IO.Directory.CreateDirectory(_savePath);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                _savePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VidDownload");
+                System.IO.Directory.CreateDirectory(_savePath);
+                _messageService.Warning(
+                    "Нет доступа к стандартной папке Видео. Используется папка приложения.",
+                    "Предупреждение");
+            }
         }
 
         private async Task SaveSettingsAsync()
@@ -352,7 +381,8 @@ namespace VidDownload.WPF.ViewModels
                 Format = _settings.Format,
                 DownloadSubtitles = _settings.DownloadSubtitles,
                 SubtitleLanguage = _settings.SubtitleLanguage,
-                EmbedSubtitles = _settings.EmbedSubtitles
+                EmbedSubtitles = _settings.EmbedSubtitles,
+                SavePath = _savePath
             });
         }
 
