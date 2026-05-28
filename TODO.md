@@ -219,31 +219,31 @@
   - [x] 7.1.16 — Заполнить `Resources.en.resx`: перевести все ~100 строк на английский
   - [x] 7.1.17 — Проверить сборку: `dotnet build` без ошибок после замены всех строк
   - [ ] 7.1.18 — Прогнать приложение: визуально проверить, что все строки отображаются корректно (EN-сборка не ломает RU-рендеринг)
-- [ ] 7.2 — **Переключение языка в рантайме**: через `CultureInfo` или `ResourceDictionary`
-  - [ ] 7.2.1 — Выбрать архитектуру: `CultureInfo` + `ResourceManager` с ручным обновлением binding'ов, либо WPF-словари `ResourceDictionary` с `DynamicResource`
-  - [ ] 7.2.2 — Создать `ILocalizationService` / `LanguageService` (синглтон):
-    - [ ] 7.2.2.1 — Свойство `CurrentCulture` / `CurrentLanguage`
-    - [ ] 7.2.2.2 — Событие `LanguageChanged` / реализовать `INotifyPropertyChanged` для привязок
-    - [ ] 7.2.2.3 — Метод `SetLanguage(string cultureCode)`: меняет `Thread.CurrentThread.CurrentUICulture` и оповещает подписчиков
-  - [ ] 7.2.3 — Создать класс-обёртку `LocalizedStrings` с Observable-свойствами под каждую ресурсную строку:
-    - [ ] 7.2.3.1 — Каждое свойство читает `Resources.ResourceManager.GetString(name, CultureInfo)`
-    - [ ] 7.2.3.2 — При смене языка — поднять `PropertyChanged` для всех свойств (через цикл по ключам или ручную рассылку)
-  - [ ] 7.2.4 — Зарегистрировать `LocalizedStrings` как синглтон в DI (`AppServices.cs`) и передать во все VM
-  - [ ] 7.2.5 — В XAML: привязать элементы к `{Binding LocalizedStrings.Key}` вместо `{x:Static res:Resources.Key}`
-    - [ ] 7.2.5.1 — Привязать `MainWindow.xaml`: Title, Label, CheckBox, Button, все строки
-    - [ ] 7.2.5.2 — Привязать `ConvertWindow.xaml`, `HelpWindow.xaml`, `HistoryWindow.xaml`
-  - [ ] 7.2.6 — В C#-коде: заменить прямые вызовы ресурсов на `LocalizedStrings.Instance.KeyName` или через инъекцию
-    - [ ] 7.2.6.1 — MainViewModel.cs: статусы, диалоги, ошибки
-    - [ ] 7.2.6.2 — ConvertViewModel.cs, YtDlpService.cs, FFmpegService.cs, FFmpegAction.cs, UpdateService.cs
-  - [ ] 7.2.7 — Создать UI для выбора языка:
-    - [ ] 7.2.7.1 — Добавить `ComboBox` (или `RadioButton`) в `MainWindow.xaml`: `RU` / `EN` / другие
-    - [ ] 7.2.7.2 — Добавить свойство `SelectedLanguage` в `MainViewModel`
-    - [ ] 7.2.7.3 — Привязать `SelectedLanguage` к `LanguageService.SetLanguage()` через команду или `PropertyChanged`
-  - [ ] 7.2.8 — Сохранять выбор языка между сессиями:
-    - [ ] 7.2.8.1 — Добавить поле `Language` в `UserSettings.cs`
-    - [ ] 7.2.8.2 — Загружать язык в `MainViewModel.LoadSettingsAsync()` и применять через `LanguageService.SetLanguage()`
-    - [ ] 7.2.8.3 — Сохранять язык в `MainViewModel.SaveSettingsAsync()`
-  - [ ] 7.2.9 — Обработать трюковой случай: окно `ConvertWindow`, `HelpWindow`, `HistoryWindow` открыто в момент смены языка — обновить его строки (общий синглтон `LocalizedStrings` сработает, если окно использует Binding)
-  - [ ] 7.2.10 — Обработать трюковой случай: если ресурсного файла для выбранного языка нет — падать на `RU` (culture fallback)
-  - [ ] 7.2.11 — Проверить сборку: `dotnet build` без ошибок после внедрения runtime-переключения
-  - [ ] 7.2.12 — Функциональный тест: переключить язык во время загрузки/простоя — все строки в главном окне и диалогах обновляются без перезапуска
+- [x] 7.2 — **Переключение языка в рантайме**: через `CultureInfo` или `ResourceDictionary`
+  - [x] 7.2.1 — Выбрать архитектуру: `CultureInfo` + `ResourceManager` с ручным обновлением binding'ов, либо WPF-словари `ResourceDictionary` с `DynamicResource`
+  - [x] 7.2.2 — Создать `ILocalizationService` / `LanguageService` (синглтон):
+    - [x] 7.2.2.1 — Свойство `CurrentCulture` / `CurrentLanguage`
+    - [x] 7.2.2.2 — Событие `LanguageChanged` / реализовать `INotifyPropertyChanged` для привязок
+    - [x] 7.2.2.3 — Метод `SetLanguage(string cultureCode)`: меняет `Thread.CurrentThread.CurrentUICulture` и оповещает подписчиков
+  - [x] 7.2.3 — Создать класс-обёртку `LocalizedStrings` с Observable-свойствами под каждую ресурсную строку:
+    - [x] 7.2.3.1 — Каждое свойство читает `Resources.ResourceManager.GetString(name, CultureInfo)`
+    - [x] 7.2.3.2 — При смене языка — поднять `PropertyChanged` для всех свойств (через цикл по ключам или ручную рассылку)
+  - [x] 7.2.4 — Зарегистрировать `LocalizedStrings` как синглтон в DI (`AppServices.cs`) и передать во все VM
+  - [x] 7.2.5 — В XAML: привязать элементы к `{Binding LocalizedStrings.Key}` вместо `{x:Static res:Resources.Key}`
+    - [x] 7.2.5.1 — Привязать `MainWindow.xaml`: Title, Label, CheckBox, Button, все строки
+    - [x] 7.2.5.2 — Привязать `ConvertWindow.xaml`, `HelpWindow.xaml`, `HistoryWindow.xaml`
+  - [x] 7.2.6 — В C#-коде: заменить прямые вызовы ресурсов на `LocalizedStrings.Instance.KeyName` или через инъекцию
+    - [x] 7.2.6.1 — MainViewModel.cs: статусы, диалоги, ошибки
+    - [x] 7.2.6.2 — ConvertViewModel.cs, YtDlpService.cs, FFmpegService.cs, FFmpegAction.cs, UpdateService.cs
+  - [x] 7.2.7 — Создать UI для выбора языка:
+    - [x] 7.2.7.1 — Добавить `ComboBox` (или `RadioButton`) в `MainWindow.xaml`: `RU` / `EN` / другие
+    - [x] 7.2.7.2 — Добавить свойство `SelectedLanguage` в `MainViewModel`
+    - [x] 7.2.7.3 — Привязать `SelectedLanguage` к `LanguageService.SetLanguage()` через команду или `PropertyChanged`
+  - [x] 7.2.8 — Сохранять выбор языка между сессиями:
+    - [x] 7.2.8.1 — Добавить поле `Language` в `UserSettings.cs`
+    - [x] 7.2.8.2 — Загружать язык в `MainViewModel.LoadSettingsAsync()` и применять через `LanguageService.SetLanguage()`
+    - [x] 7.2.8.3 — Сохранять язык в `MainViewModel.SaveSettingsAsync()`
+  - [x] 7.2.9 — Обработать трюковой случай: окно `ConvertWindow`, `HelpWindow`, `HistoryWindow` открыто в момент смены языка — обновить его строки (общий синглтон `LocalizedStrings` сработает, если окно использует Binding)
+  - [x] 7.2.10 — Обработать трюковой случай: если ресурсного файла для выбранного языка нет — падать на `RU` (culture fallback)
+  - [x] 7.2.11 — Проверить сборку: `dotnet build` без ошибок после внедрения runtime-переключения
+  - [x] 7.2.12 — Функциональный тест: переключить язык во время загрузки/простоя — все строки в главном окне и диалогах обновляются без перезапуска

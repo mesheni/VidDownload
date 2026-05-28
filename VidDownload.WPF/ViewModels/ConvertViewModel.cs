@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.Services;
-using Res = VidDownload.WPF.Resources.Res;
+using VidDownload.WPF.Resources;
 using VidDownload.WPF.ViewModels.Base;
 
 namespace VidDownload.WPF.ViewModels
@@ -15,6 +15,9 @@ namespace VidDownload.WPF.ViewModels
         private readonly FFmpegAction _ffmpegAction;
         private readonly IMessageService _messageService;
         private readonly IDialogService _dialogService;
+        private readonly LocalizedStrings _loc;
+
+        public LocalizedStrings LocalizedStrings => _loc;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(ConvertCommand))]
@@ -39,11 +42,12 @@ namespace VidDownload.WPF.ViewModels
             "", "AVI", "MP4", "MKV", "MOV"
         };
 
-        public ConvertViewModel(IMessageService messageService, IDialogService dialogService)
+        public ConvertViewModel(IMessageService messageService, IDialogService dialogService, LocalizedStrings localizedStrings)
         {
             _ffmpegAction = new FFmpegAction();
             _messageService = messageService;
             _dialogService = dialogService;
+            _loc = localizedStrings;
         }
 
         private bool CanConvert() => !IsConverting && !string.IsNullOrEmpty(FilePath) && File.Exists(FilePath);
@@ -55,7 +59,7 @@ namespace VidDownload.WPF.ViewModels
         {
             if (string.IsNullOrEmpty(FilePath) || !File.Exists(FilePath))
             {
-                _messageService.Warning(Res.SelectFileForConversion, Res.ErrorTitle);
+                _messageService.Warning(_loc["SelectFileForConversion"], _loc["ErrorTitle"]);
                 return;
             }
 
@@ -66,7 +70,7 @@ namespace VidDownload.WPF.ViewModels
 
             if (File.Exists(outputPath))
             {
-                if (!await _dialogService.AskAsync(string.Format(Res.FileExistsOverwrite, outputFileName), Res.ConfirmationTitle))
+                if (!await _dialogService.AskAsync(string.Format(_loc["FileExistsOverwrite"], outputFileName), _loc["ConfirmationTitle"]))
                     return;
             }
 
@@ -84,12 +88,12 @@ namespace VidDownload.WPF.ViewModels
 
                 if (resultPath != null)
                 {
-                    _messageService.Info(string.Format(Res.ConversionSuccess, resultPath), Res.SuccessTitle);
+                    _messageService.Info(string.Format(_loc["ConversionSuccess"], resultPath), _loc["SuccessTitle"]);
                 }
             }
             catch (Exception ex)
             {
-                _messageService.Error(string.Format(Res.ConversionError, ex.Message), Res.ErrorTitle);
+                _messageService.Error(string.Format(_loc["ConversionError"], ex.Message), _loc["ErrorTitle"]);
                 StatusMessage = string.Empty;
                 ProgressPercent = 0;
             }
@@ -104,8 +108,8 @@ namespace VidDownload.WPF.ViewModels
         {
             OpenFileDialog openFileDialog = new()
             {
-                Filter = Res.VideoFileFilter,
-                Title = Res.SelectVideoFileDialogTitle
+                Filter = _loc["VideoFileFilter"],
+                Title = _loc["SelectVideoFileDialogTitle"]
             };
 
             if (openFileDialog.ShowDialog() == true)

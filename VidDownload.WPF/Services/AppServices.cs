@@ -2,6 +2,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.ConvertWindow;
 using VidDownload.WPF.Help;
+using VidDownload.WPF.Resources;
 using VidDownload.WPF.ViewModels;
 
 namespace VidDownload.WPF.Services
@@ -13,6 +14,10 @@ namespace VidDownload.WPF.Services
         public static void Initialize()
         {
             var services = new ServiceCollection();
+
+            var localizedStrings = LocalizedStrings.Instance;
+            services.AddSingleton<ILocalizationService>(localizedStrings);
+            services.AddSingleton(localizedStrings);
 
             services.AddSingleton<IYtDlpService, YtDlpService>();
             services.AddSingleton<IUpdateService, UpdateService>();

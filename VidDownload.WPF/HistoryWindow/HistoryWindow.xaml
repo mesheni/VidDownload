@@ -5,9 +5,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
-        xmlns:res="clr-namespace:VidDownload.WPF.Resources"
         mc:Ignorable="d"
-        Title="{x:Static res:Res.HistoryWindowTitle}" Height="500" Width="900" WindowStartupLocation="CenterScreen"
+        Title="{Binding LocalizedStrings[HistoryWindowTitle]}" Height="500" Width="900" WindowStartupLocation="CenterScreen"
         Icon="/icon.png" ResizeMode="NoResize"  Loaded="OnLoaded"
         Background="#FF1D1D1D" Foreground="White">
     <Window.Resources>
@@ -67,7 +66,7 @@
             </ListView.Resources>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="{x:Static res:Res.DateColumn}" Width="Auto" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
+                    <GridViewColumn Header="{Binding LocalizedStrings[DateColumn]}" Width="Auto" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
@@ -76,7 +75,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="{x:Static res:Res.UrlNameColumn}" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
+                    <GridViewColumn Header="{Binding LocalizedStrings[UrlNameColumn]}" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Title}" Foreground="#FF8DFD51"
@@ -85,7 +84,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="{x:Static res:Res.StatusColumn}" Width="Auto"  HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
+                    <GridViewColumn Header="{Binding LocalizedStrings[StatusColumn]}" Width="Auto"  HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Status}" Foreground="{Binding Status, Converter={StaticResource StatusColor}}"
@@ -97,7 +96,7 @@
                     <GridViewColumn Header="" Width="Auto" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="{x:Static res:Res.DownloadActionColumn}" Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
+                                <Button Content="{Binding LocalizedStrings[DownloadActionColumn]}" Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
                                         CommandParameter="{Binding}" Width="80" Height="26"
                                         FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold"
                                         Background="#FFFF4F4F" Foreground="White" BorderThickness="0"
@@ -114,10 +113,10 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Content="{x:Static res:Res.ClearHistoryButton}" Command="{Binding ClearHistoryCommand}"
+            <Button Grid.Column="0" Content="{Binding LocalizedStrings[ClearHistoryButton]}" Command="{Binding ClearHistoryCommand}"
                     Width="150" Height="30" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold"
                     Background="#FFFF4F4F" Foreground="White" BorderThickness="1" Cursor="Hand"/>
-            <Button Grid.Column="2" Content="{x:Static res:Res.CloseButton}" Click="CloseButton_Click"
+            <Button Grid.Column="2" Content="{Binding LocalizedStrings[CloseButton]}" Click="CloseButton_Click"
                     Width="100" Height="30" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold"
                     Background="#FF3A3A3A" Foreground="White" BorderThickness="1" BorderBrush="#FF555555"
                     Cursor="Hand"/>

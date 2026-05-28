@@ -15,5 +15,6 @@ namespace VidDownload.WPF.Services
         public string SubtitleLanguage { get; set; } = string.Empty;
         public bool EmbedSubtitles { get; set; }
         public string SavePath { get; set; } = string.Empty;
+        public string Language { get; set; } = "RU";
     }
 }

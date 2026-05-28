@@ -7,8 +7,8 @@ using VidDownload.WPF.Control;
 using VidDownload.WPF.ConvertWindow;
 using VidDownload.WPF.Help;
 using VidDownload.WPF.HistoryWindow;
+using VidDownload.WPF.Resources;
 using VidDownload.WPF.Services;
-using Res = VidDownload.WPF.Resources.Res;
 using VidDownload.WPF.ViewModels.Base;
 
 namespace VidDownload.WPF.ViewModels
@@ -17,6 +17,7 @@ namespace VidDownload.WPF.ViewModels
     {
         private readonly Settings _settings = new();
         private static readonly List<string> _codecList = new();
+        private readonly LocalizedStrings _loc;
         private readonly IYtDlpService _ytDlpService;
         private readonly IUpdateService _updateService;
         private readonly IFFmpegService _ffmpegService;
@@ -26,6 +27,7 @@ namespace VidDownload.WPF.ViewModels
         private readonly IDownloadHistoryService _historyService;
         private CancellationTokenSource? _cts;
         private bool _wasCancelled;
+        private bool _isLoading;
         private string _savePath = UserSettings.DefaultDownloadPath;
 
         [ObservableProperty]
@@ -70,7 +72,10 @@ namespace VidDownload.WPF.ViewModels
         private bool _isAudioOptionsVisible;
 
         [ObservableProperty]
-        private string _linkLabelText = Res.LinkLabelVideo;
+        private string _linkLabelText = LocalizedStrings.Instance["LinkLabelVideo"];
+
+        [ObservableProperty]
+        private string _selectedLanguage = "RU";
 
         [ObservableProperty]
         private string _speedText = "--";
@@ -82,7 +87,7 @@ namespace VidDownload.WPF.ViewModels
         private string _totalSizeText = "--";
 
         [ObservableProperty]
-        private string _ffmpegVersion = Res.FFmpegChecking;
+        private string _ffmpegVersion = LocalizedStrings.Instance["FFmpegChecking"];
 
         [ObservableProperty]
         private bool _isFfmpegChecking;
@@ -101,6 +106,13 @@ namespace VidDownload.WPF.ViewModels
 
         [ObservableProperty]
         private bool _isEmbedSubtitles;
+
+        public LocalizedStrings LocalizedStrings => _loc;
+
+        public ObservableCollection<string> AvailableLanguages { get; } = new()
+        {
+            "RU", "EN"
+        };
 
         public ObservableCollection<string> Resolutions { get; } = new()
         {
@@ -127,8 +139,9 @@ namespace VidDownload.WPF.ViewModels
             "", "all", "en", "ru", "de", "fr", "es", "ja", "zh-Hans", "ar", "pt"
         };
 
-        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, IFFmpegService ffmpegService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService, IDownloadHistoryService historyService)
+        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, IFFmpegService ffmpegService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService, IDownloadHistoryService historyService, LocalizedStrings localizedStrings)
         {
+            _loc = localizedStrings;
             _ytDlpService = ytDlpService;
             _updateService = updateService;
             _ffmpegService = ffmpegService;
@@ -153,7 +166,7 @@ namespace VidDownload.WPF.ViewModels
 
         partial void OnIsPlaylistChanged(bool value)
         {
-            LinkLabelText = value ? Res.LinkLabelPlaylist : Res.LinkLabelVideo;
+            LinkLabelText = value ? _loc["LinkLabelPlaylist"] : _loc["LinkLabelVideo"];
         }
 
         partial void OnIsReEncodeChanged(bool value)
@@ -169,6 +182,16 @@ namespace VidDownload.WPF.ViewModels
             }
         }
 
+        partial void OnSelectedLanguageChanged(string value)
+        {
+            if (_isLoading)
+                return;
+            if (_loc.CurrentLanguage == value.ToUpper())
+                return;
+            _loc.SetLanguage(value.ToLower());
+            _ = SaveSettingsAsync();
+        }
+
         private bool CanDownload() => !IsDownloading;
 
         [RelayCommand]
@@ -176,7 +199,7 @@ namespace VidDownload.WPF.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Url))
             {
-                StatusMessage = Res.EmptyLink;
+                StatusMessage = _loc["EmptyLink"];
                 return;
             }
 
@@ -196,15 +219,15 @@ namespace VidDownload.WPF.ViewModels
 
             if (IsEmbedSubtitles && IsAudioOnly)
             {
-                _messageService.Warning(Res.SubtitleEmbedNotForAudio, Res.WarningTitle);
+                _messageService.Warning(_loc["SubtitleEmbedNotForAudio"], _loc["WarningTitle"]);
                 IsEmbedSubtitles = false;
                 _settings.EmbedSubtitles = false;
             }
             else if (IsEmbedSubtitles && SelectedFormat == "avi")
             {
                 if (!await _dialogService.AskAsync(
-                    Res.AviSubtitleWarning,
-                    Res.WarningTitle))
+                    _loc["AviSubtitleWarning"],
+                    _loc["WarningTitle"]))
                 {
                     return;
                 }
@@ -227,7 +250,7 @@ namespace VidDownload.WPF.ViewModels
             }
             catch (UnauthorizedAccessException)
             {
-                _messageService.Warning(Res.NoSaveFolderAccess, Res.ErrorTitle);
+                _messageService.Warning(_loc["NoSaveFolderAccess"], _loc["ErrorTitle"]);
                 IsDownloading = false;
                 return;
             }
@@ -266,7 +289,7 @@ namespace VidDownload.WPF.ViewModels
                     Timestamp = DateTime.Now,
                     Status = DownloadStatus.Failed
                 });
-                _messageService.Error(string.Format(Res.ErrorWithMessage, ex.Message), Res.ErrorTitle);
+                _messageService.Error(string.Format(_loc["ErrorWithMessage"], ex.Message), _loc["ErrorTitle"]);
             }
             finally
             {
@@ -281,7 +304,7 @@ namespace VidDownload.WPF.ViewModels
                 SelectedFormat = "";
                 Url = "";
                 IsDownloading = false;
-                StatusMessage = _wasCancelled ? Res.DownloadCancelled : "";
+                StatusMessage = _wasCancelled ? _loc["DownloadCancelled"] : "";
                 SpeedText = "--";
                 EtaText = "--";
                 TotalSizeText = "--";
@@ -297,7 +320,7 @@ namespace VidDownload.WPF.ViewModels
                 return;
 
             bool confirmed = await _dialogService.ConfirmAsync(
-                Res.ConfirmCancelDownload, Res.CancelConfirmTitle);
+                _loc["ConfirmCancelDownload"], _loc["CancelConfirmTitle"]);
 
             if (!confirmed)
                 return;
@@ -341,6 +364,7 @@ namespace VidDownload.WPF.ViewModels
 
         private async Task LoadSettingsAsync()
         {
+            _isLoading = true;
             var userSettings = await _settingsService.LoadAsync();
             if (!string.IsNullOrEmpty(userSettings.Resolution))
                 SelectedResolution = userSettings.Resolution;
@@ -354,6 +378,11 @@ namespace VidDownload.WPF.ViewModels
             if (!string.IsNullOrEmpty(userSettings.SubtitleLanguage))
                 SelectedSubtitleLanguage = userSettings.SubtitleLanguage;
             IsEmbedSubtitles = userSettings.EmbedSubtitles;
+            if (!string.IsNullOrEmpty(userSettings.Language))
+            {
+                SelectedLanguage = userSettings.Language;
+                _loc.SetLanguage(userSettings.Language.ToLower());
+            }
             _savePath = !string.IsNullOrEmpty(userSettings.SavePath)
                 ? userSettings.SavePath
                 : UserSettings.DefaultDownloadPath;
@@ -367,9 +396,10 @@ namespace VidDownload.WPF.ViewModels
                 _savePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VidDownload");
                 System.IO.Directory.CreateDirectory(_savePath);
                 _messageService.Warning(
-                    Res.NoVideoFolderAccess,
-                    Res.WarningTitle);
+                    _loc["NoVideoFolderAccess"],
+                    _loc["WarningTitle"]);
             }
+            _isLoading = false;
         }
 
         private async Task SaveSettingsAsync()
@@ -383,7 +413,8 @@ namespace VidDownload.WPF.ViewModels
                 DownloadSubtitles = _settings.DownloadSubtitles,
                 SubtitleLanguage = _settings.SubtitleLanguage,
                 EmbedSubtitles = _settings.EmbedSubtitles,
-                SavePath = _savePath
+                SavePath = _savePath,
+                Language = SelectedLanguage
             });
         }
 
@@ -395,30 +426,30 @@ namespace VidDownload.WPF.ViewModels
 
             IsFfmpegChecking = true;
             IsFfmpegUpdateAvailable = false;
-            FfmpegStatusMessage = Res.CheckingFFmpeg;
+            FfmpegStatusMessage = _loc["CheckingFFmpeg"];
 
             try
             {
                 var info = await _ffmpegService.CheckForUpdateAsync();
 
                 string localVer = await _ffmpegService.GetLocalVersionAsync();
-                FfmpegVersion = string.IsNullOrEmpty(localVer) ? Res.FFmpegNotInstalled : localVer;
+                FfmpegVersion = string.IsNullOrEmpty(localVer) ? _loc["FFmpegNotInstalled"] : localVer;
 
                 if (!info.IsUpdateAvailable)
                 {
                     if (!string.IsNullOrEmpty(localVer))
-                        FfmpegStatusMessage = Res.FFmpegUpToDate;
+                        FfmpegStatusMessage = _loc["FFmpegUpToDate"];
                     else
-                        FfmpegStatusMessage = Res.FFmpegNotFound;
+                        FfmpegStatusMessage = _loc["FFmpegNotFound"];
                     return;
                 }
 
                 if (string.IsNullOrEmpty(info.DownloadUrl))
                 {
                     _messageService.Error(
-                        Res.FFmpegDownloadLinkError,
-                        Res.UpdateErrorTitle);
-                    FfmpegStatusMessage = Res.FFmpegLinkNotFound;
+                        _loc["FFmpegDownloadLinkError"],
+                        _loc["UpdateErrorTitle"]);
+                    FfmpegStatusMessage = _loc["FFmpegLinkNotFound"];
                     return;
                 }
 
@@ -426,18 +457,18 @@ namespace VidDownload.WPF.ViewModels
                 string displayLatest = info.LatestVersion.Length > 30
                     ? info.LatestVersion[..27] + "..."
                     : info.LatestVersion;
-                FfmpegStatusMessage = string.Format(Res.FFmpegVersionAvailable, displayLatest);
+                FfmpegStatusMessage = string.Format(_loc["FFmpegVersionAvailable"], displayLatest);
 
-                string displayCurrent = string.IsNullOrEmpty(localVer) ? Res.VersionNotFound : localVer;
+                string displayCurrent = string.IsNullOrEmpty(localVer) ? _loc["VersionNotFound"] : localVer;
                 if (!await _dialogService.AskAsync(
-                    string.Format(Res.FFmpegUpdateDialog, displayCurrent, displayLatest),
-                    Res.FFmpegUpdateAvailableTitle))
+                    string.Format(_loc["FFmpegUpdateDialog"], displayCurrent, displayLatest),
+                    _loc["FFmpegUpdateAvailableTitle"]))
                 {
                     return;
                 }
 
                 IsFfmpegChecking = true;
-                FfmpegVersion = Res.FFmpegUpdating;
+                FfmpegVersion = _loc["FFmpegUpdating"];
 
                 var progress = new Progress<DownloadProgress>(p =>
                 {
@@ -448,20 +479,20 @@ namespace VidDownload.WPF.ViewModels
                 await _ffmpegService.DownloadUpdateAsync(info, progress);
 
                 string newVer = await _ffmpegService.GetLocalVersionAsync();
-                FfmpegVersion = string.IsNullOrEmpty(newVer) ? Res.FFmpegInstalled : newVer;
+                FfmpegVersion = string.IsNullOrEmpty(newVer) ? _loc["FFmpegInstalled"] : newVer;
                 IsFfmpegUpdateAvailable = false;
-                FfmpegStatusMessage = Res.FFmpegUpdated;
+                FfmpegStatusMessage = _loc["FFmpegUpdated"];
 
                 _messageService.Info(
-                    string.Format(Res.FFmpegUpdateInfoMessage, displayLatest, newVer),
-                    Res.FFmpegUpdateInfoTitle);
+                    string.Format(_loc["FFmpegUpdateInfoMessage"], displayLatest, newVer),
+                    _loc["FFmpegUpdateInfoTitle"]);
             }
             catch (Exception ex)
             {
-                FfmpegStatusMessage = string.Format(Res.ErrorWithMessage, ex.Message);
+                FfmpegStatusMessage = string.Format(_loc["ErrorWithMessage"], ex.Message);
                 _messageService.Error(
-                    string.Format(Res.FFmpegUpdateFailed, ex.Message),
-                    Res.UpdateErrorTitle);
+                    string.Format(_loc["FFmpegUpdateFailed"], ex.Message),
+                    _loc["UpdateErrorTitle"]);
             }
             finally
             {
@@ -487,18 +518,18 @@ namespace VidDownload.WPF.ViewModels
 
             string currentVer = await _updateService.GetCurrentVersionAsync();
             bool fileNotFound = string.IsNullOrEmpty(currentVer);
-            string displayCurrent = fileNotFound ? Res.VersionNotFound : currentVer;
+            string displayCurrent = fileNotFound ? _loc["VersionNotFound"] : currentVer;
 
             if (!fileNotFound &&
                 !await _dialogService.AskAsync(
-                    string.Format(Res.YtDlpUpdateDialog, displayCurrent, info.Version),
-                    Res.YtDlpUpdateAvailableTitle))
+                    string.Format(_loc["YtDlpUpdateDialog"], displayCurrent, info.Version),
+                    _loc["YtDlpUpdateAvailableTitle"]))
             {
                 return;
             }
 
             IsDownloading = true;
-            StatusMessage = Res.YtDlpDownloading;
+            StatusMessage = _loc["YtDlpDownloading"];
 
             try
             {
@@ -511,8 +542,8 @@ namespace VidDownload.WPF.ViewModels
                 await _updateService.DownloadUpdateAsync(info, progress);
 
                 _messageService.Info(
-                    string.Format(Res.YtDlpUpdated, info.Version),
-                    Res.UpdateCompletedTitle);
+                    string.Format(_loc["YtDlpUpdated"], info.Version),
+                    _loc["UpdateCompletedTitle"]);
             }
             finally
             {

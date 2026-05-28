@@ -1,17 +1,16 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Navigation;
+using VidDownload.WPF.Resources;
 
 namespace VidDownload.WPF.Help
 {
-    /// <summary>
-    /// Логика взаимодействия для HelpWindow.xaml
-    /// </summary>
     public partial class HelpWindow : Window
     {
         public HelpWindow()
         {
             InitializeComponent();
+            DataContext = LocalizedStrings.Instance;
         }
 
         private void Hyperlink_Vk(object sender, RequestNavigateEventArgs e)

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using VidDownload.WPF.Resources;
 using VidDownload.WPF.Services;
 using VidDownload.WPF.ViewModels.Base;
 
@@ -11,6 +12,9 @@ namespace VidDownload.WPF.ViewModels
     public partial class HistoryViewModel : ViewModelBase
     {
         private readonly IDownloadHistoryService _historyService;
+        private readonly LocalizedStrings _loc;
+
+        public LocalizedStrings LocalizedStrings => _loc;
 
         [ObservableProperty]
         private ObservableCollection<DownloadHistoryEntry> _entries = new();
@@ -18,9 +22,10 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private DownloadHistoryEntry? _selectedEntry;
 
-        public HistoryViewModel(IDownloadHistoryService historyService)
+        public HistoryViewModel(IDownloadHistoryService historyService, LocalizedStrings localizedStrings)
         {
             _historyService = historyService;
+            _loc = localizedStrings;
         }
 
         public async Task LoadAsync()

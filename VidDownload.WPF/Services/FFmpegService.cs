@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Octokit;
-using Res = VidDownload.WPF.Resources.Res;
+using VidDownload.WPF.Resources;
 
 namespace VidDownload.WPF.Services
 {
@@ -171,13 +171,13 @@ namespace VidDownload.WPF.Services
                             progress?.Report(new DownloadProgress
                             {
                                 Percent = (int)(totalRead * 100 / totalBytes),
-                                StatusMessage = string.Format(Res.DownloadingFFmpegProgress, totalRead * 100 / totalBytes)
+                                StatusMessage = string.Format(LocalizedStrings.Instance["DownloadingFFmpegProgress"], totalRead * 100 / totalBytes)
                             });
                         }
                     }
                 }
 
-                progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = Res.ExtractingFFmpeg });
+                progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = LocalizedStrings.Instance["ExtractingFFmpeg"] });
 
                 string extractDir = Path.Combine(AppDir, "ffmpeg_extract");
                 if (Directory.Exists(extractDir))
@@ -188,7 +188,7 @@ namespace VidDownload.WPF.Services
 
                 string[] binDirs = Directory.GetDirectories(extractDir, "bin", SearchOption.AllDirectories);
                 if (binDirs.Length == 0)
-                    throw new InvalidOperationException(Res.BinFolderNotFound);
+                    throw new InvalidOperationException(LocalizedStrings.Instance["BinFolderNotFound"]);
 
                 string binDir = binDirs[0];
                 foreach (string file in Directory.GetFiles(binDir))
@@ -199,11 +199,11 @@ namespace VidDownload.WPF.Services
 
                 string exePath = Path.Combine(AppDir, FfmpegExeName);
                 if (!File.Exists(exePath))
-                    throw new InvalidOperationException(Res.FFmpegExeNotFound);
+                    throw new InvalidOperationException(LocalizedStrings.Instance["FFmpegExeNotFound"]);
 
                 StoreTag(info.LatestVersion);
 
-                progress?.Report(new DownloadProgress { Percent = 100, StatusMessage = Res.FFmpegUpdatedShort });
+                progress?.Report(new DownloadProgress { Percent = 100, StatusMessage = LocalizedStrings.Instance["FFmpegUpdatedShort"] });
             }
             finally
             {
