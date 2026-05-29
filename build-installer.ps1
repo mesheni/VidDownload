@@ -18,7 +18,7 @@ if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 
 Write-Host "`n[2/5] Building Updater..." -ForegroundColor Yellow
 $updaterOut = Join-Path $repoRoot "Updater\bin\Release\net10.0\win-x64\publish"
-dotnet publish $updaterProject -c Release --self-contained -p:PublishSingleFile=true -r win-x64 -o $updaterOut --nologo 2>&1 | Out-Host
+dotnet publish $updaterProject -c Release -p:PublishSingleFile=true -r win-x64 -o $updaterOut --nologo 2>&1 | Out-Host
 if ($LASTEXITCODE -ne 0) { throw "Updater build failed" }
 Copy-Item (Join-Path $updaterOut "Updater.exe") (Join-Path $publishPath "Updater.exe") -Force
 Write-Host "    Updater.exe included"

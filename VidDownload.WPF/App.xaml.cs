@@ -10,9 +10,7 @@ namespace VidDownload.WPF
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log");
-            if (!Directory.Exists(logPath))
-                Directory.CreateDirectory(logPath);
+            string logPath = AppPaths.LogsDir;
 
             AppServices.Initialize();
 

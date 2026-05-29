@@ -411,8 +411,8 @@ namespace VidDownload.WPF.ViewModels
             }
             catch (UnauthorizedAccessException)
             {
-                _savePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VidDownload");
-                System.IO.Directory.CreateDirectory(_savePath);
+                _savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "VidDownload");
+                Directory.CreateDirectory(_savePath);
                 _messageService.Warning(
                     _loc["NoVideoFolderAccess"],
                     _loc["WarningTitle"]);
@@ -652,6 +652,7 @@ namespace VidDownload.WPF.ViewModels
                     FileName = updaterPath,
                     Arguments = $"--src \"{tempFile}\" --dst \"{appExe}\" --pid {pid}",
                     UseShellExecute = true,
+                    Verb = "runas",
                     CreateNoWindow = true
                 };
 

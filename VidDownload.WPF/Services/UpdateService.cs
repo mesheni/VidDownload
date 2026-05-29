@@ -15,7 +15,7 @@ namespace VidDownload.WPF.Services
         private const string Owner = "yt-dlp";
         private const string Repo = "yt-dlp";
         private const string AssetName = "yt-dlp.exe";
-        private const string ExeName = "yt-dlp.exe";
+        private static readonly string YtDlpDestPath = Path.Combine(AppPaths.ToolsDir, "yt-dlp.exe");
 
         private const string AppOwner = "mesheni";
         private const string AppRepo = "VidDownload";
@@ -73,7 +73,7 @@ namespace VidDownload.WPF.Services
             using var response = await httpClient.GetAsync(info.DownloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             var totalBytes = response.Content.Headers.ContentLength ?? -1;
             using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using var fileStream = new FileStream(ExeName, IOFileMode.Create, System.IO.FileAccess.Write);
+            using var fileStream = new FileStream(YtDlpDestPath, IOFileMode.Create, System.IO.FileAccess.Write);
 
             var buffer = new byte[8192];
             long totalRead = 0;
@@ -87,7 +87,7 @@ namespace VidDownload.WPF.Services
                     progress?.Report(new DownloadProgress
                     {
                         Percent = (int)(totalRead * 100 / totalBytes),
-                        StatusMessage = string.Format(LocalizedStrings.Instance["DownloadingProgress"], ExeName, totalRead * 100 / totalBytes)
+                        StatusMessage = string.Format(LocalizedStrings.Instance["DownloadingProgress"], "yt-dlp.exe", totalRead * 100 / totalBytes)
                     });
                 }
             }

@@ -16,17 +16,28 @@ namespace VidDownload.WPF.Services
         private const string Repo = "FFmpeg-Builds";
         private const string FfmpegExeName = "ffmpeg.exe";
         private const string VersionFileName = "ffmpeg_version.txt";
-        private static readonly string AppDir = AppDomain.CurrentDomain.BaseDirectory;
+
+        private static readonly string InstallDir = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string VersionFilePath = Path.Combine(AppPaths.ToolsDir, VersionFileName);
+
+        private static string ResolveFfmpegPath()
+        {
+            string dataPath = Path.Combine(AppPaths.ToolsDir, FfmpegExeName);
+            if (File.Exists(dataPath))
+                return dataPath;
+            string appPath = Path.Combine(InstallDir, FfmpegExeName);
+            return File.Exists(appPath) ? appPath : dataPath;
+        }
 
         public Task<string> GetFFmpegPathAsync()
         {
-            string path = Path.Combine(AppDir, FfmpegExeName);
+            string path = ResolveFfmpegPath();
             return Task.FromResult(File.Exists(path) ? path : string.Empty);
         }
 
         public async Task<string> GetLocalVersionAsync()
         {
-            string path = Path.Combine(AppDir, FfmpegExeName);
+            string path = ResolveFfmpegPath();
             if (!File.Exists(path))
                 return string.Empty;
 
@@ -47,11 +58,10 @@ namespace VidDownload.WPF.Services
 
         private static string GetStoredTag()
         {
-            string versionFile = Path.Combine(AppDir, VersionFileName);
             try
             {
-                if (File.Exists(versionFile))
-                    return File.ReadAllText(versionFile).Trim();
+                if (File.Exists(VersionFilePath))
+                    return File.ReadAllText(VersionFilePath).Trim();
             }
             catch { }
             return string.Empty;
@@ -59,10 +69,9 @@ namespace VidDownload.WPF.Services
 
         private static void StoreTag(string tag)
         {
-            string versionFile = Path.Combine(AppDir, VersionFileName);
             try
             {
-                File.WriteAllText(versionFile, tag);
+                File.WriteAllText(VersionFilePath, tag);
             }
             catch { }
         }
@@ -146,7 +155,7 @@ namespace VidDownload.WPF.Services
 
         public async Task DownloadUpdateAsync(FFmpegInfo info, IProgress<DownloadProgress> progress)
         {
-            string tempZip = Path.Combine(AppDir, "ffmpeg_update.zip");
+            string tempZip = Path.Combine(AppPaths.ToolsDir, "ffmpeg_update.zip");
             try
             {
                 using var httpClient = new HttpClient();
@@ -179,7 +188,7 @@ namespace VidDownload.WPF.Services
 
                 progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = LocalizedStrings.Instance["ExtractingFFmpeg"] });
 
-                string extractDir = Path.Combine(AppDir, "ffmpeg_extract");
+                string extractDir = Path.Combine(AppPaths.ToolsDir, "ffmpeg_extract");
                 if (Directory.Exists(extractDir))
                     Directory.Delete(extractDir, true);
                 Directory.CreateDirectory(extractDir);
@@ -193,11 +202,11 @@ namespace VidDownload.WPF.Services
                 string binDir = binDirs[0];
                 foreach (string file in Directory.GetFiles(binDir))
                 {
-                    string destPath = Path.Combine(AppDir, Path.GetFileName(file));
+                    string destPath = Path.Combine(AppPaths.ToolsDir, Path.GetFileName(file));
                     File.Copy(file, destPath, overwrite: true);
                 }
 
-                string exePath = Path.Combine(AppDir, FfmpegExeName);
+                string exePath = Path.Combine(AppPaths.ToolsDir, FfmpegExeName);
                 if (!File.Exists(exePath))
                     throw new InvalidOperationException(LocalizedStrings.Instance["FFmpegExeNotFound"]);
 
@@ -210,7 +219,7 @@ namespace VidDownload.WPF.Services
                 try { if (File.Exists(tempZip)) File.Delete(tempZip); } catch { }
                 try
                 {
-                    string extractDir = Path.Combine(AppDir, "ffmpeg_extract");
+                    string extractDir = Path.Combine(AppPaths.ToolsDir, "ffmpeg_extract");
                     if (Directory.Exists(extractDir)) Directory.Delete(extractDir, true);
                 }
                 catch { }
