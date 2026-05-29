@@ -18,6 +18,13 @@ vendor/
 *.tmp
 *.temp
 
+# WiX / Installer
+*.msi
+*.msm
+*.wixpdb
+publish/
+.wix/
+
 # User-specific files
 *.user
 *.userosscache

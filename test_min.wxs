@@ -1,0 +1,6 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package Name="Test" Version="1.0.0" Manufacturer="test" UpgradeCode="00000000-0000-0000-0000-000000000000">
+        <MajorUpgrade DowngradeErrorMessage="A newer version is installed." />
+        <UIRef Id="WixUI_Minimal" />
+    </Package>
+</Wix>

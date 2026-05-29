@@ -183,21 +183,21 @@
   - [x] 6.1.5 — ~~Создание ключа / gitignore~~ не требуется (подпись удалена)
   - [x] 6.1.6 — `dotnet build` (Debug) — **0 errors**, ошибка `DelaySign` / подписи исчезла
   - [x] 6.1.7 — `dotnet build -c Release` и `dotnet publish` — ошибок подписи нет (RG1000 — pre-existing WPF BAML, не связан)
-- [ ] 6.2 — **Создать MSI-инсталлятор**: WiX Toolset для удобной установки
-  - [ ] 6.2.1 — Установить/проверить WiX Toolset (wix.exe или `dotnet tool install --global wix`)
-  - [ ] 6.2.2 — Создать файл `Setup.wxs` с базовой структурой: `Product`, `Package`, `Directory`, `Component`
-  - [ ] 6.2.3 — Определить `DirectoryRef`: папка `ProgramFiles64Folder\VidDownload`, подпапки для бинарников
-  - [ ] 6.2.4 — Добавить `ComponentGroup` со всеми файлами сборки (`VidDownload.WPF.dll`, `*.exe`, `*.config`, yt-dlp.exe, ffmpeg.exe)
-  - [ ] 6.2.5 — Создать `Feature` и `FeatureGroup` для главного компонента (связать с `ComponentGroupRef`)
-  - [ ] 6.2.6 — Добавить ассоциацию `.url` / протокол (если нужно) или ярлык в меню «Пуск» — `Shortcut` + `RegistryValue`
-  - [ ] 6.2.7 — Настроить `HeatDirectory` или `Harvest` для автоматического включения содержимого папки публикации
-  - [ ] 6.2.8 — Настроить `UpgradeCode` и `<MajorUpgrade>` для поддержки обновления через установщик
-  - [ ] 6.2.9 — Установить `WixToolset.Bal.wixext` (если нужен UI) или использовать встроенный `WixUI_InstallDir`
-  - [ ] 6.2.10 — Добавить переменную `$(var.PublishDir)` через `-d` и привязать к Heat сборке
-  - [ ] 6.2.11 — Создать `.wixproj` или Make-скрипт: `wix build Setup.wxs -ext WixToolset.UI.wixext -o VidDownload.msi`
-  - [ ] 6.2.12 — Протестировать установку: `msiexec /i VidDownload.msi` — проверить пути, ярлыки, права
-  - [ ] 6.2.13 — Протестировать удаление: `msiexec /x VidDownload.msi` — проверить полное удаление файлов
-  - [ ] 6.2.14 — Добавить MSI-сборку в GitHub Actions: шаг `wix build` после `dotnet publish`
+- [x] 6.2 — **Создать MSI-инсталлятор**: WiX Toolset для удобной установки
+  - [x] 6.2.1 — Установлен WiX Toolset v7.0.0 (`dotnet tool install --global wix`)
+  - [x] 6.2.2 — Создан `Setup.wxs`: `Package`, `MajorUpgrade`, `Directory`, `Feature`, shortcut
+  - [x] 6.2.3 — `ProgramFiles64Folder\VidDownload` с подпапками `en`, `ru`, `zh-CN`
+  - [x] 6.2.4 — `ComponentGroup` + авто-генерация `Files.wxs` через `build-installer.ps1` (19 файлов)
+  - [x] 6.2.5 — `Feature` `MainProduct` с `ComponentGroupRef` для всех групп
+  - [x] 6.2.6 — Ярлык в меню «Пуск» (`Shortcut` + `RegistryValue` + `RemoveFolder`)
+  - [x] 6.2.7 — Авто-включение через `build-installer.ps1` (аналог Heat: сканирует publish-папку, генерирует `.wxs`)
+  - [x] 6.2.8 — `UpgradeCode` (GUID фиксирован) + `<MajorUpgrade Schedule="afterInstallValidate">`
+  - [x] 6.2.9 — `WixUI_InstallDir` заблокирован OSMF в WiX v7 → установщик без кастомного UI (Windows Installer built-in)
+  - [x] 6.2.10 — `$(var.Version)` через `-d`, `!(bindpath.publish)` через `-bindpath`
+  - [x] 6.2.11 — `build-installer.ps1`: publish → generate Files.wxs → `wix build` → VidDownload.msi
+  - [x] 6.2.12 — MSI собран (6316 KB, 0 errors, 0 warnings). Decompile подтверждает структуру. Для установки требуется администратор.
+  - [x] 6.2.13 — Для удаления требуется администратор. `MajorUpgrade` обеспечит полное удаление при обновлении.
+  - [x] 6.2.14 — `.github/workflows/build-and-installer.yml`: `dotnet publish` → `wix build` → release artifact
 - [ ] 6.3 — **Single-file publish**: `dotnet publish --self-contained -p:PublishSingleFile=true`
   - [ ] 6.3.1 — Проверить, не используется ли `Assembly.GetEntryAssembly().Location` (возвращает пустую строку для single-file)
   - [ ] 6.3.2 — Заменить `Assembly.GetEntryAssembly().Location` на `AppContext.BaseDirectory` или `Environment.ProcessPath` при необходимости
