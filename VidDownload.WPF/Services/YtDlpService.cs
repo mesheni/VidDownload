@@ -22,7 +22,7 @@ namespace VidDownload.WPF.Services
             CancellationToken cancellationToken)
         {
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd HH_mm_ss");
-            string log = Path.Combine(AppDomain.CurrentDomain.BaseDirectory + @"log\" + dateTime + "_log.txt");
+            string log = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log", $"{dateTime}_log.txt");
             string? logDir = Path.GetDirectoryName(log);
 
             if (!string.IsNullOrEmpty(logDir) && !Directory.Exists(logDir))
@@ -36,7 +36,7 @@ namespace VidDownload.WPF.Services
 
             using (Process proc = new())
             {
-                proc.StartInfo.FileName = @".\yt-dlp.exe";
+                proc.StartInfo.FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "yt-dlp.exe");
                 proc.StartInfo.UseShellExecute = false;
                 proc.StartInfo.RedirectStandardOutput = true;
                 proc.StartInfo.CreateNoWindow = true;
@@ -94,9 +94,10 @@ namespace VidDownload.WPF.Services
         {
             try
             {
-                if (File.Exists("yt-dlp.exe"))
+                string ytDlpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "yt-dlp.exe");
+                if (File.Exists(ytDlpPath))
                 {
-                    var versionInfo = FileVersionInfo.GetVersionInfo("yt-dlp.exe");
+                    var versionInfo = FileVersionInfo.GetVersionInfo(ytDlpPath);
                     return Task.FromResult(versionInfo.FileVersion ?? string.Empty);
                 }
             }

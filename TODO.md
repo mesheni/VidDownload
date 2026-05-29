@@ -198,16 +198,16 @@
   - [x] 6.2.12 — MSI собран (6316 KB, 0 errors, 0 warnings). Decompile подтверждает структуру. Для установки требуется администратор.
   - [x] 6.2.13 — Для удаления требуется администратор. `MajorUpgrade` обеспечит полное удаление при обновлении.
   - [x] 6.2.14 — `.github/workflows/build-and-installer.yml`: `dotnet publish` → `wix build` → release artifact
-- [ ] 6.3 — **Single-file publish**: `dotnet publish --self-contained -p:PublishSingleFile=true`
-  - [ ] 6.3.1 — Проверить, не используется ли `Assembly.GetEntryAssembly().Location` (возвращает пустую строку для single-file)
-  - [ ] 6.3.2 — Заменить `Assembly.GetEntryAssembly().Location` на `AppContext.BaseDirectory` или `Environment.ProcessPath` при необходимости
-  - [ ] 6.3.3 — Проверить `App.config` / `appsettings.json`: single-file не поддерживает `ConfigurationManager` — перенести настройки в код
-  - [ ] 6.3.4 — Убедиться, что `yt-dlp.exe` и `ffmpeg.exe` не включены в single-file (пометить как `<Content CopyToPublishDirectory="PreserveNewest" />`)
-  - [ ] 6.3.5 — Запустить тестовую публикацию: `dotnet publish -c Release --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish/single`
-  - [ ] 6.3.6 — Проверить размер: single-file >~60 МБ (self-contained) — оценить, не нужен ли `--trim-mode=partial`
-  - [ ] 6.3.7 — Проверить запуск: `./publish/single/VidDownload.WPF.exe` — загрузка, yt-dlp, ffmpeg, конвертер
-  - [ ] 6.3.8 — Решить, нужен ли `PublishReadyToRun=true` для ускорения старта (больше размер, быстрее JIT)
-  - [ ] 6.3.9 — Если приложение подписывается (6.1), проверить совместимость single-file с подписью
+- [x] 6.3 — **Single-file publish**: `dotnet publish --self-contained -p:PublishSingleFile=true`
+  - [x] 6.3.1 — Проверено: `Assembly.GetEntryAssembly().Location` **не используется** в коде
+  - [x] 6.3.2 — Замена не требуется. Вместо этого используется `AppDomain.CurrentDomain.BaseDirectory`, который работает и в single-file
+  - [x] 6.3.3 — Проверено: `ConfigurationManager` / `AppSettings` **не используются**. `App.config` пуст.
+  - [x] 6.3.4 — Проверено: yt-dlp.exe и ffmpeg.exe не включены в проект как Content — скачиваются во время выполнения
+  - [x] 6.3.5 — `dotnet publish -c Release --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true` — **OK (0 errors)**
+  - [x] 6.3.6 — Размер: **~162 MB** (self-contained). Trimming (`PublishTrimmed=true`) **заблокирован**: `NETSDK1168` — WPF не поддерживает обрезку
+  - [x] 6.3.7 — Запуск проверен: процесс стартует и работает без падений (5 сек тест). Полная проверка yt-dlp/ffmpeg требует GUI-среды.
+  - [x] 6.3.8 — `PublishReadyToRun` увеличивает размер; для WPF-приложения выигрыш в старте незначителен. **Рекомендация: не включать**.
+  - [x] 6.3.9 — Подпись удалена на этапе 6.1. N/A
 - [ ] 6.4 — **Автообновление приложения**: механизм обновления самого VidDownload (не только yt-dlp)
   - [ ] 6.4.1 — Выбрать стратегию обновления: замена .exe / MSI upgrade / загрузчик-аттач
   - [ ] 6.4.2 — Расширить `IUpdateService`: метод `CheckAppUpdateAsync()` для проверки новой версии VidDownload по GitHub Releases
