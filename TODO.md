@@ -208,19 +208,19 @@
   - [x] 6.3.7 — Запуск проверен: процесс стартует и работает без падений (5 сек тест). Полная проверка yt-dlp/ffmpeg требует GUI-среды.
   - [x] 6.3.8 — `PublishReadyToRun` увеличивает размер; для WPF-приложения выигрыш в старте незначителен. **Рекомендация: не включать**.
   - [x] 6.3.9 — Подпись удалена на этапе 6.1. N/A
-- [ ] 6.4 — **Автообновление приложения**: механизм обновления самого VidDownload (не только yt-dlp)
-  - [ ] 6.4.1 — Выбрать стратегию обновления: замена .exe / MSI upgrade / загрузчик-аттач
-  - [ ] 6.4.2 — Расширить `IUpdateService`: метод `CheckAppUpdateAsync()` для проверки новой версии VidDownload по GitHub Releases
-  - [ ] 6.4.3 — Создать модель `AppUpdateInfo` с полями: `Version`, `DownloadUrl`, `ReleaseNotes`, `IsPreRelease`, `AssetName`
-  - [ ] 6.4.4 — В `UpdateService.CheckAppUpdateAsync()`: через Octokit получить теги релизов VidDownload, сравнить с текущей версией из сборки
-  - [ ] 6.4.5 — Реализовать `DownloadAppUpdateAsync()`: скачать выбранный asset (.exe или .msi) во временную папку
-  - [ ] 6.4.6 — Создать отдельный `Updater.exe` (простая консоль): дождаться завершения основного процесса, заменить файл, перезапустить
-  - [ ] 6.4.7 — Запускать `Updater.exe` с аргументами: `--src <temp>\new.exe --dst <app>\VidDownload.WPF.exe --pid <current-pid>`
-  - [ ] 6.4.8 — Добавить свойства `IsAppUpdateAvailable`, `AppUpdateVersion` в `MainViewModel`
-  - [ ] 6.4.9 — Создать команду `UpdateAppCommand` в `MainViewModel`: проверить обновление, предложить скачать, скачать, запустить updater
-  - [ ] 6.4.10 — В `MainWindow.xaml`: добавить кнопку/индикатор «Доступно обновление VidDownload» рядом с проверкой yt-dlp
-  - [ ] 6.4.11 — Проверить цифровую подпись (если есть): верифицировать скачанный файл перед заменой
-  - [ ] 6.4.12 — Обработать краевые случаи: нет прав на запись в `Program Files`, антивирус блокирует замену, ошибка скачивания
+- [x] 6.4 — **Автообновление приложения**: механизм обновления самого VidDownload (не только yt-dlp)
+  - [x] 6.4.1 — Стратегия: **замена .exe через Updater.exe** (консольный помощник ожидает PID, заменяет файл, перезапускает)
+  - [x] 6.4.2 — `IUpdateService` расширен: `CheckAppUpdateAsync()`, `DownloadAppUpdateAsync()`
+  - [x] 6.4.3 — Создан `AppUpdateInfo` с Version, DownloadUrl, ReleaseNotes, IsPreRelease, IsUpdateAvailable
+  - [x] 6.4.4 — `CheckAppUpdateAsync()` через Octokit `Repository.Release.GetAll(mesheni, VidDownload)` → сравнивает версии через `Version`
+  - [x] 6.4.5 — `DownloadAppUpdateAsync()` скачивает .exe/.msi в `%TEMP%\VidDownloadUpdate\` с прогрессом
+  - [x] 6.4.6 — Проект `Updater.exe` (net10.0, single-file): ждёт PID, ретраит копирование (10 попыток), перезапускает
+  - [x] 6.4.7 — Updater вызывается: `--src <temp> --dst <app exe> --pid <current>`
+  - [x] 6.4.8 — `IsAppUpdateAvailable`, `IsAppUpdateChecking`, `AppUpdateStatusMessage`, `AppVersion` в MainViewModel
+  - [x] 6.4.9 — `UpdateAppCommand`: диалог → скачивание → диалог перезапуска → запуск Updater.exe → Shutdown
+  - [x] 6.4.10 — Строка в MainWindow: `VidDownload: {version} [Обновить приложение]` (кнопка красная, видна только при `IsAppUpdateAvailable`)
+  - [x] 6.4.11 — Подпись удалена (этап 6.1) — N/A
+  - [x] 6.4.12 — Updater ретраит копирование (10× по 1с), ошибки перехвачены в try/catch, сообщения пользователю через диалоги
 
 ---
 

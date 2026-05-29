@@ -123,4 +123,16 @@
   <data name="FFmpegUpdatedShort" xml:space="preserve"><value>FFmpeg 已更新</value></data>
   <data name="InputFileNotFound" xml:space="preserve"><value>输入文件未找到: {0}</value></data>
   <data name="DownloadingProgress" xml:space="preserve"><value>正在下载 {0}... {1}%</value></data>
+  <data name="AppCheckingUpdate" xml:space="preserve"><value>检查更新...</value></data>
+  <data name="AppUpdateAvailable" xml:space="preserve"><value>版本 {0} 可用</value></data>
+  <data name="AppUpToDate" xml:space="preserve"><value>已是最新版本</value></data>
+  <data name="AppUpdateDialog" xml:space="preserve"><value>当前版本: {0}\n新版本: {1}\n下载并安装?</value></data>
+  <data name="AppUpdateDownloadTitle" xml:space="preserve"><value>VidDownload 更新可用!</value></data>
+  <data name="AppUpdateCheckError" xml:space="preserve"><value>检查更新失败</value></data>
+  <data name="AppUpdateDownloading" xml:space="preserve"><value>正在下载更新...</value></data>
+  <data name="AppUpdateReady" xml:space="preserve"><value>更新已下载。重新启动应用程序?</value></data>
+  <data name="AppUpdateError" xml:space="preserve"><value>更新错误: {0}</value></data>
+  <data name="AppUpdateSuccess" xml:space="preserve"><value>应用程序已更新至 {0}</value></data>
+  <data name="AppRestartTitle" xml:space="preserve"><value>重启</value></data>
+  <data name="CheckAppUpdateButton" xml:space="preserve"><value>更新应用</value></data>
 </root>

@@ -123,4 +123,16 @@
   <data name="FFmpegUpdatedShort" xml:space="preserve"><value>FFmpeg updated</value></data>
   <data name="InputFileNotFound" xml:space="preserve"><value>Input file not found: {0}</value></data>
   <data name="DownloadingProgress" xml:space="preserve"><value>Downloading {0}... {1}%</value></data>
+  <data name="AppCheckingUpdate" xml:space="preserve"><value>checking updates...</value></data>
+  <data name="AppUpdateAvailable" xml:space="preserve"><value>Version {0} available</value></data>
+  <data name="AppUpToDate" xml:space="preserve"><value>App is up to date</value></data>
+  <data name="AppUpdateDialog" xml:space="preserve"><value>Current version: {0}\nNew version: {1}\nDownload and install?</value></data>
+  <data name="AppUpdateDownloadTitle" xml:space="preserve"><value>VidDownload update available!</value></data>
+  <data name="AppUpdateCheckError" xml:space="preserve"><value>Failed to check for updates</value></data>
+  <data name="AppUpdateDownloading" xml:space="preserve"><value>Downloading update...</value></data>
+  <data name="AppUpdateReady" xml:space="preserve"><value>Update downloaded. Restart the application?</value></data>
+  <data name="AppUpdateError" xml:space="preserve"><value>Update error: {0}</value></data>
+  <data name="AppUpdateSuccess" xml:space="preserve"><value>Application updated to {0}</value></data>
+  <data name="AppRestartTitle" xml:space="preserve"><value>Restart</value></data>
+  <data name="CheckAppUpdateButton" xml:space="preserve"><value>Update app</value></data>
 </root>

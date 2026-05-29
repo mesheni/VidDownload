@@ -2,9 +2,11 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Octokit;
 using VidDownload.WPF.Resources;
+using IOFileMode = System.IO.FileMode;
 
 namespace VidDownload.WPF.Services
 {
@@ -14,6 +16,11 @@ namespace VidDownload.WPF.Services
         private const string Repo = "yt-dlp";
         private const string AssetName = "yt-dlp.exe";
         private const string ExeName = "yt-dlp.exe";
+
+        private const string AppOwner = "mesheni";
+        private const string AppRepo = "VidDownload";
+        private const string AppAssetPattern = "VidDownload";
+
         private readonly IYtDlpService _ytDlpService;
 
         public UpdateService(IYtDlpService ytDlpService)
@@ -66,7 +73,7 @@ namespace VidDownload.WPF.Services
             using var response = await httpClient.GetAsync(info.DownloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
             var totalBytes = response.Content.Headers.ContentLength ?? -1;
             using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using var fileStream = new FileStream(ExeName, System.IO.FileMode.Create, System.IO.FileAccess.Write);
+            using var fileStream = new FileStream(ExeName, IOFileMode.Create, System.IO.FileAccess.Write);
 
             var buffer = new byte[8192];
             long totalRead = 0;
@@ -89,6 +96,101 @@ namespace VidDownload.WPF.Services
         public async Task<string> GetCurrentVersionAsync()
         {
             return await _ytDlpService.GetLocalVersionAsync().ConfigureAwait(false);
+        }
+
+        public async Task<AppUpdateInfo> CheckAppUpdateAsync()
+        {
+            var info = new AppUpdateInfo();
+
+            if (!await CheckForInternetConnectionAsync().ConfigureAwait(false))
+                return info;
+
+            try
+            {
+                var client = new GitHubClient(new ProductHeaderValue("VidDownload"));
+                var releases = await client.Repository.Release.GetAll(AppOwner, AppRepo).ConfigureAwait(false);
+
+                foreach (var release in releases)
+                {
+                    if (release.Prerelease)
+                        continue;
+
+                    info.Version = release.TagName.TrimStart('v', 'V');
+                    info.ReleaseNotes = release.Body ?? string.Empty;
+                    info.IsPreRelease = false;
+
+                    foreach (var asset in release.Assets)
+                    {
+                        if (asset.BrowserDownloadUrl.Contains(AppAssetPattern) &&
+                            (asset.BrowserDownloadUrl.EndsWith(".exe") || asset.BrowserDownloadUrl.EndsWith(".msi")))
+                        {
+                            info.DownloadUrl = asset.BrowserDownloadUrl;
+                            break;
+                        }
+                    }
+                    break;
+                }
+
+                if (string.IsNullOrEmpty(info.Version))
+                    return info;
+
+                string currentVer = GetAppVersion();
+                string latestVer = info.Version.Replace(".", "");
+
+                if (string.IsNullOrEmpty(currentVer) ||
+                    !Version.TryParse(currentVer, out var current) ||
+                    !Version.TryParse(info.Version, out var latest) ||
+                    current < latest)
+                {
+                    info.IsUpdateAvailable = true;
+                }
+            }
+            catch
+            {
+                // Network error or rate limit — return no update
+            }
+
+            return info;
+        }
+
+        public async Task DownloadAppUpdateAsync(AppUpdateInfo info, IProgress<DownloadProgress> progress)
+        {
+            string tempDir = Path.Combine(Path.GetTempPath(), "VidDownloadUpdate");
+            Directory.CreateDirectory(tempDir);
+
+            string fileName = info.DownloadUrl.EndsWith(".msi") ? "VidDownload.msi" : "VidDownload.WPF.exe";
+            string destPath = Path.Combine(tempDir, fileName);
+
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("VidDownload");
+
+            using var response = await httpClient.GetAsync(info.DownloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+            var totalBytes = response.Content.Headers.ContentLength ?? -1;
+            using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using var fileStream = new FileStream(destPath, IOFileMode.Create, System.IO.FileAccess.Write);
+
+            var buffer = new byte[8192];
+            long totalRead = 0;
+            int bytesRead;
+            while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
+            {
+                await fileStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                totalRead += bytesRead;
+                if (totalBytes > 0)
+                {
+                    progress?.Report(new DownloadProgress
+                    {
+                        Percent = (int)(totalRead * 100 / totalBytes),
+                        StatusMessage = string.Format(LocalizedStrings.Instance["DownloadingProgress"], fileName, totalRead * 100 / totalBytes)
+                    });
+                }
+            }
+        }
+
+        private static string GetAppVersion()
+        {
+            var version = Assembly.GetEntryAssembly()?.GetName()?.Version;
+            return version?.ToString() ?? "0.0.0";
         }
 
         private static async Task<bool> CheckForInternetConnectionAsync(int timeoutMs = 1000)

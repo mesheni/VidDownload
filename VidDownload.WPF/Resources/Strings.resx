@@ -123,4 +123,16 @@
   <data name="FFmpegUpdatedShort" xml:space="preserve"><value>FFmpeg обновлён</value></data>
   <data name="InputFileNotFound" xml:space="preserve"><value>Входной файл не найден: {0}</value></data>
   <data name="DownloadingProgress" xml:space="preserve"><value>Загрузка {0}... {1}%</value></data>
+  <data name="AppCheckingUpdate" xml:space="preserve"><value>проверка обновлений...</value></data>
+  <data name="AppUpdateAvailable" xml:space="preserve"><value>Доступна версия {0}</value></data>
+  <data name="AppUpToDate" xml:space="preserve"><value>Версия актуальна</value></data>
+  <data name="AppUpdateDialog" xml:space="preserve"><value>Текущая версия: {0}\nНовая версия: {1}\nЗагрузить и установить?</value></data>
+  <data name="AppUpdateDownloadTitle" xml:space="preserve"><value>Доступно обновление VidDownload!</value></data>
+   <data name="AppUpdateCheckError" xml:space="preserve"><value>Не удалось проверить обновления</value></data>
+  <data name="AppUpdateDownloading" xml:space="preserve"><value>Загрузка обновления...</value></data>
+  <data name="AppUpdateReady" xml:space="preserve"><value>Обновление скачано. Перезапустить приложение?</value></data>
+  <data name="AppUpdateError" xml:space="preserve"><value>Ошибка обновления: {0}</value></data>
+  <data name="AppUpdateSuccess" xml:space="preserve"><value>Приложение обновлено до {0}</value></data>
+  <data name="AppRestartTitle" xml:space="preserve"><value>Перезапуск</value></data>
+  <data name="CheckAppUpdateButton" xml:space="preserve"><value>Обновить приложение</value></data>
 </root>

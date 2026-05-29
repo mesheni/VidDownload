@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,6 +109,20 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private bool _isEmbedSubtitles;
 
+        [ObservableProperty]
+        private string _appVersion = string.Empty;
+
+        [ObservableProperty]
+        private bool _isAppUpdateChecking;
+
+        [ObservableProperty]
+        private bool _isAppUpdateAvailable;
+
+        [ObservableProperty]
+        private string _appUpdateStatusMessage = string.Empty;
+
+        private AppUpdateInfo? _appUpdateInfo;
+
         public LocalizedStrings LocalizedStrings => _loc;
 
         public ObservableCollection<string> AvailableLanguages { get; } = new()
@@ -155,7 +171,9 @@ namespace VidDownload.WPF.ViewModels
             }
             _ = CheckUpdateAsync();
             _ = CheckFFmpegUpdateAsync();
+            _ = CheckAppUpdateAsync();
             _ = LoadSettingsAsync();
+            AppVersion = GetAppVersion();
         }
 
         partial void OnIsAudioOnlyChanged(bool value)
@@ -551,6 +569,110 @@ namespace VidDownload.WPF.ViewModels
                 StatusMessage = "";
                 IsDownloading = false;
             }
+        }
+
+        public async Task CheckAppUpdateAsync()
+        {
+            if (IsAppUpdateChecking)
+                return;
+
+            IsAppUpdateChecking = true;
+            AppUpdateStatusMessage = _loc["AppCheckingUpdate"];
+
+            try
+            {
+                var info = await _updateService.CheckAppUpdateAsync();
+                _appUpdateInfo = info;
+
+                if (!info.IsUpdateAvailable)
+                {
+                    AppUpdateStatusMessage = _loc["AppUpToDate"];
+                    return;
+                }
+
+                IsAppUpdateAvailable = true;
+                string displayLatest = info.Version.Length > 20
+                    ? info.Version[..17] + "..."
+                    : info.Version;
+                AppUpdateStatusMessage = string.Format(_loc["AppUpdateAvailable"], displayLatest);
+            }
+            catch
+            {
+                AppUpdateStatusMessage = _loc["AppUpdateCheckError"];
+            }
+            finally
+            {
+                IsAppUpdateChecking = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task UpdateAppAsync()
+        {
+            if (_appUpdateInfo == null || !_appUpdateInfo.IsUpdateAvailable)
+                return;
+
+            string currentVer = string.IsNullOrEmpty(AppVersion) ? _loc["VersionNotFound"] : AppVersion;
+            string displayLatest = _appUpdateInfo.Version;
+
+            if (!await _dialogService.AskAsync(
+                string.Format(_loc["AppUpdateDialog"], currentVer, displayLatest),
+                _loc["AppUpdateDownloadTitle"]))
+            {
+                return;
+            }
+
+            IsAppUpdateChecking = true;
+            AppUpdateStatusMessage = _loc["AppUpdateDownloading"];
+
+            try
+            {
+                var progress = new Progress<DownloadProgress>(p =>
+                {
+                    if (!string.IsNullOrEmpty(p.StatusMessage))
+                        AppUpdateStatusMessage = p.StatusMessage;
+                });
+
+                await _updateService.DownloadAppUpdateAsync(_appUpdateInfo, progress);
+
+                if (!await _dialogService.AskAsync(
+                    _loc["AppUpdateReady"],
+                    _loc["AppRestartTitle"]))
+                {
+                    return;
+                }
+
+                string updaterPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater.exe");
+                string tempFile = Path.Combine(Path.GetTempPath(), "VidDownloadUpdate", "VidDownload.WPF.exe");
+                string appExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VidDownload.WPF.exe");
+                int pid = Environment.ProcessId;
+
+                var updaterInfo = new ProcessStartInfo
+                {
+                    FileName = updaterPath,
+                    Arguments = $"--src \"{tempFile}\" --dst \"{appExe}\" --pid {pid}",
+                    UseShellExecute = true,
+                    CreateNoWindow = true
+                };
+
+                Process.Start(updaterInfo);
+                Application.Current.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                AppUpdateStatusMessage = string.Format(_loc["AppUpdateError"], ex.Message);
+                _messageService.Error(string.Format(_loc["AppUpdateError"], ex.Message), _loc["UpdateErrorTitle"]);
+            }
+            finally
+            {
+                IsAppUpdateChecking = false;
+            }
+        }
+
+        private static string GetAppVersion()
+        {
+            var version = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
+            return version?.ToString() ?? "0.0.0";
         }
     }
 }

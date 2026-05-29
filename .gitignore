@@ -25,6 +25,10 @@ vendor/
 publish/
 .wix/
 
+# Updater publish
+Updater/bin/
+Updater/obj/
+
 # User-specific files
 *.user
 *.userosscache

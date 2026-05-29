@@ -95,6 +95,11 @@
                         <Label Content="{Binding FfmpegVersion}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
                         <Button Content="{Binding LocalizedStrings[CheckUpdateButton]}" Command="{Binding CheckFFmpegUpdateCommand}" Height="24" Padding="5,0" Margin="10,0,0,0" FontFamily="Cascadia Code" FontSize="11" FontWeight="Bold"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 2">
+                        <Label Content="VidDownload:" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
+                        <Label Content="{Binding AppVersion}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="#FF1D1D1D"/>
+                        <Button Content="{Binding LocalizedStrings[CheckAppUpdateButton]}" Command="{Binding UpdateAppCommand}" Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource BoolToVis}}" Height="24" Padding="5,0" Margin="10,0,0,0" FontFamily="Cascadia Code" FontSize="11" FontWeight="Bold" Background="#FF5252" Foreground="White"/>
+                    </StackPanel>
                     <Grid HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
