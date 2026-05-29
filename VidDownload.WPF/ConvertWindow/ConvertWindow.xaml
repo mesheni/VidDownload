@@ -6,39 +6,103 @@
         xmlns:hc="https://handyorg.github.io/handycontrol"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Height="450" Width="800">
+        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Height="760" Width="820">
     <Window.Resources>
         <converters:BooleanInvertConverter x:Key="InvertBool"/>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
     <Grid Background="#FF1D1D1D">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Margin="20, 20, 0, 0">
-            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                <Label Content="{Binding LocalizedStrings[SelectVideoFileLabel]}" Background="#FF1D1D1D" Foreground="White" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" FontSize="16" Height="36" FontWeight="Bold"/>
-                <Button Content="{Binding LocalizedStrings[BrowseButton]}" Command="{Binding BrowseFileCommand}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Width="100" FontFamily="Cascadia Code" FontSize="14"/>
-                <hc:TextBox Text="{Binding FilePath}" Width="450" Height="100" Margin="10, 0, 0, 0" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" HorizontalContentAlignment="Left" AllowDrop="True" TextWrapping="Wrap" TextAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Top"/>
+
+        <!-- Row 0: Input file selection -->
+        <Grid Grid.Row="0" Margin="20, 15, 20, 0">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{Binding LocalizedStrings[SelectVideoFileLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="{Binding LocalizedStrings[BrowseButton]}" Command="{Binding BrowseFileCommand}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Width="80" FontFamily="Cascadia Code" FontSize="13" Margin="8,0"/>
+                <TextBox Text="{Binding FilePath}" Width="540" Height="24" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" FontSize="12" VerticalContentAlignment="Center" AllowDrop="True"/>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="1" Margin="20,20,20,20">
-            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                <Label Content="{Binding LocalizedStrings[ExtensionLabel]}" Margin="10, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Cascadia Code" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" UseLayoutRounding="False" BorderThickness="0,0,0,0"/>
-                <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Height="22" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Cascadia Code" FontWeight="Bold" Background="White" BorderThickness="0,0,0,0" FontSize="14"/>
+
+        <!-- Row 1: Output directory + file name -->
+        <Grid Grid.Row="1" Margin="20, 12, 20, 0">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{Binding LocalizedStrings[OutputFolderLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Button Content="{Binding LocalizedStrings[OutputBrowseButton]}" Command="{Binding BrowseOutputDirCommand}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Width="80" FontFamily="Cascadia Code" FontSize="13" Margin="8,0"/>
+                <TextBox Text="{Binding OutputDirectory}" Width="380" Height="24" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" FontSize="12" VerticalContentAlignment="Center"/>
+                <Label Content="{Binding LocalizedStrings[OutputFileNameLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,4,0"/>
+                <TextBox Text="{Binding OutputFileName}" Width="140" Height="24" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" FontSize="12" VerticalContentAlignment="Center"/>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="2" Margin="20,0,20,20" VerticalAlignment="Bottom">
+
+        <!-- Row 2: Format, Hardware encoder, Preset -->
+        <Grid Grid.Row="2" Margin="20, 12, 20, 0">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{Binding LocalizedStrings[ExtensionLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Height="24" Width="90" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="13" Margin="6,0,16,0"/>
+
+                <Label Content="{Binding LocalizedStrings[HardwareEncoderLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding HardwareEncoders}" SelectedItem="{Binding SelectedHardwareEncoder}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Height="24" Width="100" FontFamily="Cascadia Code" FontSize="13" Margin="6,0,16,0"/>
+
+                <Label Content="{Binding LocalizedStrings[PresetLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Height="24" Width="120" FontFamily="Cascadia Code" FontSize="13" Margin="6,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 3: Video codec + Audio codec -->
+        <Grid Grid.Row="3" Margin="20, 12, 20, 0">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{Binding LocalizedStrings[VideoCodecLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding SelectedVideoCodec}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Height="24" Width="200" FontFamily="Cascadia Code" FontSize="13" Margin="6,0,16,0"/>
+
+                <Label Content="{Binding LocalizedStrings[AudioCodecLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding AudioCodecs}" SelectedItem="{Binding SelectedAudioCodec}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Height="24" Width="140" FontFamily="Cascadia Code" FontSize="13" Margin="6,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 4: Quality parameters -->
+        <Grid Grid.Row="4" Margin="20, 12, 20, 0">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="{Binding LocalizedStrings[CrfLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Width="45" Height="24" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" FontSize="13" VerticalContentAlignment="Center" Margin="6,0,16,0"/>
+
+                <Label Content="{Binding LocalizedStrings[VideoBitrateLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Width="70" Height="24" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" FontSize="13" VerticalContentAlignment="Center" Margin="6,0,16,0"/>
+
+                <Label Content="{Binding LocalizedStrings[AudioBitrateLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" Width="70" Height="24" Background="#FF363535" Foreground="#FFBAF79F" BorderBrush="{x:Null}" FontFamily="Cascadia Code" FontSize="13" VerticalContentAlignment="Center" Margin="6,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 5: FFmpeg command preview -->
+        <Grid Grid.Row="5" Margin="20, 12, 20, 0">
             <StackPanel Orientation="Vertical">
-                <Label Content="{Binding StatusMessage}" Width="610" HorizontalAlignment="Center" Margin="20,0,20,0" FontFamily="Cascadia Code SemiLight" Foreground="White" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
-                <ProgressBar Value="{Binding ProgressPercent}" Margin="20, 0" Height="28" VerticalAlignment="Top" Foreground="#FDFF5252" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14"/>
+                <Label Content="{Binding LocalizedStrings[FfmpegCommandPreviewLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold" Margin="0,0,0,2"/>
+                <TextBox Text="{Binding FfmpegCommandPreview}" Height="40" Background="#FF2A2A2A" Foreground="#FF8BE0FD" BorderBrush="{x:Null}" FontFamily="Consolas" FontSize="11" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="3" Margin="20,0,20,20" VerticalAlignment="Bottom">
+
+        <!-- Row 6: Status + Progress -->
+        <Grid Grid.Row="6" Margin="20,8,20,0" VerticalAlignment="Bottom">
             <StackPanel Orientation="Vertical">
-                <Button Content="{Binding LocalizedStrings[ConvertButton]}" Command="{Binding ConvertCommand}" VerticalAlignment="Top" Margin="0, 10" Height="45" Width="300" Background="#FFFF4F4F" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="27" FontWeight="Bold"/>
+                <Label Content="{Binding StatusMessage}" HorizontalAlignment="Center" FontFamily="Cascadia Code" Foreground="White" Background="{x:Null}" Padding="0"/>
+                <ProgressBar Value="{Binding ProgressPercent}" Height="24" VerticalAlignment="Top" Foreground="#FDFF5252" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="13"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Row 7: Cancel + Convert buttons -->
+        <Grid Grid.Row="7" Margin="20,10,20,15" VerticalAlignment="Bottom">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="{Binding LocalizedStrings[CancelConvertButton]}" Command="{Binding CancelConvertCommand}" IsEnabled="{Binding IsCancellable}" Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}" Height="42" Width="180" Background="#FFFF8700" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="18" FontWeight="Bold" Margin="0,0,15,0"/>
+                <Button Content="{Binding LocalizedStrings[ConvertButton]}" Command="{Binding ConvertCommand}" Height="42" Width="280" Background="#FFFF4F4F" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="20" FontWeight="Bold"/>
             </StackPanel>
         </Grid>
     </Grid>

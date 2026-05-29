@@ -135,4 +135,17 @@
   <data name="AppUpdateSuccess" xml:space="preserve"><value>Application updated to {0}</value></data>
   <data name="AppRestartTitle" xml:space="preserve"><value>Restart</value></data>
   <data name="CheckAppUpdateButton" xml:space="preserve"><value>Update app</value></data>
+  <data name="VideoCodecLabel" xml:space="preserve"><value>Video codec:</value></data>
+  <data name="AudioCodecLabel" xml:space="preserve"><value>Audio codec:</value></data>
+  <data name="HardwareEncoderLabel" xml:space="preserve"><value>Hardware encoder:</value></data>
+  <data name="CrfLabel" xml:space="preserve"><value>CRF:</value></data>
+  <data name="VideoBitrateLabel" xml:space="preserve"><value>Video bitrate (Kbps):</value></data>
+  <data name="AudioBitrateLabel" xml:space="preserve"><value>Audio bitrate (Kbps):</value></data>
+  <data name="PresetLabel" xml:space="preserve"><value>Preset:</value></data>
+  <data name="OutputFolderLabel" xml:space="preserve"><value>Output folder:</value></data>
+  <data name="OutputFileNameLabel" xml:space="preserve"><value>File name:</value></data>
+  <data name="OutputBrowseButton" xml:space="preserve"><value>Browse</value></data>
+  <data name="CancelConvertButton" xml:space="preserve"><value>Cancel</value></data>
+  <data name="FfmpegCommandPreviewLabel" xml:space="preserve"><value>FFmpeg command:</value></data>
+  <data name="OutputFolderDialogTitle" xml:space="preserve"><value>Select output folder</value></data>
 </root>

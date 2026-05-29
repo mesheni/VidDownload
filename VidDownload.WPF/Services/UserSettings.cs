@@ -16,5 +16,15 @@ namespace VidDownload.WPF.Services
         public bool EmbedSubtitles { get; set; }
         public string SavePath { get; set; } = string.Empty;
         public string Language { get; set; } = "RU";
+
+        public string ConvertOutputFormat { get; set; } = "MP4";
+        public string ConvertVideoCodec { get; set; } = "libx264";
+        public string ConvertAudioCodec { get; set; } = "aac";
+        public string ConvertHardwareEncoder { get; set; } = string.Empty;
+        public int ConvertCrf { get; set; } = 23;
+        public int ConvertVideoBitrate { get; set; }
+        public int ConvertAudioBitrate { get; set; }
+        public string ConvertPreset { get; set; } = "medium";
+        public string ConvertOutputDir { get; set; } = string.Empty;
     }
 }
