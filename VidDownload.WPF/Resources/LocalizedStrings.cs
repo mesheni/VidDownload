@@ -39,7 +39,12 @@ namespace VidDownload.WPF.Resources
 
         public void SetLanguage(string cultureCode)
         {
-            var culture = new CultureInfo(cultureCode);
+            var mapped = cultureCode.ToLower() switch
+            {
+                "zh" => "zh-CN",
+                _ => cultureCode
+            };
+            var culture = new CultureInfo(mapped);
             Res.Culture = culture;
             Thread.CurrentThread.CurrentUICulture = culture;
             Thread.CurrentThread.CurrentCulture = culture;

@@ -111,7 +111,7 @@ namespace VidDownload.WPF.ViewModels
 
         public ObservableCollection<string> AvailableLanguages { get; } = new()
         {
-            "RU", "EN"
+            "RU", "EN", "ZH"
         };
 
         public ObservableCollection<string> Resolutions { get; } = new()

@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Navigation;
-using VidDownload.WPF.Resources;
 
 namespace VidDownload.WPF.Help
 {
@@ -10,7 +9,6 @@ namespace VidDownload.WPF.Help
         public HelpWindow()
         {
             InitializeComponent();
-            DataContext = LocalizedStrings.Instance;
         }
 
         private void Hyperlink_Vk(object sender, RequestNavigateEventArgs e)
