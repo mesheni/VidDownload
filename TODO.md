@@ -175,10 +175,52 @@
 
 ## Этап 6: Упаковка и распространение
 
-- [ ] 6.1 — **Подписать сборку**: настроить SignAssembly или убрать `DelaySign=True` с пустым ключом
+- [x] 6.1 — **Подписать сборку**: настроить SignAssembly или убрать `DelaySign=True` с пустым ключом
+  - [x] 6.1.1 — Определиться с подходом: подпись не нужна (`SignAssembly=False`, ключ не существует) → удаляем всё
+  - [x] 6.1.2 — ~~Если нужна подпись…~~ не требуется
+  - [x] 6.1.3 — ~~Если нужна подпись…~~ не требуется
+  - [x] 6.1.4 — Удалены `<DelaySign>True</DelaySign>`, `<SignAssembly>False</SignAssembly>`, `<AssemblyOriginatorKeyFile>` из `.csproj`
+  - [x] 6.1.5 — ~~Создание ключа / gitignore~~ не требуется (подпись удалена)
+  - [x] 6.1.6 — `dotnet build` (Debug) — **0 errors**, ошибка `DelaySign` / подписи исчезла
+  - [x] 6.1.7 — `dotnet build -c Release` и `dotnet publish` — ошибок подписи нет (RG1000 — pre-existing WPF BAML, не связан)
 - [ ] 6.2 — **Создать MSI-инсталлятор**: WiX Toolset для удобной установки
+  - [ ] 6.2.1 — Установить/проверить WiX Toolset (wix.exe или `dotnet tool install --global wix`)
+  - [ ] 6.2.2 — Создать файл `Setup.wxs` с базовой структурой: `Product`, `Package`, `Directory`, `Component`
+  - [ ] 6.2.3 — Определить `DirectoryRef`: папка `ProgramFiles64Folder\VidDownload`, подпапки для бинарников
+  - [ ] 6.2.4 — Добавить `ComponentGroup` со всеми файлами сборки (`VidDownload.WPF.dll`, `*.exe`, `*.config`, yt-dlp.exe, ffmpeg.exe)
+  - [ ] 6.2.5 — Создать `Feature` и `FeatureGroup` для главного компонента (связать с `ComponentGroupRef`)
+  - [ ] 6.2.6 — Добавить ассоциацию `.url` / протокол (если нужно) или ярлык в меню «Пуск» — `Shortcut` + `RegistryValue`
+  - [ ] 6.2.7 — Настроить `HeatDirectory` или `Harvest` для автоматического включения содержимого папки публикации
+  - [ ] 6.2.8 — Настроить `UpgradeCode` и `<MajorUpgrade>` для поддержки обновления через установщик
+  - [ ] 6.2.9 — Установить `WixToolset.Bal.wixext` (если нужен UI) или использовать встроенный `WixUI_InstallDir`
+  - [ ] 6.2.10 — Добавить переменную `$(var.PublishDir)` через `-d` и привязать к Heat сборке
+  - [ ] 6.2.11 — Создать `.wixproj` или Make-скрипт: `wix build Setup.wxs -ext WixToolset.UI.wixext -o VidDownload.msi`
+  - [ ] 6.2.12 — Протестировать установку: `msiexec /i VidDownload.msi` — проверить пути, ярлыки, права
+  - [ ] 6.2.13 — Протестировать удаление: `msiexec /x VidDownload.msi` — проверить полное удаление файлов
+  - [ ] 6.2.14 — Добавить MSI-сборку в GitHub Actions: шаг `wix build` после `dotnet publish`
 - [ ] 6.3 — **Single-file publish**: `dotnet publish --self-contained -p:PublishSingleFile=true`
+  - [ ] 6.3.1 — Проверить, не используется ли `Assembly.GetEntryAssembly().Location` (возвращает пустую строку для single-file)
+  - [ ] 6.3.2 — Заменить `Assembly.GetEntryAssembly().Location` на `AppContext.BaseDirectory` или `Environment.ProcessPath` при необходимости
+  - [ ] 6.3.3 — Проверить `App.config` / `appsettings.json`: single-file не поддерживает `ConfigurationManager` — перенести настройки в код
+  - [ ] 6.3.4 — Убедиться, что `yt-dlp.exe` и `ffmpeg.exe` не включены в single-file (пометить как `<Content CopyToPublishDirectory="PreserveNewest" />`)
+  - [ ] 6.3.5 — Запустить тестовую публикацию: `dotnet publish -c Release --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish/single`
+  - [ ] 6.3.6 — Проверить размер: single-file >~60 МБ (self-contained) — оценить, не нужен ли `--trim-mode=partial`
+  - [ ] 6.3.7 — Проверить запуск: `./publish/single/VidDownload.WPF.exe` — загрузка, yt-dlp, ffmpeg, конвертер
+  - [ ] 6.3.8 — Решить, нужен ли `PublishReadyToRun=true` для ускорения старта (больше размер, быстрее JIT)
+  - [ ] 6.3.9 — Если приложение подписывается (6.1), проверить совместимость single-file с подписью
 - [ ] 6.4 — **Автообновление приложения**: механизм обновления самого VidDownload (не только yt-dlp)
+  - [ ] 6.4.1 — Выбрать стратегию обновления: замена .exe / MSI upgrade / загрузчик-аттач
+  - [ ] 6.4.2 — Расширить `IUpdateService`: метод `CheckAppUpdateAsync()` для проверки новой версии VidDownload по GitHub Releases
+  - [ ] 6.4.3 — Создать модель `AppUpdateInfo` с полями: `Version`, `DownloadUrl`, `ReleaseNotes`, `IsPreRelease`, `AssetName`
+  - [ ] 6.4.4 — В `UpdateService.CheckAppUpdateAsync()`: через Octokit получить теги релизов VidDownload, сравнить с текущей версией из сборки
+  - [ ] 6.4.5 — Реализовать `DownloadAppUpdateAsync()`: скачать выбранный asset (.exe или .msi) во временную папку
+  - [ ] 6.4.6 — Создать отдельный `Updater.exe` (простая консоль): дождаться завершения основного процесса, заменить файл, перезапустить
+  - [ ] 6.4.7 — Запускать `Updater.exe` с аргументами: `--src <temp>\new.exe --dst <app>\VidDownload.WPF.exe --pid <current-pid>`
+  - [ ] 6.4.8 — Добавить свойства `IsAppUpdateAvailable`, `AppUpdateVersion` в `MainViewModel`
+  - [ ] 6.4.9 — Создать команду `UpdateAppCommand` в `MainViewModel`: проверить обновление, предложить скачать, скачать, запустить updater
+  - [ ] 6.4.10 — В `MainWindow.xaml`: добавить кнопку/индикатор «Доступно обновление VidDownload» рядом с проверкой yt-dlp
+  - [ ] 6.4.11 — Проверить цифровую подпись (если есть): верифицировать скачанный файл перед заменой
+  - [ ] 6.4.12 — Обработать краевые случаи: нет прав на запись в `Program Files`, антивирус блокирует замену, ошибка скачивания
 
 ---
 
