@@ -25,13 +25,13 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="{Binding LinkLabelText}" hc:Theme.Skin="Dark" Height="40" Margin="20, 0" FontFamily="Cascadia Code" FontSize="22" Foreground="White" FontWeight="Bold" Background="{x:Null}" ScrollViewer.VerticalScrollBarVisibility="Disabled" BorderThickness="0,0,0,0" Panel.ZIndex="0"/>
-                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableLanguages}" SelectedItem="{Binding SelectedLanguage}" Width="55" Height="24" Margin="0,8,8,0" VerticalAlignment="Top" HorizontalAlignment="Right" FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold" hc:Theme.Skin="Dark"/>
+                        <TextBox Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}" hc:Theme.Skin="Dark" Margin="8,8,8,0" VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Cascadia Code SemiLight" VerticalContentAlignment="Center" SelectionBrush="#FDFF5252" Width="610"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableLanguages}" SelectedItem="{Binding SelectedLanguage}" Width="55" Height="36" Margin="0,8,8,0" VerticalAlignment="Top" HorizontalAlignment="Right" FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold" hc:Theme.Skin="Dark"/>
                     </Grid>
-                    <TextBox Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}" hc:Theme.Skin="Dark" Margin="20, 0" VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Cascadia Code SemiLight" VerticalContentAlignment="Center" SelectionBrush="#FDFF5252" Width="610"/>
+                    
                 </StackPanel>
             </Grid>
-            <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,30,0,0">
+            <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,10,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
