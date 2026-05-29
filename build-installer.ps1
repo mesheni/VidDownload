@@ -5,6 +5,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding = [System.Text.Encoding]::UTF8
+$env:DOTNET_CLI_UI_LANGUAGE = "en"
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host "=== VidDownload MSI Installer Build ===" -ForegroundColor Cyan
