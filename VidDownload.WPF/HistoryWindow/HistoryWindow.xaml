@@ -96,7 +96,7 @@
                     <GridViewColumn Header="" Width="Auto" HeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding LocalizedStrings[DownloadActionColumn]}" Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
+                                <Button Content="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[DownloadActionColumn]}" Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
                                         CommandParameter="{Binding}" Width="80" Height="26"
                                         FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold"
                                         Background="#FFFF4F4F" Foreground="White" BorderThickness="0"
