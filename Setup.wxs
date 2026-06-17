@@ -1,0 +1,87 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package
+        Name="VidDownload"
+        Version="$(var.Version)"
+        Manufacturer="mesh"
+        UpgradeCode="84c6d2b1-5a3e-4f7d-9b8c-2e1f3a4d5c6b"
+        Scope="perMachine">
+
+        <SummaryInformation
+            Description="VidDownload installer"
+            Keywords="Installer"
+            Manufacturer="mesh" />
+
+        <MajorUpgrade
+            DowngradeErrorMessage="A newer version of VidDownload is already installed."
+            Schedule="afterInstallValidate" />
+
+        <MediaTemplate
+            EmbedCab="yes"
+            CompressionLevel="high" />
+
+        <Property Id="ARPNOREPAIR" Value="1" />
+        <Property Id="ARPNOMODIFY" Value="1" />
+
+        <Property Id="INSTALLFOLDER">
+            <RegistrySearch
+                Id="SearchInstallDir"
+                Root="HKLM"
+                Key="Software\VidDownload"
+                Name="InstallDir"
+                Type="raw" />
+        </Property>
+
+        <SetProperty
+            Id="INSTALLFOLDER"
+            Value="[ProgramFiles64Folder]VidDownload"
+            After="AppSearch"
+            Condition="NOT INSTALLFOLDER" />
+
+        <StandardDirectory Id="ProgramFiles64Folder">
+            <Directory Id="INSTALLFOLDER" Name="VidDownload">
+                <Directory Id="dir_en" Name="en" />
+                <Directory Id="dir_ru" Name="ru" />
+                <Directory Id="dir_zh_CN" Name="zh-CN" />
+            </Directory>
+        </StandardDirectory>
+
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ApplicationProgramsFolder" Name="VidDownload" />
+        </StandardDirectory>
+
+        <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+            <Component Directory="ApplicationProgramsFolder">
+                <Shortcut
+                    Id="ApplicationStartMenuShortcut"
+                    Name="VidDownload"
+                    Description="Download videos from various platforms"
+                    Target="[INSTALLFOLDER]VidDownload.WPF.exe"
+                    WorkingDirectory="INSTALLFOLDER" />
+                <RegistryValue
+                    Root="HKCU"
+                    Key="Software\VidDownload"
+                    Name="Installed"
+                    Type="integer"
+                    Value="1"
+                    KeyPath="yes" />
+                <RemoveFolder
+                    Id="RemoveApplicationProgramsFolder"
+                    On="uninstall" />
+            </Component>
+        </ComponentGroup>
+
+        <ComponentGroupRef Id="PublishedFiles" />
+
+        <Feature
+            Id="MainProduct"
+            Title="VidDownload"
+            Level="1"
+            ConfigurableDirectory="INSTALLFOLDER">
+            <ComponentGroupRef Id="ProductComponents" />
+            <ComponentGroupRef Id="PublishedFiles" />
+        </Feature>
+
+        <Icon Id="app.ico" SourceFile="!(bindpath.publish)\VidDownload.WPF.exe" />
+        <Property Id="ARPPRODUCTICON" Value="app.ico" />
+    </Package>
+</Wix>

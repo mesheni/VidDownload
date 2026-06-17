@@ -4,9 +4,6 @@ using System.Windows.Navigation;
 
 namespace VidDownload.WPF.Help
 {
-    /// <summary>
-    /// Логика взаимодействия для HelpWindow.xaml
-    /// </summary>
     public partial class HelpWindow : Window
     {
         public HelpWindow()

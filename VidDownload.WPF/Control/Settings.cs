@@ -11,6 +11,10 @@ public class Settings
     public string VideoCodec { get; set; } = "av01";
     public string AudioCodec { get; set; } = "aac";
     public string Format { get; set; } = "mp4";
+    public bool DownloadSubtitles { get; set; }
+    public string SubtitleLanguage { get; set; } = "all";
+    public bool EmbedSubtitles { get; set; }
+    public string SavePath { get; set; } = string.Empty;
 
     public Settings(string resolution, string videoCodec, string audioCodec, string format)
     {
@@ -21,7 +25,5 @@ public class Settings
     }
 
     public Settings() { }
-
-
 
 }

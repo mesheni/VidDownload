@@ -1,17 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using VidDownload.WPF.Services;
 
 namespace VidDownload.WPF
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            string logPath = AppPaths.LogsDir;
+
+            AppServices.Initialize();
+
+            var mainWindow = AppServices.ServiceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
+
+            base.OnStartup(e);
+        }
     }
 }

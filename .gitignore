@@ -1,4 +1,3 @@
-```gitignore
 # Build artifacts and binaries
 *.exe
 *.dll
@@ -18,6 +17,17 @@ vendor/
 *.log
 *.tmp
 *.temp
+
+# WiX / Installer
+*.msi
+*.msm
+*.wixpdb
+publish/
+.wix/
+
+# Updater publish
+Updater/bin/
+Updater/obj/
 
 # User-specific files
 *.user
@@ -42,4 +52,3 @@ vendor/
 Thumbs.db
 ehthumbs.db
 Icon?
-```

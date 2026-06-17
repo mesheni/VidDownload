@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="MainWindowTitle" xml:space="preserve">
+    <value>VidDownload</value>
+  </data>
+  <data name="ResolutionLabel" xml:space="preserve">
+    <value>Разрешение:</value>
+  </data>
+  <data name="CodecLabel" xml:space="preserve">
+    <value>Кодек:</value>
+  </data>
+  <data name="AudioFormatLabel" xml:space="preserve">
+    <value>Аудио формат:</value>
+  </data>
+  <data name="FileExtensionLabel" xml:space="preserve">
+    <value>Расширение файла:</value>
+  </data>
+  <data name="DownloadPlaylist" xml:space="preserve">
+    <value>Скачать весь плейлист</value>
+  </data>
+  <data name="AudioOnly" xml:space="preserve">
+    <value>Только аудио</value>
+  </data>
+  <data name="ReEncodeVideo" xml:space="preserve">
+    <value>Перекодировать видео</value>
+  </data>
+  <data name="DownloadSubtitles" xml:space="preserve">
+    <value>Скачать субтитры</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Язык:</value>
+  </data>
+  <data name="EmbedSubtitles" xml:space="preserve">
+    <value>Встроить субтитры</value>
+  </data>
+  <data name="SpeedLabel" xml:space="preserve">
+    <value>Скорость: </value>
+  </data>
+  <data name="ETALabel" xml:space="preserve">
+    <value>ETA: </value>
+  </data>
+  <data name="SizeLabel" xml:space="preserve">
+    <value>Размер: </value>
+  </data>
+  <data name="FFmpegLabel" xml:space="preserve">
+    <value>FFmpeg: </value>
+  </data>
+  <data name="DownloadButton" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="CheckUpdateButton" xml:space="preserve">
+    <value>Проверить обновление</value>
+  </data>
+  <data name="OpenVideoFolderButton" xml:space="preserve">
+    <value>Открыть папку с видео</value>
+  </data>
+  <data name="HistoryButton" xml:space="preserve">
+    <value>История</value>
+  </data>
+  <data name="ConverterButton" xml:space="preserve">
+    <value>Конвертер</value>
+  </data>
+  <data name="HelpButton" xml:space="preserve">
+    <value>?</value>
+  </data>
+  <data name="ConvertWindowTitle" xml:space="preserve">
+    <value>Конвертер</value>
+  </data>
+  <data name="SelectVideoFileLabel" xml:space="preserve">
+    <value>Выберите видеофайл:</value>
+  </data>
+  <data name="BrowseButton" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="ExtensionLabel" xml:space="preserve">
+    <value>Расширение:</value>
+  </data>
+  <data name="ConvertButton" xml:space="preserve">
+    <value>Конвертировать</value>
+  </data>
+  <data name="HelpWindowTitle" xml:space="preserve">
+    <value>Помощь</value>
+  </data>
+  <data name="HelpAuthorLabel" xml:space="preserve">
+    <value>by mesh</value>
+  </data>
+  <data name="HelpVersionLabel" xml:space="preserve">
+    <value>v0.7 2026 г.</value>
+  </data>
+  <data name="VkLinkText" xml:space="preserve">
+    <value>ССЫЛКА НА КАНАЛ В TELEGRAM</value>
+  </data>
+  <data name="GitHubLinkText" xml:space="preserve">
+    <value>ССЫЛКА НА GITHUB</value>
+  </data>
+  <data name="HistoryWindowTitle" xml:space="preserve">
+    <value>История загрузок</value>
+  </data>
+  <data name="DateColumn" xml:space="preserve">
+    <value>Дата</value>
+  </data>
+  <data name="UrlNameColumn" xml:space="preserve">
+    <value>URL / Название</value>
+  </data>
+  <data name="StatusColumn" xml:space="preserve">
+    <value>Статус</value>
+  </data>
+  <data name="DownloadActionColumn" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="ClearHistoryButton" xml:space="preserve">
+    <value>Очистить историю</value>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="LinkLabelVideo" xml:space="preserve">
+    <value>Поле для ссылки на видео:</value>
+  </data>
+  <data name="LinkLabelPlaylist" xml:space="preserve">
+    <value>Поле для ссылки на плейлист:</value>
+  </data>
+  <data name="EmptyLink" xml:space="preserve">
+    <value>Пустое поле ссылки!</value>
+  </data>
+  <data name="FFmpegChecking" xml:space="preserve">
+    <value>проверка...</value>
+  </data>
+  <data name="SubtitleEmbedNotForAudio" xml:space="preserve">
+    <value>Встраивание субтитров недоступно для аудио.</value>
+  </data>
+  <data name="WarningTitle" xml:space="preserve">
+    <value>Предупреждение</value>
+  </data>
+  <data name="AviSubtitleWarning" xml:space="preserve">
+    <value>Формат AVI может не поддерживать встроенные субтитры. Продолжить?</value>
+  </data>
+  <data name="NoSaveFolderAccess" xml:space="preserve">
+    <value>Нет доступа к папке сохранения. Выберите другую папку.</value>
+  </data>
+  <data name="ErrorTitle" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
+  <data name="DownloadCancelled" xml:space="preserve">
+    <value>Загрузка отменена</value>
+  </data>
+  <data name="ConfirmCancelDownload" xml:space="preserve">
+    <value>Вы уверены, что хотите отменить загрузку?</value>
+  </data>
+  <data name="CancelConfirmTitle" xml:space="preserve">
+    <value>Подтверждение отмены</value>
+  </data>
+  <data name="NoVideoFolderAccess" xml:space="preserve">
+    <value>Нет доступа к стандартной папке Видео. Используется папка приложения.</value>
+  </data>
+  <data name="CheckingFFmpeg" xml:space="preserve">
+    <value>Поиск обновлений FFmpeg...</value>
+  </data>
+  <data name="FFmpegNotInstalled" xml:space="preserve">
+    <value>не установлен</value>
+  </data>
+  <data name="FFmpegUpToDate" xml:space="preserve">
+    <value>FFmpeg актуален</value>
+  </data>
+  <data name="FFmpegNotFound" xml:space="preserve">
+    <value>FFmpeg не найден</value>
+  </data>
+  <data name="FFmpegDownloadLinkError" xml:space="preserve">
+    <value>Не удалось найти ссылку для скачивания архива FFmpeg.</value>
+  </data>
+  <data name="UpdateErrorTitle" xml:space="preserve">
+    <value>Ошибка обновления</value>
+  </data>
+  <data name="FFmpegUpdateDialog" xml:space="preserve">
+    <value>Текущая версия: {0} Последняя сборка: {1} Загрузить и установить?</value>
+  </data>
+  <data name="FFmpegUpdateAvailableTitle" xml:space="preserve">
+    <value>Доступно обновление FFmpeg!</value>
+  </data>
+  <data name="FFmpegUpdating" xml:space="preserve">
+    <value>обновление...</value>
+  </data>
+  <data name="FFmpegInstalled" xml:space="preserve">
+    <value>установлен</value>
+  </data>
+  <data name="FFmpegUpdated" xml:space="preserve">
+    <value>FFmpeg успешно обновлён</value>
+  </data>
+  <data name="ErrorWithMessage" xml:space="preserve">
+    <value>Ошибка: {0}</value>
+  </data>
+  <data name="FFmpegUpdateFailed" xml:space="preserve">
+    <value>Не удалось обновить FFmpeg: {0}</value>
+  </data>
+  <data name="YtDlpUpdateDialog" xml:space="preserve">
+    <value>Текущая версия: {0} Последняя версия: {1} Подтвердите начало обновления.</value>
+  </data>
+  <data name="YtDlpUpdateAvailableTitle" xml:space="preserve">
+    <value>Доступна новая версия yt-dlp!</value>
+  </data>
+  <data name="YtDlpDownloading" xml:space="preserve">
+    <value>Идет загрузка обновления yt-dlp!</value>
+  </data>
+  <data name="YtDlpUpdated" xml:space="preserve">
+    <value>Версия yt-dlp обновлена до {0}</value>
+  </data>
+  <data name="UpdateCompletedTitle" xml:space="preserve">
+    <value>Обновление завершено!</value>
+  </data>
+  <data name="FFmpegUpdateInfoMessage" xml:space="preserve">
+    <value>FFmpeg обновлён до {0} Версия: {1}</value>
+  </data>
+  <data name="FFmpegUpdateInfoTitle" xml:space="preserve">
+    <value>Обновление FFmpeg завершено</value>
+  </data>
+  <data name="FFmpegLinkNotFound" xml:space="preserve">
+    <value>Ошибка: ссылка не найдена</value>
+  </data>
+  <data name="FFmpegVersionAvailable" xml:space="preserve">
+    <value>Доступна версия {0}</value>
+  </data>
+  <data name="VersionNotFound" xml:space="preserve">
+    <value>не найдена</value>
+  </data>
+  <data name="SelectFileForConversion" xml:space="preserve">
+    <value>Пожалуйста, выберите видеофайл для конвертации.</value>
+  </data>
+  <data name="FileExistsOverwrite" xml:space="preserve">
+    <value>Файл "{0}" уже существует. Перезаписать?</value>
+  </data>
+  <data name="ConfirmationTitle" xml:space="preserve">
+    <value>Подтверждение</value>
+  </data>
+  <data name="ConversionSuccess" xml:space="preserve">
+    <value>Конвертация успешно завершена! Файл сохранён: {0}</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>Успех</value>
+  </data>
+  <data name="ConversionError" xml:space="preserve">
+    <value>Произошла ошибка при конвертации: {0}</value>
+  </data>
+  <data name="SelectVideoFileDialogTitle" xml:space="preserve">
+    <value>Выберите видеофайл для конвертации</value>
+  </data>
+  <data name="VideoFileFilter" xml:space="preserve">
+    <value>Video files (*.mp4;*.avi;*.wmv;*.mkv;*.mov)|*.mp4;*.avi;*.wmv;*.mkv;*.mov|All files (*.*)|*.*</value>
+  </data>
+  <data name="YtDlpProcessError" xml:space="preserve">
+    <value>yt-dlp завершился с ошибкой (код: {0}). Проверьте логи.</value>
+  </data>
+  <data name="DownloadingFFmpegProgress" xml:space="preserve">
+    <value>Загрузка FFmpeg... {0}%</value>
+  </data>
+  <data name="ExtractingFFmpeg" xml:space="preserve">
+    <value>Извлечение FFmpeg...</value>
+  </data>
+  <data name="BinFolderNotFound" xml:space="preserve">
+    <value>Папка bin не найдена в архиве</value>
+  </data>
+  <data name="FFmpegExeNotFound" xml:space="preserve">
+    <value>ffmpeg.exe не найден после извлечения</value>
+  </data>
+  <data name="FFmpegUpdatedShort" xml:space="preserve">
+    <value>FFmpeg обновлён</value>
+  </data>
+  <data name="InputFileNotFound" xml:space="preserve">
+    <value>Входной файл не найден: {0}</value>
+  </data>
+  <data name="DownloadingProgress" xml:space="preserve">
+    <value>Загрузка {0}... {1}%</value>
+  </data>
+  <data name="AppCheckingUpdate" xml:space="preserve">
+    <value>проверка обновлений...</value>
+  </data>
+  <data name="AppUpdateAvailable" xml:space="preserve">
+    <value>Доступна версия {0}</value>
+  </data>
+  <data name="AppUpToDate" xml:space="preserve">
+    <value>Версия актуальна</value>
+  </data>
+  <data name="AppUpdateDialog" xml:space="preserve">
+    <value>Текущая версия: {0}\nНовая версия: {1} Загрузить и установить?</value>
+  </data>
+  <data name="AppUpdateDownloadTitle" xml:space="preserve">
+    <value>Доступно обновление VidDownload!</value>
+  </data>
+  <data name="AppUpdateCheckError" xml:space="preserve">
+    <value>Не удалось проверить обновления</value>
+  </data>
+  <data name="AppUpdateDownloading" xml:space="preserve">
+    <value>Загрузка обновления...</value>
+  </data>
+  <data name="AppUpdateReady" xml:space="preserve">
+    <value>Обновление скачано. Перезапустить приложение?</value>
+  </data>
+  <data name="AppUpdateError" xml:space="preserve">
+    <value>Ошибка обновления: {0}</value>
+  </data>
+  <data name="AppUpdateSuccess" xml:space="preserve">
+    <value>Приложение обновлено до {0}</value>
+  </data>
+  <data name="AppRestartTitle" xml:space="preserve">
+    <value>Перезапуск</value>
+  </data>
+  <data name="CheckAppUpdateButton" xml:space="preserve">
+    <value>Обновить приложение</value>
+  </data>
+  <data name="VideoCodecLabel" xml:space="preserve">
+    <value>Видео кодек:</value>
+  </data>
+  <data name="AudioCodecLabel" xml:space="preserve">
+    <value>Аудио кодек:</value>
+  </data>
+  <data name="HardwareEncoderLabel" xml:space="preserve">
+    <value>Аппаратный кодировщик:</value>
+  </data>
+  <data name="CrfLabel" xml:space="preserve">
+    <value>CRF:</value>
+  </data>
+  <data name="VideoBitrateLabel" xml:space="preserve">
+    <value>Битрейт видео (Kbps):</value>
+  </data>
+  <data name="AudioBitrateLabel" xml:space="preserve">
+    <value>Битрейт аудио (Kbps):</value>
+  </data>
+  <data name="PresetLabel" xml:space="preserve">
+    <value>Пресет:</value>
+  </data>
+  <data name="OutputFolderLabel" xml:space="preserve">
+    <value>Папка сохранения:</value>
+  </data>
+  <data name="OutputFileNameLabel" xml:space="preserve">
+    <value>Имя файла:</value>
+  </data>
+  <data name="OutputBrowseButton" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="CancelConvertButton" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="FfmpegCommandPreviewLabel" xml:space="preserve">
+    <value>Команда FFmpeg:</value>
+  </data>
+  <data name="OutputFolderDialogTitle" xml:space="preserve">
+    <value>Выберите папку для сохранения</value>
+  </data>
+  <data name="CrfHint" xml:space="preserve">
+    <value>0 = без потерь (огромный файл)
+18–23 = визуально без потерь
+23 = по умолчанию
+28–35 = среднее качество
+51 = худшее качество</value>
+  </data>
+  <data name="VideoBitrateHint" xml:space="preserve">
+    <value>Рекомендуемые значения:
+• 720p:  1 500 – 4 000 Kbps
+• 1080p: 3 000 – 8 000 Kbps
+• 1440p: 6 000 – 15 000 Kbps
+• 2160p (4K): 15 000 – 50 000 Kbps
+
+Оставьте 0 — будет использован CRF</value>
+  </data>
+  <data name="AudioBitrateHint" xml:space="preserve">
+    <value>Рекомендуемые значения:
+• Низкое:   96–128 Kbps
+• Среднее:  160–192 Kbps
+• Высокое:  256–320 Kbps
+
+Оставьте 0 — автоматически</value>
+  </data>
+  <data name="EncodingSectionLabel" xml:space="preserve">
+    <value>КОДИРОВАНИЕ</value>
+  </data>
+  <data name="QualitySectionLabel" xml:space="preserve">
+    <value>КАЧЕСТВО</value>
+  </data>
+  <data name="OutputSectionLabel" xml:space="preserve">
+    <value>СОХРАНЕНИЕ</value>
+  </data>
+  <data name="InputSectionLabel" xml:space="preserve">
+    <value>ИСХОДНЫЙ ФАЙЛ</value>
+  </data>
+</root>
