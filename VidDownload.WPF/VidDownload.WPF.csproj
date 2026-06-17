@@ -4,15 +4,15 @@
     <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>0.7.0</Version>
+    <Version>0.7.1</Version>
     <Company />
     <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.7.0</AssemblyVersion>
+    <AssemblyVersion>0.7.1</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <FileVersion>0.7.0</FileVersion>
+    <FileVersion>0.7.1</FileVersion>
     <Copyright>mesh</Copyright>
     <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/mesheni/VidDownload</RepositoryUrl>

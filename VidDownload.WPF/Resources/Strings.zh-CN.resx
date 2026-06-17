@@ -205,7 +205,7 @@
     <value>by mesh</value>
   </data>
   <data name="HelpVersionLabel" xml:space="preserve">
-    <value>v0.7 2026 年</value>
+    <value>v0.7.1 2026 年</value>
   </data>
   <data name="VkLinkText" xml:space="preserve">
     <value>通往 Telegram 频道的链接</value>
