@@ -104,19 +104,10 @@ powershell -ExecutionPolicy Bypass -File build-installer.ps1
 
 ---
 
-## CI/CD
-
-GitHub Actions (`build-and-installer.yml`) запускается при push тега `v*`:
-
-- Собирает MSI (`build-installer.ps1`)
-- Публикует артефакт `VidDownload-Installer`
-- Создаёт GitHub Release с прикреплённым `.msi`
-
----
-
 ## Интерфейс
 
-![Скриншот интерфейса](https://github.com/mesheni/VidDownload/assets/26280352/b4f1df46-2cf3-4ee4-9ca4-9d95e091522c)
+<img width="691" height="671" alt="image" src="https://github.com/user-attachments/assets/bcf7304f-7123-4ec8-b323-1aee94242589" />
+
 
 ---
 
