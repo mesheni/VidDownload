@@ -90,7 +90,7 @@ dotnet tool install --global wix
 wix eula accept wix7
 
 # Сборка MSI
-.\build-installer.ps1
+powershell -ExecutionPolicy Bypass -File build-installer.ps1
 ```
 
 Скрипт выполняет:
