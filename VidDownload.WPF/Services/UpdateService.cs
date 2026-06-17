@@ -193,22 +193,35 @@ namespace VidDownload.WPF.Services
             return version?.ToString() ?? "0.0.0";
         }
 
-        private static async Task<bool> CheckForInternetConnectionAsync(int timeoutMs = 1000)
+        private static async Task<bool> CheckForInternetConnectionAsync(int timeoutMs = 5000)
         {
             bool result = false;
             await Task.Run(() =>
             {
                 try
                 {
-                    var request = (HttpWebRequest)WebRequest.Create("http://www.gstatic.com/generate_204");
+                    var request = (HttpWebRequest)WebRequest.Create("https://github.com");
                     request.KeepAlive = false;
                     request.Timeout = timeoutMs;
+                    request.Method = "HEAD";
                     using (var response = (HttpWebResponse)request.GetResponse())
                         result = true;
                 }
                 catch
                 {
-                    result = false;
+                    try
+                    {
+                        var request = (HttpWebRequest)WebRequest.Create("https://www.google.com");
+                        request.KeepAlive = false;
+                        request.Timeout = timeoutMs;
+                        request.Method = "HEAD";
+                        using (var response = (HttpWebResponse)request.GetResponse())
+                            result = true;
+                    }
+                    catch
+                    {
+                        result = false;
+                    }
                 }
             }).ConfigureAwait(false);
             return result;
