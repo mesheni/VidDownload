@@ -98,8 +98,9 @@ namespace VidDownload.WPF.Services
                 var json = await File.ReadAllTextAsync(HistoryPath).ConfigureAwait(false);
                 return JsonSerializer.Deserialize<List<DownloadHistoryEntry>>(json) ?? new List<DownloadHistoryEntry>();
             }
-            catch
+            catch (Exception ex)
             {
+                AppLog.Error(nameof(JsonDownloadHistoryService), $"Failed to load history: {ex.Message}");
                 return new List<DownloadHistoryEntry>();
             }
         }
@@ -107,7 +108,7 @@ namespace VidDownload.WPF.Services
         private static async Task SaveInternalAsync(List<DownloadHistoryEntry> entries)
         {
             var json = JsonSerializer.Serialize(entries, JsonOptions);
-            await File.WriteAllTextAsync(HistoryPath, json).ConfigureAwait(false);
+            await JsonSettingsService.AtomicWriteAsync(HistoryPath, json).ConfigureAwait(false);
         }
     }
 }

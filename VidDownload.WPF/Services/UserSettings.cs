@@ -17,6 +17,18 @@ namespace VidDownload.WPF.Services
         public string SavePath { get; set; } = string.Empty;
         public string Language { get; set; } = "RU";
 
+        /// <summary>Лимит скорости yt-dlp (--limit-rate), например "5M". Пусто = без лимита.</summary>
+        public string RateLimit { get; set; } = string.Empty;
+
+        /// <summary>Максимум одновременных загрузок очереди (1–3).</summary>
+        public int MaxConcurrentDownloads { get; set; } = 1;
+
+        /// <summary>Сворачивать приложение в трей при закрытии окна вместо выхода.</summary>
+        public bool MinimizeToTray { get; set; }
+
+        /// <summary>Следить за буфером обмена и предлагать добавить ссылки в очередь.</summary>
+        public bool ClipboardMonitorEnabled { get; set; }
+
         public string ConvertOutputFormat { get; set; } = "MP4";
         public string ConvertVideoCodec { get; set; } = "libx264";
         public string ConvertAudioCodec { get; set; } = "aac";

@@ -7,7 +7,7 @@ namespace VidDownload.WPF.Services
 {
     public interface IYtDlpService
     {
-        Task DownloadAsync(
+        Task<DownloadResult> DownloadAsync(
             string url,
             Settings settings,
             bool isPlaylist,

@@ -2,8 +2,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Octokit;
 using VidDownload.WPF.Resources;
@@ -90,9 +88,12 @@ namespace VidDownload.WPF.Services
                 if (proc == null)
                     return string.Empty;
 
-                string? firstLine = await proc.StandardOutput.ReadLineAsync().ConfigureAwait(false);
-                await proc.WaitForExitAsync().ConfigureAwait(false);
+                // Читаем весь вывод до ожидания завершения, иначе процесс может
+                // заблокироваться на записи в заполненный пайп (дедлок)
+                string output = await proc.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+                await Task.Run(() => proc.WaitForExit()).ConfigureAwait(false);
 
+                string? firstLine = output.Split('\n', 2)[0].Trim();
                 if (string.IsNullOrEmpty(firstLine))
                     return string.Empty;
 
@@ -114,7 +115,7 @@ namespace VidDownload.WPF.Services
         {
             var info = new FFmpegInfo();
 
-            if (!await CheckForInternetConnectionAsync().ConfigureAwait(false))
+            if (!await NetworkHelper.IsInternetAvailableAsync().ConfigureAwait(false))
                 return info;
 
             string localVer = await GetLocalVersionAsync().ConfigureAwait(false);
@@ -158,33 +159,10 @@ namespace VidDownload.WPF.Services
             string tempZip = Path.Combine(AppPaths.ToolsDir, "ffmpeg_update.zip");
             try
             {
-                using var httpClient = new HttpClient();
-                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("VidDownload");
-
-                using var response = await httpClient.GetAsync(new Uri(info.DownloadUrl), HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
-                var totalBytes = response.Content.Headers.ContentLength ?? -1;
-
-                {
-                    using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                    using var fileStream = new FileStream(tempZip, System.IO.FileMode.Create, System.IO.FileAccess.Write);
-
-                    var buffer = new byte[8192];
-                    long totalRead = 0;
-                    int bytesRead;
-                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false)) > 0)
-                    {
-                        await fileStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
-                        totalRead += bytesRead;
-                        if (totalBytes > 0)
-                        {
-                            progress?.Report(new DownloadProgress
-                            {
-                                Percent = (int)(totalRead * 100 / totalBytes),
-                                StatusMessage = string.Format(LocalizedStrings.Instance["DownloadingFFmpegProgress"], totalRead * 100 / totalBytes)
-                            });
-                        }
-                    }
-                }
+                // NetworkHelper проверяет HTTP-статус: при 404/403 исключение выйдет
+                // наружу, и существующий ffmpeg.exe не будет повреждён
+                await NetworkHelper.DownloadFileAsync(info.DownloadUrl, tempZip, progress, "ffmpeg.zip")
+                    .ConfigureAwait(false);
 
                 progress?.Report(new DownloadProgress { Percent = 90, StatusMessage = LocalizedStrings.Instance["ExtractingFFmpeg"] });
 
@@ -224,27 +202,6 @@ namespace VidDownload.WPF.Services
                 }
                 catch { }
             }
-        }
-
-        private static async Task<bool> CheckForInternetConnectionAsync(int timeoutMs = 1000)
-        {
-            bool result = false;
-            await Task.Run(() =>
-            {
-                try
-                {
-                    var request = (HttpWebRequest)WebRequest.Create("http://www.gstatic.com/generate_204");
-                    request.KeepAlive = false;
-                    request.Timeout = timeoutMs;
-                    using (var response = (HttpWebResponse)request.GetResponse())
-                        result = true;
-                }
-                catch
-                {
-                    result = false;
-                }
-            }).ConfigureAwait(false);
-            return result;
         }
     }
 }

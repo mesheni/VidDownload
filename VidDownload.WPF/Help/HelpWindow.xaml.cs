@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Navigation;
+using VidDownload.WPF.Resources;
 
 namespace VidDownload.WPF.Help
 {
@@ -9,7 +10,12 @@ namespace VidDownload.WPF.Help
         public HelpWindow()
         {
             InitializeComponent();
+            // Динамическая локализация: окно обновляется при смене языка,
+            // в отличие от статических привязок к ресурсам
+            DataContext = this;
         }
+
+        public LocalizedStrings LocalizedStrings => LocalizedStrings.Instance;
 
         private void Hyperlink_Vk(object sender, RequestNavigateEventArgs e)
         {

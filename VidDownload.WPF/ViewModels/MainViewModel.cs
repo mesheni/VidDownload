@@ -1,10 +1,13 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
+using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using VidDownload.WPF.Control;
 using VidDownload.WPF.ConvertWindow;
 using VidDownload.WPF.Help;
@@ -18,17 +21,17 @@ namespace VidDownload.WPF.ViewModels
     public partial class MainViewModel : ViewModelBase
     {
         private readonly Settings _settings = new();
-        private static readonly List<string> _codecList = new();
         private readonly LocalizedStrings _loc;
-        private readonly IYtDlpService _ytDlpService;
         private readonly IUpdateService _updateService;
         private readonly IFFmpegService _ffmpegService;
         private readonly ISettingsService _settingsService;
         private readonly IMessageService _messageService;
         private readonly IDialogService _dialogService;
         private readonly IDownloadHistoryService _historyService;
-        private CancellationTokenSource? _cts;
-        private bool _wasCancelled;
+        private readonly IDownloadQueueService _queue;
+        private readonly INotificationService _notifications;
+        private readonly IClipboardMonitorService _clipboardMonitor;
+        private DownloadItem? _activeItem;
         private bool _isLoading;
         private string _savePath = UserSettings.DefaultDownloadPath;
 
@@ -61,11 +64,6 @@ namespace VidDownload.WPF.ViewModels
 
         [ObservableProperty]
         private int _progressPercent;
-
-        [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(DownloadCommand))]
-        [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
-        private bool _isDownloading;
 
         [ObservableProperty]
         private bool _isVideoOptionsVisible = true;
@@ -121,9 +119,29 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private string _appUpdateStatusMessage = string.Empty;
 
+        [ObservableProperty]
+        private string _savePathText = string.Empty;
+
+        [ObservableProperty]
+        private string _rateLimit = string.Empty;
+
+        [ObservableProperty]
+        private bool _minimizeToTray;
+
+        [ObservableProperty]
+        private bool _isClipboardMonitorEnabled;
+
+        [ObservableProperty]
+        private bool _hasActiveDownloads;
+
+        [ObservableProperty]
+        private bool _hasQueueItems;
+
         private AppUpdateInfo? _appUpdateInfo;
 
         public LocalizedStrings LocalizedStrings => _loc;
+
+        public IDownloadQueueService Queue => _queue;
 
         public ObservableCollection<string> AvailableLanguages { get; } = new()
         {
@@ -155,25 +173,54 @@ namespace VidDownload.WPF.ViewModels
             "", "all", "en", "ru", "de", "fr", "es", "ja", "zh-Hans", "ar", "pt"
         };
 
-        public MainViewModel(IYtDlpService ytDlpService, IUpdateService updateService, IFFmpegService ffmpegService, ISettingsService settingsService, IMessageService messageService, IDialogService dialogService, IDownloadHistoryService historyService, LocalizedStrings localizedStrings)
+        public MainViewModel(
+            IUpdateService updateService,
+            IFFmpegService ffmpegService,
+            ISettingsService settingsService,
+            IMessageService messageService,
+            IDialogService dialogService,
+            IDownloadHistoryService historyService,
+            IDownloadQueueService queue,
+            INotificationService notifications,
+            IClipboardMonitorService clipboardMonitor,
+            LocalizedStrings localizedStrings)
         {
             _loc = localizedStrings;
-            _ytDlpService = ytDlpService;
             _updateService = updateService;
             _ffmpegService = ffmpegService;
             _settingsService = settingsService;
             _messageService = messageService;
             _dialogService = dialogService;
             _historyService = historyService;
-            foreach (var item in Codecs)
-            {
-                _codecList.Add(item);
-            }
-            _ = CheckUpdateAsync();
-            _ = CheckFFmpegUpdateAsync();
-            _ = CheckAppUpdateAsync();
-            _ = LoadSettingsAsync();
+            _queue = queue;
+            _notifications = notifications;
+            _clipboardMonitor = clipboardMonitor;
+
+            _queue.ItemStarted += OnItemStarted;
+            _queue.ItemCompleted += OnItemCompleted;
+            _queue.ItemFailed += OnItemFailed;
+            _queue.ItemCancelled += OnItemCancelled;
+            _queue.Items.CollectionChanged += (_, _) => HasQueueItems = _queue.Items.Count > 0;
+
+            _clipboardMonitor.UrlDetected += OnClipboardUrlDetected;
+
+            RunSafe(CheckUpdateAsync, nameof(CheckUpdateAsync));
+            RunSafe(CheckFFmpegUpdateAsync, nameof(CheckFFmpegUpdateAsync));
+            RunSafe(CheckAppUpdateAsync, nameof(CheckAppUpdateAsync));
+            RunSafe(LoadSettingsAsync, nameof(LoadSettingsAsync));
             AppVersion = GetAppVersion();
+        }
+
+        private async void RunSafe(Func<Task> action, string operationName)
+        {
+            try
+            {
+                await action();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(MainViewModel), $"{operationName} failed: {ex}");
+            }
         }
 
         partial void OnIsAudioOnlyChanged(bool value)
@@ -207,10 +254,41 @@ namespace VidDownload.WPF.ViewModels
             if (_loc.CurrentLanguage == value.ToUpper())
                 return;
             _loc.SetLanguage(value.ToLower());
-            _ = SaveSettingsAsync();
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
         }
 
-        private bool CanDownload() => !IsDownloading;
+        partial void OnSavePathTextChanged(string value)
+        {
+            if (_isLoading)
+                return;
+            _savePath = value;
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
+        partial void OnRateLimitChanged(string value)
+        {
+            if (_isLoading)
+                return;
+            _settings.RateLimit = value?.Trim() ?? string.Empty;
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
+        partial void OnMinimizeToTrayChanged(bool value)
+        {
+            if (_isLoading)
+                return;
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
+        partial void OnIsClipboardMonitorEnabledChanged(bool value)
+        {
+            if (_isLoading)
+                return;
+            _clipboardMonitor.IsEnabled = value;
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
+        // ==== Очередь загрузок ====
 
         [RelayCommand]
         private async Task DownloadAsync()
@@ -221,139 +299,239 @@ namespace VidDownload.WPF.ViewModels
                 return;
             }
 
+            if (!UrlHelper.LooksLikeVideoReference(Url) &&
+                !await _dialogService.AskAsync(_loc["InvalidUrlWarning"], _loc["WarningTitle"]))
+            {
+                return;
+            }
+
+            if (!await ValidateOptionsAsync())
+                return;
+
+            Enqueue(Url);
+            Url = string.Empty;
+        }
+
+        /// <summary>Добавляет ссылку в очередь с текущими настройками (без интерактивных проверок).</summary>
+        private void Enqueue(string url, bool notify = false)
+        {
+            ApplySelectionsToSettings();
+
+            var item = new DownloadItem(url, _settings.Clone(), IsPlaylist, IsAudioOnly, IsReEncode);
+            _queue.Enqueue(item);
+
+            if (notify)
+                _notifications.Info(string.Format(_loc["AddedToQueue"], url));
+
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
+        /// <summary>Переносит текущие выбранные параметры интерфейса в настройки загрузки.</summary>
+        private void ApplySelectionsToSettings()
+        {
             if (SelectedResolution.Length != 0)
                 _settings.Resolution = SelectedResolution;
             if (SelectedAudioFormat.Length != 0)
                 _settings.AudioCodec = SelectedAudioFormat;
             if (SelectedFormat.Length != 0)
                 _settings.Format = SelectedFormat;
-            if (SelectedCodec.Length != 0 && _codecList.Exists(i => i == SelectedCodec))
+            if (SelectedCodec.Length != 0 && Codecs.Contains(SelectedCodec))
                 _settings.VideoCodec = SelectedCodec;
 
             _settings.DownloadSubtitles = IsDownloadSubtitles;
             _settings.SubtitleLanguage = SelectedSubtitleLanguage;
             _settings.EmbedSubtitles = IsEmbedSubtitles;
             _settings.SavePath = _savePath;
+            _settings.RateLimit = RateLimit?.Trim() ?? string.Empty;
+        }
 
+        private async Task<bool> ValidateOptionsAsync()
+        {
             if (IsEmbedSubtitles && IsAudioOnly)
             {
                 _messageService.Warning(_loc["SubtitleEmbedNotForAudio"], _loc["WarningTitle"]);
                 IsEmbedSubtitles = false;
-                _settings.EmbedSubtitles = false;
             }
             else if (IsEmbedSubtitles && SelectedFormat == "avi")
             {
-                if (!await _dialogService.AskAsync(
-                    _loc["AviSubtitleWarning"],
-                    _loc["WarningTitle"]))
-                {
-                    return;
-                }
+                if (!await _dialogService.AskAsync(_loc["AviSubtitleWarning"], _loc["WarningTitle"]))
+                    return false;
             }
+            return true;
+        }
 
-            string downloadUrl = Url;
+        [RelayCommand]
+        private void PauseResumeItem(DownloadItem? item)
+        {
+            if (item == null)
+                return;
+            if (item.Status == DownloadItemStatus.Paused)
+                _queue.Resume(item);
+            else if (item.Status is DownloadItemStatus.Downloading or DownloadItemStatus.Queued)
+                _queue.Pause(item);
+        }
 
-            _cts?.Dispose();
-            _cts = new CancellationTokenSource();
-            _wasCancelled = false;
-
-            IsDownloading = true;
-            StatusMessage = string.Empty;
-            ProgressPercent = 0;
-
-            try
+        [RelayCommand]
+        private async Task CancelItemAsync(DownloadItem? item)
+        {
+            if (item == null)
+                return;
+            if (item.Status == DownloadItemStatus.Downloading &&
+                !await _dialogService.AskAsync(_loc["ConfirmCancelDownload"], _loc["CancelConfirmTitle"]))
             {
-                if (!System.IO.Directory.Exists(_savePath))
-                    System.IO.Directory.CreateDirectory(_savePath);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                _messageService.Warning(_loc["NoSaveFolderAccess"], _loc["ErrorTitle"]);
-                IsDownloading = false;
                 return;
             }
+            _queue.Cancel(item);
+        }
 
-            try
-            {
-                var progress = new Progress<DownloadProgress>(p =>
-                {
-                    StatusMessage = p.StatusMessage;
-                    ProgressPercent = p.Percent;
-                    SpeedText = p.Speed;
-                    EtaText = p.Eta;
-                    TotalSizeText = p.TotalSize;
-                });
+        [RelayCommand]
+        private void RemoveItem(DownloadItem? item)
+        {
+            if (item != null)
+                _queue.Remove(item);
+        }
 
-                await _ytDlpService.DownloadAsync(downloadUrl, _settings, IsPlaylist, IsAudioOnly, IsReEncode, progress, _cts.Token).ConfigureAwait(true);
+        [RelayCommand]
+        private void ClearFinished()
+        {
+            _queue.ClearFinished();
+        }
 
-                await _historyService.AddEntryAsync(new DownloadHistoryEntry
-                {
-                    Url = downloadUrl,
-                    Title = downloadUrl,
-                    Timestamp = DateTime.Now,
-                    Status = DownloadStatus.Completed
-                });
-            }
-            catch (OperationCanceledException)
-            {
-                _wasCancelled = true;
-            }
-            catch (Exception ex)
-            {
-                await _historyService.AddEntryAsync(new DownloadHistoryEntry
-                {
-                    Url = downloadUrl,
-                    Title = downloadUrl,
-                    Timestamp = DateTime.Now,
-                    Status = DownloadStatus.Failed
-                });
-                _messageService.Error(string.Format(_loc["ErrorWithMessage"], ex.Message), _loc["ErrorTitle"]);
-            }
-            finally
-            {
-                _cts?.Dispose();
-                _cts = null;
+        /// <summary>Esc: отменяет текущую активную загрузку (с подтверждением).</summary>
+        [RelayCommand]
+        private async Task CancelActiveAsync()
+        {
+            var active = _queue.Items.FirstOrDefault(i => i.Status == DownloadItemStatus.Downloading)
+                ?? _queue.Items.FirstOrDefault(i => i.Status == DownloadItemStatus.Queued);
+            if (active == null)
+                return;
+            await CancelItemAsync(active);
+        }
 
-                await SaveSettingsAsync();
-                ProgressPercent = 0;
-                SelectedCodec = "";
-                SelectedResolution = "";
-                SelectedAudioFormat = "";
-                SelectedFormat = "";
-                Url = "";
-                IsDownloading = false;
-                StatusMessage = _wasCancelled ? _loc["DownloadCancelled"] : "";
-                SpeedText = "--";
-                EtaText = "--";
-                TotalSizeText = "--";
+        private void OnItemStarted(object? sender, DownloadItem item)
+        {
+            SetActiveItem(item);
+            RefreshActivity();
+        }
+
+        private void OnItemCompleted(object? sender, DownloadItem item)
+        {
+            RefreshActivity();
+            ResetSummaryIfIdle();
+            _notifications.Success(string.Format(_loc["DownloadCompleteNotify"], item.DisplayTitle));
+            RunSafe(() => AddHistoryAsync(item, DownloadStatus.Completed), nameof(AddHistoryAsync));
+        }
+
+        private void OnItemFailed(object? sender, DownloadItem item)
+        {
+            RefreshActivity();
+            ResetSummaryIfIdle();
+            _notifications.Error(string.Format(_loc["DownloadFailedNotify"], item.DisplayTitle));
+            RunSafe(() => AddHistoryAsync(item, DownloadStatus.Failed), nameof(AddHistoryAsync));
+        }
+
+        private void OnItemCancelled(object? sender, DownloadItem item)
+        {
+            RefreshActivity();
+            ResetSummaryIfIdle();
+            // Не записываем в историю элементы, которые ни разу не запускались
+            if (item.Started)
+                RunSafe(() => AddHistoryAsync(item, DownloadStatus.Cancelled), nameof(AddHistoryAsync));
+        }
+
+        /// <summary>
+        /// Когда все загрузки завершены, нижний индикатор возвращается в исходное
+        /// состояние — иначе на нём навсегда остаются 100% и скорость последней загрузки.
+        /// </summary>
+        private void ResetSummaryIfIdle()
+        {
+            if (_queue.HasActiveDownloads)
+                return;
+            ProgressPercent = 0;
+            StatusMessage = string.Empty;
+            SpeedText = "--";
+            EtaText = "--";
+            TotalSizeText = "--";
+        }
+
+        private async Task AddHistoryAsync(DownloadItem item, DownloadStatus status)
+        {
+            await _historyService.AddEntryAsync(new DownloadHistoryEntry
+            {
+                Url = item.Url,
+                Title = item.DisplayTitle,
+                FilePath = item.FilePath,
+                Timestamp = DateTime.Now,
+                Status = status
+            });
+        }
+
+        private void RefreshActivity()
+        {
+            HasActiveDownloads = _queue.HasActiveDownloads;
+        }
+
+        private void SetActiveItem(DownloadItem? item)
+        {
+            if (_activeItem != null)
+                _activeItem.PropertyChanged -= OnActiveItemPropertyChanged;
+
+            _activeItem = item;
+
+            if (_activeItem != null)
+            {
+                _activeItem.PropertyChanged += OnActiveItemPropertyChanged;
+                CopyItemToSummary(_activeItem);
             }
         }
 
-        private bool CanCancel() => IsDownloading;
-
-        [RelayCommand(CanExecute = nameof(CanCancel))]
-        private async Task CancelAsync()
+        private void OnActiveItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (_cts == null || _cts.IsCancellationRequested)
+            if (_activeItem == null)
                 return;
+            if (e.PropertyName is null or nameof(DownloadItem.StatusMessage) or nameof(DownloadItem.Percent)
+                or nameof(DownloadItem.Speed) or nameof(DownloadItem.Eta) or nameof(DownloadItem.TotalSize))
+            {
+                CopyItemToSummary(_activeItem);
+            }
+        }
 
-            bool confirmed = await _dialogService.ConfirmAsync(
-                _loc["ConfirmCancelDownload"], _loc["CancelConfirmTitle"]);
+        private void CopyItemToSummary(DownloadItem item)
+        {
+            StatusMessage = item.StatusMessage;
+            ProgressPercent = item.Percent;
+            SpeedText = item.Speed;
+            EtaText = item.Eta;
+            TotalSizeText = item.TotalSize;
+        }
 
-            if (!confirmed)
-                return;
+        // ==== Папка сохранения и прочие команды ====
 
-            _cts.Cancel();
+        [RelayCommand]
+        private void BrowseFolder()
+        {
+            var dialog = new OpenFolderDialog
+            {
+                Title = _loc["OutputFolderDialogTitle"],
+                InitialDirectory = Directory.Exists(_savePath)
+                    ? _savePath
+                    : Environment.GetFolderPath(Environment.SpecialFolder.MyVideos)
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                SavePathText = dialog.FolderName;
+            }
         }
 
         [RelayCommand]
         private void OpenFolder()
         {
-            if (!System.IO.Directory.Exists(_savePath))
+            if (!Directory.Exists(_savePath))
             {
-                System.IO.Directory.CreateDirectory(_savePath);
+                Directory.CreateDirectory(_savePath);
             }
-            Process.Start("explorer.exe", "/open, \"" + _savePath);
+            Process.Start("explorer.exe", $"\"{_savePath}\"");
         }
 
         [RelayCommand]
@@ -380,6 +558,21 @@ namespace VidDownload.WPF.ViewModels
             }
         }
 
+        // ==== Буфер обмена ====
+
+        private void OnClipboardUrlDetected(object? sender, string url)
+        {
+            if (Url == url)
+                return;
+
+            _notifications.Ask(
+                string.Format(_loc["ClipboardLinkDetected"], url),
+                _loc["ClipboardLinkTitle"],
+                () => Enqueue(url, notify: true));
+        }
+
+        // ==== Настройки ====
+
         private async Task LoadSettingsAsync()
         {
             _isLoading = true;
@@ -404,24 +597,31 @@ namespace VidDownload.WPF.ViewModels
             _savePath = !string.IsNullOrEmpty(userSettings.SavePath)
                 ? userSettings.SavePath
                 : UserSettings.DefaultDownloadPath;
+            SavePathText = _savePath;
+            RateLimit = userSettings.RateLimit ?? string.Empty;
+            _settings.RateLimit = RateLimit;
+            MinimizeToTray = userSettings.MinimizeToTray;
+            IsClipboardMonitorEnabled = userSettings.ClipboardMonitorEnabled;
+            _queue.MaxConcurrent = Math.Clamp(userSettings.MaxConcurrentDownloads <= 0 ? 1 : userSettings.MaxConcurrentDownloads, 1, 3);
+
             try
             {
-                if (!System.IO.Directory.Exists(_savePath))
-                    System.IO.Directory.CreateDirectory(_savePath);
+                if (!Directory.Exists(_savePath))
+                    Directory.CreateDirectory(_savePath);
             }
             catch (UnauthorizedAccessException)
             {
                 _savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "VidDownload");
                 Directory.CreateDirectory(_savePath);
-                _messageService.Warning(
-                    _loc["NoVideoFolderAccess"],
-                    _loc["WarningTitle"]);
+                SavePathText = _savePath;
+                _messageService.Warning(_loc["NoVideoFolderAccess"], _loc["WarningTitle"]);
             }
             _isLoading = false;
         }
 
         private async Task SaveSettingsAsync()
         {
+            ApplySelectionsToSettings();
             await _settingsService.SaveAsync(new UserSettings
             {
                 Resolution = _settings.Resolution,
@@ -432,9 +632,15 @@ namespace VidDownload.WPF.ViewModels
                 SubtitleLanguage = _settings.SubtitleLanguage,
                 EmbedSubtitles = _settings.EmbedSubtitles,
                 SavePath = _savePath,
-                Language = SelectedLanguage
+                Language = SelectedLanguage,
+                RateLimit = RateLimit ?? string.Empty,
+                MaxConcurrentDownloads = _queue.MaxConcurrent,
+                MinimizeToTray = MinimizeToTray,
+                ClipboardMonitorEnabled = IsClipboardMonitorEnabled
             });
         }
+
+        // ==== Обновление FFmpeg ====
 
         [RelayCommand]
         private async Task CheckFFmpegUpdateAsync()
@@ -464,9 +670,7 @@ namespace VidDownload.WPF.ViewModels
 
                 if (string.IsNullOrEmpty(info.DownloadUrl))
                 {
-                    _messageService.Error(
-                        _loc["FFmpegDownloadLinkError"],
-                        _loc["UpdateErrorTitle"]);
+                    _messageService.Error(_loc["FFmpegDownloadLinkError"], _loc["UpdateErrorTitle"]);
                     FfmpegStatusMessage = _loc["FFmpegLinkNotFound"];
                     return;
                 }
@@ -485,7 +689,6 @@ namespace VidDownload.WPF.ViewModels
                     return;
                 }
 
-                IsFfmpegChecking = true;
                 FfmpegVersion = _loc["FFmpegUpdating"];
 
                 var progress = new Progress<DownloadProgress>(p =>
@@ -501,22 +704,20 @@ namespace VidDownload.WPF.ViewModels
                 IsFfmpegUpdateAvailable = false;
                 FfmpegStatusMessage = _loc["FFmpegUpdated"];
 
-                _messageService.Info(
-                    string.Format(_loc["FFmpegUpdateInfoMessage"], displayLatest, newVer),
-                    _loc["FFmpegUpdateInfoTitle"]);
+                _notifications.Success(string.Format(_loc["FFmpegUpdateInfoMessage"], displayLatest, newVer));
             }
             catch (Exception ex)
             {
                 FfmpegStatusMessage = string.Format(_loc["ErrorWithMessage"], ex.Message);
-                _messageService.Error(
-                    string.Format(_loc["FFmpegUpdateFailed"], ex.Message),
-                    _loc["UpdateErrorTitle"]);
+                _messageService.Error(string.Format(_loc["FFmpegUpdateFailed"], ex.Message), _loc["UpdateErrorTitle"]);
             }
             finally
             {
                 IsFfmpegChecking = false;
             }
         }
+
+        // ==== Обновление yt-dlp ====
 
         public async Task CheckUpdateAsync()
         {
@@ -526,8 +727,9 @@ namespace VidDownload.WPF.ViewModels
             {
                 info = await _updateService.CheckForUpdateAsync();
             }
-            catch
+            catch (Exception ex)
             {
+                AppLog.Error(nameof(MainViewModel), $"yt-dlp update check failed: {ex.Message}");
                 return;
             }
 
@@ -546,30 +748,37 @@ namespace VidDownload.WPF.ViewModels
                 return;
             }
 
-            IsDownloading = true;
-            StatusMessage = _loc["YtDlpDownloading"];
-
             try
             {
                 var progress = new Progress<DownloadProgress>(p =>
                 {
-                    ProgressPercent = p.Percent;
-                    StatusMessage = p.StatusMessage;
+                    // Общий индикатор занят только когда нет активных загрузок
+                    if (_activeItem == null)
+                    {
+                        ProgressPercent = p.Percent;
+                        StatusMessage = p.StatusMessage;
+                    }
                 });
 
                 await _updateService.DownloadUpdateAsync(info, progress);
 
-                _messageService.Info(
-                    string.Format(_loc["YtDlpUpdated"], info.Version),
-                    _loc["UpdateCompletedTitle"]);
+                _notifications.Success(string.Format(_loc["YtDlpUpdated"], info.Version), _loc["UpdateCompletedTitle"]);
+            }
+            catch (Exception ex)
+            {
+                _notifications.Error(string.Format(_loc["ErrorWithMessage"], ex.Message), _loc["UpdateErrorTitle"]);
             }
             finally
             {
-                ProgressPercent = 0;
-                StatusMessage = "";
-                IsDownloading = false;
+                if (_activeItem == null)
+                {
+                    ProgressPercent = 0;
+                    StatusMessage = string.Empty;
+                }
             }
         }
+
+        // ==== Обновление приложения ====
 
         public async Task CheckAppUpdateAsync()
         {
@@ -612,6 +821,17 @@ namespace VidDownload.WPF.ViewModels
             if (_appUpdateInfo == null || !_appUpdateInfo.IsUpdateAvailable)
                 return;
 
+            // В релизе нет portable .exe — предложить открыть страницу загрузки
+            if (string.IsNullOrEmpty(_appUpdateInfo.DownloadUrl))
+            {
+                AppUpdateStatusMessage = _loc["AppUpdateManualOnly"];
+                if (await _dialogService.AskAsync(_loc["AppUpdateOpenPage"], _loc["AppUpdateDownloadTitle"]))
+                {
+                    Process.Start(new ProcessStartInfo(UpdateService.ReleasesUrl) { UseShellExecute = true });
+                }
+                return;
+            }
+
             string currentVer = string.IsNullOrEmpty(AppVersion) ? _loc["VersionNotFound"] : AppVersion;
             string displayLatest = _appUpdateInfo.Version;
 
@@ -633,31 +853,36 @@ namespace VidDownload.WPF.ViewModels
                         AppUpdateStatusMessage = p.StatusMessage;
                 });
 
-                await _updateService.DownloadAppUpdateAsync(_appUpdateInfo, progress);
+                string downloadedPath = await _updateService.DownloadAppUpdateAsync(_appUpdateInfo, progress);
 
-                if (!await _dialogService.AskAsync(
-                    _loc["AppUpdateReady"],
-                    _loc["AppRestartTitle"]))
+                if (!File.Exists(downloadedPath))
+                    throw new FileNotFoundException(downloadedPath);
+
+                if (!await _dialogService.AskAsync(_loc["AppUpdateReady"], _loc["AppRestartTitle"]))
+                    return;
+
+                string appExe = Environment.ProcessPath
+                    ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VidDownload.WPF.exe");
+                string updaterPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater.exe");
+
+                if (!File.Exists(updaterPath))
                 {
+                    _messageService.Error(string.Format(_loc["UpdaterNotFound"], updaterPath), _loc["UpdateErrorTitle"]);
                     return;
                 }
-
-                string updaterPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater.exe");
-                string tempFile = Path.Combine(Path.GetTempPath(), "VidDownloadUpdate", "VidDownload.WPF.exe");
-                string appExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "VidDownload.WPF.exe");
-                int pid = Environment.ProcessId;
 
                 var updaterInfo = new ProcessStartInfo
                 {
                     FileName = updaterPath,
-                    Arguments = $"--src \"{tempFile}\" --dst \"{appExe}\" --pid {pid}",
+                    Arguments = $"--src \"{downloadedPath}\" --dst \"{appExe}\" --pid {Environment.ProcessId}",
                     UseShellExecute = true,
                     Verb = "runas",
                     CreateNoWindow = true
                 };
 
                 Process.Start(updaterInfo);
-                Application.Current.Shutdown();
+                _queue.CancelAll();
+                System.Windows.Application.Current.Shutdown();
             }
             catch (Exception ex)
             {

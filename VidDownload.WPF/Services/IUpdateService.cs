@@ -8,7 +8,10 @@ namespace VidDownload.WPF.Services
         Task<UpdateInfo> CheckForUpdateAsync();
         Task DownloadUpdateAsync(UpdateInfo info, IProgress<DownloadProgress> progress);
         Task<string> GetCurrentVersionAsync();
+
         Task<AppUpdateInfo> CheckAppUpdateAsync();
-        Task DownloadAppUpdateAsync(AppUpdateInfo info, IProgress<DownloadProgress> progress);
+
+        /// <summary>Возвращает путь к скачанному файлу обновления приложения.</summary>
+        Task<string> DownloadAppUpdateAsync(AppUpdateInfo info, IProgress<DownloadProgress> progress);
     }
 }

@@ -205,7 +205,7 @@
     <value>by mesh</value>
   </data>
   <data name="HelpVersionLabel" xml:space="preserve">
-    <value>v0.7.1 2026 年</value>
+    <value>v0.8.0 2026 年</value>
   </data>
   <data name="VkLinkText" xml:space="preserve">
     <value>通往 Telegram 频道的链接</value>
@@ -500,5 +500,104 @@
   </data>
   <data name="InputSectionLabel" xml:space="preserve">
     <value>输入文件</value>
+  </data>
+  <data name="UrlPlaceholder" xml:space="preserve">
+    <value>粘贴视频链接并按回车…</value>
+  </data>
+  <data name="SaveFolderLabel" xml:space="preserve">
+    <value>文件夹：</value>
+  </data>
+  <data name="RateLimitLabel" xml:space="preserve">
+    <value>速度限制：</value>
+  </data>
+  <data name="RateLimitHint" xml:space="preserve">
+    <value>yt-dlp 的下载限速，例如 5M 或 500K。留空表示不限速。</value>
+  </data>
+  <data name="ClipboardMonitorLabel" xml:space="preserve">
+    <value>剪贴板监控</value>
+  </data>
+  <data name="MinimizeToTrayLabel" xml:space="preserve">
+    <value>关闭时最小化到托盘</value>
+  </data>
+  <data name="QueueSectionLabel" xml:space="preserve">
+    <value>下载队列</value>
+  </data>
+  <data name="QueueEmptyMessage" xml:space="preserve">
+    <value>队列为空 — 在上方粘贴链接并点击下载</value>
+  </data>
+  <data name="ClearFinishedButton" xml:space="preserve">
+    <value>清除已完成</value>
+  </data>
+  <data name="AddedToQueue" xml:space="preserve">
+    <value>已加入队列：{0}</value>
+  </data>
+  <data name="DownloadCompleteNotify" xml:space="preserve">
+    <value>下载完成：{0}</value>
+  </data>
+  <data name="DownloadFailedNotify" xml:space="preserve">
+    <value>下载失败：{0}</value>
+  </data>
+  <data name="InvalidUrlWarning" xml:space="preserve">
+    <value>这似乎不是链接（http/https）。仍要加入队列吗？</value>
+  </data>
+  <data name="ConfirmExitWithDownloads" xml:space="preserve">
+    <value>有正在进行的下载。停止并退出吗？</value>
+  </data>
+  <data name="ExitConfirmTitle" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="TrayShow" xml:space="preserve">
+    <value>显示</value>
+  </data>
+  <data name="TrayOpenFolder" xml:space="preserve">
+    <value>打开下载文件夹</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="AppNameLabel" xml:space="preserve">
+    <value>VidDownload:</value>
+  </data>
+  <data name="AppUpdateManualOnly" xml:space="preserve">
+    <value>自动更新不可用（发布中没有 .exe）</value>
+  </data>
+  <data name="AppUpdateOpenPage" xml:space="preserve">
+    <value>自动更新不可用：该发布中没有便携版。打开 GitHub 下载页面？</value>
+  </data>
+  <data name="UpdaterNotFound" xml:space="preserve">
+    <value>未找到 Updater.exe：{0}</value>
+  </data>
+  <data name="ClipboardLinkDetected" xml:space="preserve">
+    <value>剪贴板中发现链接：&#10;{0}&#10;加入队列？</value>
+  </data>
+  <data name="ClipboardLinkTitle" xml:space="preserve">
+    <value>剪贴板中的链接</value>
+  </data>
+  <data name="PauseButton" xml:space="preserve">
+    <value>暂停 / 继续</value>
+  </data>
+  <data name="StatusQueued" xml:space="preserve">
+    <value>排队中</value>
+  </data>
+  <data name="StatusDownloading" xml:space="preserve">
+    <value>下载中</value>
+  </data>
+  <data name="StatusPaused" xml:space="preserve">
+    <value>已暂停</value>
+  </data>
+  <data name="StatusCompleted" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="StatusFailed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="StatusCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="StatusPreparing" xml:space="preserve">
+    <value>准备中…</value>
+  </data>
+  <data name="YtDlpMissing" xml:space="preserve">
+    <value>未找到 yt-dlp.exe。请等待启动时的自动下载，或检查网络连接。</value>
   </data>
 </root>

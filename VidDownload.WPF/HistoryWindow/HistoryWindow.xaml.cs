@@ -22,7 +22,7 @@ namespace VidDownload.WPF.HistoryWindow
             DownloadAgainCommand = new RelayCommand<DownloadHistoryEntry>(OnDownloadAgain);
         }
 
-        private async void OnDownloadAgain(DownloadHistoryEntry? entry)
+        private void OnDownloadAgain(DownloadHistoryEntry? entry)
         {
             if (entry == null) return;
 

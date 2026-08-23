@@ -30,15 +30,32 @@ jobs:
       - name: Build MSI Installer
         run: powershell -ExecutionPolicy Bypass -File build-installer.ps1
 
+      # Portable-сборка: единый self-contained exe + Updater.exe рядом.
+      # Именно .exe-asset используется механизмом самообновления приложения.
+      - name: Publish Portable Build
+        run: dotnet publish VidDownload.WPF/VidDownload.WPF.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish-portable --nologo
+
+      - name: Publish Updater (Portable)
+        run: dotnet publish Updater/Updater.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish-portable --nologo
+
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
           name: VidDownload-Installer
           path: VidDownload.msi
 
+      - name: Upload Portable Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VidDownload-Portable
+          path: publish-portable/*.exe
+
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: VidDownload.msi
+          files: |
+            VidDownload.msi
+            publish-portable/VidDownload.WPF.exe
+            publish-portable/Updater.exe
           generate_release_notes: true

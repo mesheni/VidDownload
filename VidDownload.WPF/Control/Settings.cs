@@ -16,6 +16,9 @@ public class Settings
     public bool EmbedSubtitles { get; set; }
     public string SavePath { get; set; } = string.Empty;
 
+    /// <summary>Лимит скорости для yt-dlp (--limit-rate), например "5M" или "500K". Пусто = без лимита.</summary>
+    public string RateLimit { get; set; } = string.Empty;
+
     public Settings(string resolution, string videoCodec, string audioCodec, string format)
     {
         Resolution = resolution;
@@ -26,4 +29,17 @@ public class Settings
 
     public Settings() { }
 
+    /// <summary>Независимая копия настроек — каждый элемент очереди работает со своим снимком.</summary>
+    public Settings Clone() => new()
+    {
+        Resolution = Resolution,
+        VideoCodec = VideoCodec,
+        AudioCodec = AudioCodec,
+        Format = Format,
+        DownloadSubtitles = DownloadSubtitles,
+        SubtitleLanguage = SubtitleLanguage,
+        EmbedSubtitles = EmbedSubtitles,
+        SavePath = SavePath,
+        RateLimit = RateLimit
+    };
 }

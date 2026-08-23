@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace VidDownload.WPF.Control
 {
@@ -14,6 +14,8 @@ namespace VidDownload.WPF.Control
                 "-x",
                 "--audio-format", _acodec
             };
+
+            AppendRateLimit(args, settings);
 
             if (settings.DownloadSubtitles)
             {
@@ -69,6 +71,8 @@ namespace VidDownload.WPF.Control
             args.Add("-S");
             args.Add($"+codec:{_vcodec},res:{_res},fps");
 
+            AppendRateLimit(args, settings);
+
             if (settings.DownloadSubtitles)
             {
                 args.Add("--write-subs");
@@ -97,6 +101,15 @@ namespace VidDownload.WPF.Control
 
             args.Add(reference);
             return args;
+        }
+
+        private static void AppendRateLimit(List<string> args, Settings settings)
+        {
+            if (!string.IsNullOrWhiteSpace(settings.RateLimit))
+            {
+                args.Add("--limit-rate");
+                args.Add(settings.RateLimit.Trim());
+            }
         }
     }
 }

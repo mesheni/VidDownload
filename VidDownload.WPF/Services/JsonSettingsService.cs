@@ -31,8 +31,10 @@ namespace VidDownload.WPF.Services
                 var json = await File.ReadAllTextAsync(SettingsPath).ConfigureAwait(false);
                 return JsonSerializer.Deserialize<UserSettings>(json) ?? new UserSettings();
             }
-            catch
+            catch (Exception ex)
             {
+                // Повреждённый settings.json не должен молча стирать настройки пользователя
+                AppLog.Error(nameof(JsonSettingsService), $"Failed to load settings: {ex.Message}");
                 return new UserSettings();
             }
         }
@@ -42,11 +44,37 @@ namespace VidDownload.WPF.Services
             try
             {
                 var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(SettingsPath, json).ConfigureAwait(false);
+                await AtomicWriteAsync(SettingsPath, json).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignored
+                AppLog.Error(nameof(JsonSettingsService), $"Failed to save settings: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Атомарная замена: запись во временный файл и FileMove поверх целевого,
+        /// чтобы обрыв процесса посреди записи не оставил битый JSON.
+        /// </summary>
+        internal static async Task AtomicWriteAsync(string path, string content)
+        {
+            string tempPath = path + ".tmp";
+            try
+            {
+                await File.WriteAllTextAsync(tempPath, content).ConfigureAwait(false);
+                File.Move(tempPath, path, overwrite: true);
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(tempPath))
+                        File.Delete(tempPath);
+                }
+                catch
+                {
+                    // Не критично
+                }
             }
         }
     }

@@ -38,6 +38,14 @@ internal static class Program
             return 2;
         }
 
+        // Защита от битых загрузок: исходник должен быть PE-исполняемым файлом (сигнатура MZ),
+        // иначе можно затереть рабочее приложение мусором (HTML-страницей ошибки и т.п.)
+        if (!IsPortableExecutable(src))
+        {
+            Console.Error.WriteLine($"Source file is not a valid executable: {src}");
+            return 5;
+        }
+
         try
         {
             var targetProcess = Process.GetProcessById(pid);
@@ -70,6 +78,10 @@ internal static class Program
             }
         }
 
+        // Больше не нужен: скачанный обновлённый exe лежал во временной папке
+        try { File.Delete(src); }
+        catch { /* не критично */ }
+
         try
         {
             var startInfo = new ProcessStartInfo(dst)
@@ -87,5 +99,20 @@ internal static class Program
         }
 
         return 0;
+    }
+
+    private static bool IsPortableExecutable(string path)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            if (stream.Length < 2)
+                return false;
+            return stream.ReadByte() == 'M' && stream.ReadByte() == 'Z';
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

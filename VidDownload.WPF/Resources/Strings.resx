@@ -205,7 +205,7 @@
     <value>by mesh</value>
   </data>
   <data name="HelpVersionLabel" xml:space="preserve">
-    <value>v0.7.1 2026 г.</value>
+    <value>v0.8.0 2026 г.</value>
   </data>
   <data name="VkLinkText" xml:space="preserve">
     <value>ССЫЛКА НА КАНАЛ В TELEGRAM</value>
@@ -500,5 +500,104 @@
   </data>
   <data name="InputSectionLabel" xml:space="preserve">
     <value>ИСХОДНЫЙ ФАЙЛ</value>
+  </data>
+  <data name="UrlPlaceholder" xml:space="preserve">
+    <value>Вставьте ссылку на видео и нажмите Enter...</value>
+  </data>
+  <data name="SaveFolderLabel" xml:space="preserve">
+    <value>Папка:</value>
+  </data>
+  <data name="RateLimitLabel" xml:space="preserve">
+    <value>Лимит скорости:</value>
+  </data>
+  <data name="RateLimitHint" xml:space="preserve">
+    <value>Ограничение скорости загрузки для yt-dlp, например 5M или 500K. Пусто — без ограничений.</value>
+  </data>
+  <data name="ClipboardMonitorLabel" xml:space="preserve">
+    <value>Мониторинг буфера обмена</value>
+  </data>
+  <data name="MinimizeToTrayLabel" xml:space="preserve">
+    <value>Сворачивать в трей при закрытии</value>
+  </data>
+  <data name="QueueSectionLabel" xml:space="preserve">
+    <value>ОЧЕРЕДЬ ЗАГРУЗОК</value>
+  </data>
+  <data name="QueueEmptyMessage" xml:space="preserve">
+    <value>Очередь пуста — вставьте ссылку выше и нажмите «Скачать»</value>
+  </data>
+  <data name="ClearFinishedButton" xml:space="preserve">
+    <value>Очистить завершённые</value>
+  </data>
+  <data name="AddedToQueue" xml:space="preserve">
+    <value>Добавлено в очередь: {0}</value>
+  </data>
+  <data name="DownloadCompleteNotify" xml:space="preserve">
+    <value>Загрузка завершена: {0}</value>
+  </data>
+  <data name="DownloadFailedNotify" xml:space="preserve">
+    <value>Ошибка загрузки: {0}</value>
+  </data>
+  <data name="InvalidUrlWarning" xml:space="preserve">
+    <value>Похоже, это не ссылка (http/https). Всё равно добавить в очередь?</value>
+  </data>
+  <data name="ConfirmExitWithDownloads" xml:space="preserve">
+    <value>Есть активные загрузки. Прервать их и выйти?</value>
+  </data>
+  <data name="ExitConfirmTitle" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="TrayShow" xml:space="preserve">
+    <value>Показать</value>
+  </data>
+  <data name="TrayOpenFolder" xml:space="preserve">
+    <value>Открыть папку загрузок</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="AppNameLabel" xml:space="preserve">
+    <value>VidDownload:</value>
+  </data>
+  <data name="AppUpdateManualOnly" xml:space="preserve">
+    <value>Автообновление недоступно (нет .exe в релизе)</value>
+  </data>
+  <data name="AppUpdateOpenPage" xml:space="preserve">
+    <value>Автообновление недоступно: в релизе нет portable-версии. Открыть страницу загрузки на GitHub?</value>
+  </data>
+  <data name="UpdaterNotFound" xml:space="preserve">
+    <value>Updater.exe не найден: {0}</value>
+  </data>
+  <data name="ClipboardLinkDetected" xml:space="preserve">
+    <value>В буфере обмена найдена ссылка:&#10;{0}&#10;Добавить в очередь?</value>
+  </data>
+  <data name="ClipboardLinkTitle" xml:space="preserve">
+    <value>Ссылка в буфере обмена</value>
+  </data>
+  <data name="PauseButton" xml:space="preserve">
+    <value>Пауза / Продолжить</value>
+  </data>
+  <data name="StatusQueued" xml:space="preserve">
+    <value>В очереди</value>
+  </data>
+  <data name="StatusDownloading" xml:space="preserve">
+    <value>Загружается</value>
+  </data>
+  <data name="StatusPaused" xml:space="preserve">
+    <value>Пауза</value>
+  </data>
+  <data name="StatusCompleted" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="StatusFailed" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
+  <data name="StatusCancelled" xml:space="preserve">
+    <value>Отменено</value>
+  </data>
+  <data name="StatusPreparing" xml:space="preserve">
+    <value>Подготовка...</value>
+  </data>
+  <data name="YtDlpMissing" xml:space="preserve">
+    <value>yt-dlp.exe не найден. Дождитесь автоматической загрузки при запуске или проверьте подключение к интернету.</value>
   </data>
 </root>

@@ -20,12 +20,19 @@ namespace VidDownload.WPF.Services
             services.AddSingleton(localizedStrings);
 
             services.AddSingleton<IYtDlpService, YtDlpService>();
+            services.AddSingleton<IDownloadQueueService, DownloadQueueService>();
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IFFmpegService, FFmpegService>();
             services.AddSingleton<ISettingsService, JsonSettingsService>();
             services.AddSingleton<IMessageService, HandyControlMessageService>();
             services.AddSingleton<IDialogService, HandyControlDialogService>();
             services.AddSingleton<IDownloadHistoryService, JsonDownloadHistoryService>();
+            services.AddSingleton<IClipboardMonitorService, ClipboardMonitorService>();
+            services.AddSingleton<ITrayService, TrayService>();
+            services.AddSingleton(sp => new GrowlNotificationService(
+                new Lazy<ITrayService>(() => sp.GetRequiredService<ITrayService>())));
+            services.AddSingleton<INotificationService>(sp =>
+                sp.GetRequiredService<GrowlNotificationService>());
 
             services.AddTransient<MainViewModel>();
             services.AddTransient<ConvertViewModel>();

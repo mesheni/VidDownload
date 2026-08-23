@@ -205,7 +205,7 @@
     <value>by mesh</value>
   </data>
   <data name="HelpVersionLabel" xml:space="preserve">
-    <value>v0.7.1 2026</value>
+    <value>v0.8.0 2026</value>
   </data>
   <data name="VkLinkText" xml:space="preserve">
     <value>LINK TO THE TELEGRAM CHANNEL</value>
@@ -500,5 +500,104 @@ Leave 0 for auto</value>
   </data>
   <data name="InputSectionLabel" xml:space="preserve">
     <value>INPUT FILE</value>
+  </data>
+  <data name="UrlPlaceholder" xml:space="preserve">
+    <value>Paste a video link and press Enter...</value>
+  </data>
+  <data name="SaveFolderLabel" xml:space="preserve">
+    <value>Folder:</value>
+  </data>
+  <data name="RateLimitLabel" xml:space="preserve">
+    <value>Speed limit:</value>
+  </data>
+  <data name="RateLimitHint" xml:space="preserve">
+    <value>Download rate limit for yt-dlp, e.g. 5M or 500K. Empty = unlimited.</value>
+  </data>
+  <data name="ClipboardMonitorLabel" xml:space="preserve">
+    <value>Clipboard monitoring</value>
+  </data>
+  <data name="MinimizeToTrayLabel" xml:space="preserve">
+    <value>Minimize to tray on close</value>
+  </data>
+  <data name="QueueSectionLabel" xml:space="preserve">
+    <value>DOWNLOAD QUEUE</value>
+  </data>
+  <data name="QueueEmptyMessage" xml:space="preserve">
+    <value>Queue is empty — paste a link above and press Download</value>
+  </data>
+  <data name="ClearFinishedButton" xml:space="preserve">
+    <value>Clear finished</value>
+  </data>
+  <data name="AddedToQueue" xml:space="preserve">
+    <value>Added to queue: {0}</value>
+  </data>
+  <data name="DownloadCompleteNotify" xml:space="preserve">
+    <value>Download complete: {0}</value>
+  </data>
+  <data name="DownloadFailedNotify" xml:space="preserve">
+    <value>Download failed: {0}</value>
+  </data>
+  <data name="InvalidUrlWarning" xml:space="preserve">
+    <value>This doesn't look like a link (http/https). Add to queue anyway?</value>
+  </data>
+  <data name="ConfirmExitWithDownloads" xml:space="preserve">
+    <value>There are active downloads. Stop them and exit?</value>
+  </data>
+  <data name="ExitConfirmTitle" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="TrayShow" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="TrayOpenFolder" xml:space="preserve">
+    <value>Open downloads folder</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="AppNameLabel" xml:space="preserve">
+    <value>VidDownload:</value>
+  </data>
+  <data name="AppUpdateManualOnly" xml:space="preserve">
+    <value>Auto-update unavailable (no .exe in release)</value>
+  </data>
+  <data name="AppUpdateOpenPage" xml:space="preserve">
+    <value>Auto-update is unavailable: this release has no portable build. Open the GitHub download page?</value>
+  </data>
+  <data name="UpdaterNotFound" xml:space="preserve">
+    <value>Updater.exe not found: {0}</value>
+  </data>
+  <data name="ClipboardLinkDetected" xml:space="preserve">
+    <value>Link found in clipboard:&#10;{0}&#10;Add to queue?</value>
+  </data>
+  <data name="ClipboardLinkTitle" xml:space="preserve">
+    <value>Link in clipboard</value>
+  </data>
+  <data name="PauseButton" xml:space="preserve">
+    <value>Pause / Resume</value>
+  </data>
+  <data name="StatusQueued" xml:space="preserve">
+    <value>Queued</value>
+  </data>
+  <data name="StatusDownloading" xml:space="preserve">
+    <value>Downloading</value>
+  </data>
+  <data name="StatusPaused" xml:space="preserve">
+    <value>Paused</value>
+  </data>
+  <data name="StatusCompleted" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="StatusFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="StatusCancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="StatusPreparing" xml:space="preserve">
+    <value>Preparing...</value>
+  </data>
+  <data name="YtDlpMissing" xml:space="preserve">
+    <value>yt-dlp.exe not found. Wait for the automatic startup download or check your internet connection.</value>
   </data>
 </root>
