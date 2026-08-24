@@ -1,19 +1,16 @@
 using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
-using VidDownload.WPF.Services;
-using VidDownload.WPF.Themes;
 
 namespace VidDownload.WPF.Converters
 {
-    /// <summary>Цвет статуса записи истории — общая палитра с очередью.</summary>
-    public class DownloadStatusToColorConverter : IValueConverter
+    /// <summary>Непустая строка → Visible, пустая или null → Collapsed.</summary>
+    public class StringToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return value is DownloadStatus status
-                ? StatusPalette.For(status)
-                : StatusPalette.Queued;
+            return string.IsNullOrEmpty(value as string) ? Visibility.Collapsed : Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

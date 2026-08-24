@@ -597,7 +597,28 @@
   <data name="StatusPreparing" xml:space="preserve">
     <value>准备中…</value>
   </data>
-  <data name="YtDlpMissing" xml:space="preserve">
-    <value>未找到 yt-dlp.exe。请等待启动时的自动下载，或检查网络连接。</value>
+  <data name="PlaylistBadge" xml:space="preserve">
+    <value>播放列表</value>
+  </data>
+  <data name="VideoOfPlaylist" xml:space="preserve">
+    <value>视频：{0}</value>
+  </data>
+  <data name="VideoPercentFormat" xml:space="preserve">
+    <value>视频 {0}%</value>
+  </data>
+  <data name="QueueActiveCount" xml:space="preserve">
+    <value>{0} 个下载中</value>
+  </data>
+  <data name="QueueQueuedCount" xml:space="preserve">
+    <value>{0} 个排队中</value>
+  </data>
+  <data name="RetryButton" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="OpenLocationButton" xml:space="preserve">
+    <value>在文件夹中显示</value>
+  </data>
+  <data name="RemoveItemButton" xml:space="preserve">
+    <value>从列表移除</value>
   </data>
 </root>

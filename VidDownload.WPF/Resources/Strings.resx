@@ -600,4 +600,28 @@
   <data name="YtDlpMissing" xml:space="preserve">
     <value>yt-dlp.exe не найден. Дождитесь автоматической загрузки при запуске или проверьте подключение к интернету.</value>
   </data>
+  <data name="PlaylistBadge" xml:space="preserve">
+    <value>Плейлист</value>
+  </data>
+  <data name="VideoOfPlaylist" xml:space="preserve">
+    <value>Видео: {0}</value>
+  </data>
+  <data name="VideoPercentFormat" xml:space="preserve">
+    <value>видео {0}%</value>
+  </data>
+  <data name="QueueActiveCount" xml:space="preserve">
+    <value>{0} загружается</value>
+  </data>
+  <data name="QueueQueuedCount" xml:space="preserve">
+    <value>{0} в очереди</value>
+  </data>
+  <data name="RetryButton" xml:space="preserve">
+    <value>Повторить</value>
+  </data>
+  <data name="OpenLocationButton" xml:space="preserve">
+    <value>Показать в папке</value>
+  </data>
+  <data name="RemoveItemButton" xml:space="preserve">
+    <value>Убрать из списка</value>
+  </data>
 </root>

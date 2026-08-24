@@ -12,11 +12,11 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
                 <hc:StandaloneTheme AccentColor="#FFFFEFEF" />
 
-                
-                
+
                 <hc:Theme Skin="Dark" />
 
                 <hc:Theme SyncWithSystem="True"/>
+                <ResourceDictionary Source="/Themes/Colors.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>

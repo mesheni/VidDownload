@@ -32,6 +32,10 @@ namespace VidDownload.WPF.Control
                 }
             }
 
+            // Галочка «Плейлист» реально управляет скачиванием, а не только раскладкой файлов:
+            // без неё даже плейлист-ссылка качается как одиночное видео.
+            args.Add(_isPlaylist ? "--yes-playlist" : "--no-playlist");
+
             if (_isPlaylist)
             {
                 args.Add("-o");
@@ -87,6 +91,10 @@ namespace VidDownload.WPF.Control
                     args.Add("--embed-subs");
                 }
             }
+
+            // Галочка «Плейлист» реально управляет скачиванием, а не только раскладкой файлов:
+            // без неё даже плейлист-ссылка качается как одиночное видео.
+            args.Add(_isPlaylist ? "--yes-playlist" : "--no-playlist");
 
             if (_isPlaylist)
             {

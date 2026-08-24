@@ -12,51 +12,51 @@
         <converters:BooleanInvertConverter x:Key="InvertBool"/>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <Style x:Key="SectionHeader" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#FF888888"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Margin" Value="0,14,0,4"/>
         </Style>
         <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#FFCCCCCC"/>
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,0,4,0"/>
         </Style>
         <Style x:Key="DarkInput" TargetType="TextBox">
-            <Setter Property="Background" Value="#FF2D2D2D"/>
-            <Setter Property="Foreground" Value="#FFBAF79F"/>
-            <Setter Property="BorderBrush" Value="#FF3A3A3A"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBgrElevatedBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontFamily" Value="Cascadia Code"/>
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
         <Style x:Key="DarkCombo" TargetType="ComboBox">
-            <Setter Property="Background" Value="#FF2D2D2D"/>
-            <Setter Property="Foreground" Value="#FFBAF79F"/>
-            <Setter Property="BorderBrush" Value="#FF3A3A3A"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBgrElevatedBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontFamily" Value="Cascadia Code"/>
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Height" Value="26"/>
         </Style>
         <Style x:Key="ActionButton" TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Height" Value="26"/>
             <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="Background" Value="#FF3A3A3A"/>
-            <Setter Property="Foreground" Value="#FFCCCCCC"/>
-            <Setter Property="BorderBrush" Value="#FF505050"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBgrAltBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
     </Window.Resources>
-    <Grid Background="#FF1A1A1A">
+    <Grid Background="{StaticResource WindowBgrBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="24"/>
             <ColumnDefinition Width="*"/>
@@ -77,7 +77,7 @@
         <!-- ═══════ INPUT SECTION ═══════ -->
         <StackPanel Grid.Row="0" Grid.Column="1">
             <TextBlock Text="{Binding LocalizedStrings[InputSectionLabel]}" Style="{StaticResource SectionHeader}"/>
-            <Rectangle Height="1" Fill="#FF333333" Margin="0,0,0,8"/>
+            <Rectangle Height="1" Fill="{StaticResource AppBorderBrush}" Margin="0,0,0,8"/>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="{Binding LocalizedStrings[SelectVideoFileLabel]}" Style="{StaticResource FieldLabel}"/>
                 <Button Content="{Binding LocalizedStrings[BrowseButton]}"
@@ -92,7 +92,7 @@
         <!-- ═══════ OUTPUT SECTION ═══════ -->
         <StackPanel Grid.Row="1" Grid.Column="1">
             <TextBlock Text="{Binding LocalizedStrings[OutputSectionLabel]}" Style="{StaticResource SectionHeader}"/>
-            <Rectangle Height="1" Fill="#FF333333" Margin="0,0,0,8"/>
+            <Rectangle Height="1" Fill="{StaticResource AppBorderBrush}" Margin="0,0,0,8"/>
             <StackPanel Orientation="Horizontal" Margin="0,2">
                 <TextBlock Text="{Binding LocalizedStrings[OutputFolderLabel]}" Style="{StaticResource FieldLabel}"/>
                 <Button Content="{Binding LocalizedStrings[OutputBrowseButton]}"
@@ -110,7 +110,7 @@
         <!-- ═══════ ENCODING SECTION ═══════ -->
         <StackPanel Grid.Row="2" Grid.Column="1">
             <TextBlock Text="{Binding LocalizedStrings[EncodingSectionLabel]}" Style="{StaticResource SectionHeader}"/>
-            <Rectangle Height="1" Fill="#FF333333" Margin="0,0,0,8"/>
+            <Rectangle Height="1" Fill="{StaticResource AppBorderBrush}" Margin="0,0,0,8"/>
 
             <!-- Row 1: Format | Hardware encoder | Preset -->
             <StackPanel Orientation="Horizontal" Margin="0,4">
@@ -147,7 +147,7 @@
         <!-- ═══════ QUALITY SECTION ═══════ -->
         <StackPanel Grid.Row="4" Grid.Column="1">
             <TextBlock Text="{Binding LocalizedStrings[QualitySectionLabel]}" Style="{StaticResource SectionHeader}"/>
-            <Rectangle Height="1" Fill="#FF333333" Margin="0,0,0,8"/>
+            <Rectangle Height="1" Fill="{StaticResource AppBorderBrush}" Margin="0,0,0,8"/>
             <StackPanel Orientation="Horizontal" Margin="0,4">
                 <TextBlock Text="{Binding LocalizedStrings[CrfLabel]}" Style="{StaticResource FieldLabel}"/>
                 <TextBox Text="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" Width="44"
@@ -172,11 +172,11 @@
         <!-- ═══════ COMMAND PREVIEW ═══════ -->
         <StackPanel Grid.Row="5" Grid.Column="1">
             <TextBlock Text="{Binding LocalizedStrings[FfmpegCommandPreviewLabel]}" Style="{StaticResource SectionHeader}"/>
-            <Rectangle Height="1" Fill="#FF333333" Margin="0,0,0,4"/>
+            <Rectangle Height="1" Fill="{StaticResource AppBorderBrush}" Margin="0,0,0,4"/>
             <TextBox Text="{Binding FfmpegCommandPreview}" Height="48"
-                     Background="#FF222222" Foreground="#FF6BCAE2"
-                     BorderBrush="#FF333333" BorderThickness="1"
-                     FontFamily="Consolas" FontSize="11"
+                     Background="{StaticResource SurfaceBgrBrush}" Foreground="{StaticResource TextSecondaryBrush}"
+                     BorderBrush="{StaticResource AppBorderBrush}" BorderThickness="1"
+                     FontFamily="{StaticResource MonoFont}" FontSize="11"
                      IsReadOnly="True" TextWrapping="Wrap"
                      VerticalScrollBarVisibility="Auto"/>
         </StackPanel>
@@ -184,10 +184,10 @@
         <!-- ═══════ PROGRESS ═══════ -->
         <StackPanel Grid.Row="7" Grid.Column="1" Margin="0,8,0,0">
             <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center"
-                       FontFamily="Segoe UI" FontSize="12"
-                       Foreground="#FF999999" Margin="0,4"/>
+                       FontFamily="{StaticResource MonoLightFont}" FontSize="12"
+                       Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4"/>
             <ProgressBar Value="{Binding ProgressPercent}" Height="20"
-                         Foreground="#FDFF5252" Margin="0,2" hc:Theme.Skin="Dark"/>
+                         Foreground="{StaticResource AccentBrush}" Margin="0,2" hc:Theme.Skin="Dark"/>
         </StackPanel>
 
         <!-- ═══════ BUTTONS ═══════ -->
@@ -198,16 +198,16 @@
                     IsEnabled="{Binding IsCancellable}"
                     Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}"
                     Width="150" Height="38"
-                    Background="#FFCC6600" Foreground="White"
-                    BorderBrush="#FFE67A00" BorderThickness="1"
-                    FontFamily="Segoe UI" FontSize="15" FontWeight="Bold"
+                    Background="{StaticResource StatusPausedBrush}" Foreground="White"
+                    BorderBrush="{StaticResource StatusPausedBrush}" BorderThickness="1"
+                    FontFamily="{StaticResource MonoFont}" FontSize="15" FontWeight="Bold"
                     Cursor="Hand" Margin="0,0,12,0"/>
             <Button Content="{Binding LocalizedStrings[ConvertButton]}"
                     Command="{Binding ConvertCommand}"
                     Width="260" Height="44"
-                    Background="#FFD94040" Foreground="White"
-                    BorderBrush="#FFF06060" BorderThickness="1"
-                    FontFamily="Segoe UI" FontSize="18" FontWeight="Bold"
+                    Background="{StaticResource AccentBrush}" Foreground="White"
+                    BorderBrush="White" BorderThickness="1"
+                    FontFamily="{StaticResource MonoFont}" FontSize="18" FontWeight="Bold"
                     Cursor="Hand"/>
         </StackPanel>
     </Grid>

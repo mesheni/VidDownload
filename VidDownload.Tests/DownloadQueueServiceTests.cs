@@ -229,5 +229,84 @@ namespace VidDownload.Tests
             Assert.DoesNotContain(done, queue.Items);
             Assert.Contains(queued, queue.Items);
         }
+
+        [Fact]
+        public void ApplyProgress_PlaylistFields_UpdateItemAndComputeTotalPercent()
+        {
+            var queue = new DownloadQueueService(new FakeYtDlpService());
+            var item = MakeItem();
+            item.Status = DownloadItemStatus.Downloading;
+
+            queue.ApplyProgress(item, new DownloadProgress
+            {
+                PlaylistTitle = "My Mix",
+                PlaylistIndex = 1,
+                PlaylistCount = 15,
+                Percent = 100,
+                Speed = "2.00 MiB/s"
+            });
+            queue.ApplyProgress(item, new DownloadProgress
+            {
+                DestinationPath = @"C:\v\1- First.mp4",
+                PlaylistIndex = 1,
+                PlaylistCount = 15,
+                Percent = 100
+            });
+
+            Assert.True(item.HasPlaylistInfo);
+            Assert.Equal("My Mix", item.PlaylistTitle);
+            Assert.Equal("My Mix", item.DisplayTitle);
+            Assert.Equal("1- First", item.Title);
+            Assert.Equal("1/15", item.PlaylistCounterText);
+            // Первое видео из 15 скачано полностью: ~6.67% общего прогресса
+            Assert.Equal(7, item.TotalPercent);
+
+            // Второе видео: название сбрасывается, проценты начинаются заново
+            queue.ApplyProgress(item, new DownloadProgress { PlaylistIndex = 2, PlaylistCount = 15, Percent = 0 });
+            Assert.Equal(string.Empty, item.Title);
+
+            queue.ApplyProgress(item, new DownloadProgress
+            {
+                DestinationPath = @"C:\v\2- Second.mp4",
+                PlaylistIndex = 2,
+                PlaylistCount = 15,
+                Percent = 30
+            });
+
+            Assert.Equal("2- Second", item.Title);
+            Assert.Equal("My Mix", item.DisplayTitle);
+            // Одно видео целиком + 30% второго из 15: ~8.67% → 9
+            Assert.Equal(9, item.TotalPercent);
+            Assert.Equal(30, item.Percent);
+        }
+
+        [Fact]
+        public void ApplyProgress_SingleVideo_TotalPercentEqualsPercent()
+        {
+            var queue = new DownloadQueueService(new FakeYtDlpService());
+            var item = MakeItem();
+            item.Status = DownloadItemStatus.Downloading;
+
+            queue.ApplyProgress(item, new DownloadProgress { Percent = 42 });
+
+            Assert.False(item.HasPlaylistInfo);
+            Assert.Equal(42, item.TotalPercent);
+            Assert.Equal(string.Empty, item.PlaylistCounterText);
+        }
+
+        [Fact]
+        public void PercentChange_WithoutPlaylist_RaisesTotalPercent()
+        {
+            // Регрессия: раньше уведомление TotalPercent отправлялось только для плейлистов,
+            // и прогресс-бар одиночного видео оставался на 0%.
+            var item = MakeItem();
+            var raised = new System.Collections.Generic.List<string>();
+            item.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+            item.Percent = 42;
+
+            Assert.Contains(nameof(DownloadItem.TotalPercent), raised);
+            Assert.Equal(42, item.TotalPercent);
+        }
     }
 }

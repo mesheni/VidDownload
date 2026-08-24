@@ -597,7 +597,28 @@ Leave 0 for auto</value>
   <data name="StatusPreparing" xml:space="preserve">
     <value>Preparing...</value>
   </data>
-  <data name="YtDlpMissing" xml:space="preserve">
-    <value>yt-dlp.exe not found. Wait for the automatic startup download or check your internet connection.</value>
+  <data name="PlaylistBadge" xml:space="preserve">
+    <value>Playlist</value>
+  </data>
+  <data name="VideoOfPlaylist" xml:space="preserve">
+    <value>Video: {0}</value>
+  </data>
+  <data name="VideoPercentFormat" xml:space="preserve">
+    <value>video {0}%</value>
+  </data>
+  <data name="QueueActiveCount" xml:space="preserve">
+    <value>{0} downloading</value>
+  </data>
+  <data name="QueueQueuedCount" xml:space="preserve">
+    <value>{0} queued</value>
+  </data>
+  <data name="RetryButton" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="OpenLocationButton" xml:space="preserve">
+    <value>Show in folder</value>
+  </data>
+  <data name="RemoveItemButton" xml:space="preserve">
+    <value>Remove from list</value>
   </data>
 </root>

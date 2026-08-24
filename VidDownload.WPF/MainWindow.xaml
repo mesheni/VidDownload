@@ -7,7 +7,7 @@
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         xmlns:services="clr-namespace:VidDownload.WPF.Services"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[MainWindowTitle]}" WindowStartupLocation="CenterScreen" Icon="/icon.png" ResizeMode="CanResize" Width="720" MinWidth="680" MinHeight="600" Height="800">
+        Title="{Binding LocalizedStrings[MainWindowTitle]}" WindowStartupLocation="CenterScreen" Icon="/icon.png" ResizeMode="CanResize" Width="720" MinWidth="680" MinHeight="600" Height="740">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Command="{Binding DownloadCommand}"/>
         <KeyBinding Key="Esc" Command="{Binding CancelActiveCommand}"/>
@@ -16,12 +16,35 @@
         <converters:BooleanInvertConverter x:Key="InvertBool"/>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <converters:InvertedBooleanToVisibilityConverter x:Key="InvertBoolToVis"/>
+        <converters:StringToVisibilityConverter x:Key="TextToVis"/>
         <converters:DownloadItemStatusToColorConverter x:Key="StatusToColor"/>
         <converters:DownloadItemStatusToTextConverter x:Key="StatusToText"/>
+
+        <Style x:Key="MetaText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="MetaSeparator" TargetType="TextBlock" BasedOn="{StaticResource MetaText}">
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="Margin" Value="8,0,8,0"/>
+        </Style>
+        <Style x:Key="QueueIconButton" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Margin" Value="4,0,0,0"/>
+            <Setter Property="FontFamily" Value="{StaticResource IconFont}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceBgrAltBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AppBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Window.Resources>
-    <Grid Background="#FF1D1D1D">
+    <Grid Background="{StaticResource WindowBgrBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -40,11 +63,11 @@
             <TextBox Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}" hc:Theme.Skin="Dark"
                      hc:InfoElement.Placeholder="{Binding LocalizedStrings[UrlPlaceholder]}"
                      AutomationProperties.Name="{Binding LocalizedStrings[LinkLabelVideo]}"
-                     VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="Cascadia Code SemiLight"
-                     VerticalContentAlignment="Center" SelectionBrush="#FDFF5252" TextWrapping="NoWrap"/>
+                     VerticalAlignment="Top" Height="36" FontSize="16" FontFamily="{StaticResource MonoLightFont}"
+                     VerticalContentAlignment="Center" SelectionBrush="{StaticResource AccentBrush}" TextWrapping="NoWrap"/>
             <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableLanguages}" SelectedItem="{Binding SelectedLanguage}"
                       Width="55" Height="36" Margin="8,0,0,0" VerticalAlignment="Top"
-                      FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold" hc:Theme.Skin="Dark"
+                      FontFamily="{StaticResource MonoFont}" FontSize="12" FontWeight="Bold" hc:Theme.Skin="Dark"
                       AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
         </Grid>
 
@@ -57,19 +80,19 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Label Content="{Binding LocalizedStrings[SaveFolderLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold" Padding="0,6,5,6" Background="{x:Null}" BorderThickness="0"/>
+            <Label Content="{Binding LocalizedStrings[SaveFolderLabel]}" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" FontWeight="Bold" Padding="0,6,5,6" Background="{x:Null}" BorderThickness="0"/>
             <TextBox Grid.Column="1" Text="{Binding SavePathText, UpdateSourceTrigger=PropertyChanged}" hc:Theme.Skin="Dark"
-                     Height="28" VerticalContentAlignment="Center" FontSize="13" FontFamily="Cascadia Code"
+                     Height="28" VerticalContentAlignment="Center" FontSize="13" FontFamily="{StaticResource MonoFont}"
                      AutomationProperties.Name="{Binding LocalizedStrings[SaveFolderLabel]}"/>
             <Button Grid.Column="2" Content="{Binding LocalizedStrings[BrowseButton]}" Command="{Binding BrowseFolderCommand}"
-                    Width="80" Height="28" Margin="6,0,0,0" FontFamily="Cascadia Code" FontSize="12" FontWeight="Bold"
+                    Width="80" Height="28" Margin="6,0,0,0" FontFamily="{StaticResource MonoFont}" FontSize="12" FontWeight="Bold"
                     hc:Theme.Skin="Dark"
                     AutomationProperties.Name="{Binding LocalizedStrings[BrowseButton]}"/>
-            <Label Grid.Column="3" Content="{Binding LocalizedStrings[RateLimitLabel]}" Foreground="White" FontFamily="Cascadia Code"
+            <Label Grid.Column="3" Content="{Binding LocalizedStrings[RateLimitLabel]}" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}"
                    FontSize="13" FontWeight="Bold" Padding="14,6,5,6" Background="{x:Null}" BorderThickness="0"
                    ToolTip="{Binding LocalizedStrings[RateLimitHint]}"/>
             <TextBox Grid.Column="4" Text="{Binding RateLimit, UpdateSourceTrigger=PropertyChanged}" hc:Theme.Skin="Dark"
-                     Width="80" Height="28" VerticalContentAlignment="Center" FontSize="13" FontFamily="Cascadia Code"
+                     Width="80" Height="28" VerticalContentAlignment="Center" FontSize="13" FontFamily="{StaticResource MonoFont}"
                      ToolTip="{Binding LocalizedStrings[RateLimitHint]}"
                      AutomationProperties.Name="{Binding LocalizedStrings[RateLimitLabel]}"/>
         </Grid>
@@ -80,141 +103,154 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Background="#FF2B2B2B" Margin="0,0,4,0" Padding="0,10" CornerRadius="4">
+            <Border Grid.Column="0" Background="{StaticResource SurfaceBgrBrush}" Margin="0,0,4,0" Padding="0,10" CornerRadius="4">
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <Label Content="{Binding LocalizedStrings[ResolutionLabel]}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" hc:Theme.Skin="Dark" Foreground="White" FontFamily="Cascadia Code" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0"/>
-                    <ComboBox ItemsSource="{Binding Resolutions}" SelectedItem="{Binding SelectedResolution}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Height="24" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Cascadia Code" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[ResolutionLabel]}"/>
-                    <Label Content="{Binding LocalizedStrings[CodecLabel]}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Cascadia Code" Height="27" FontSize="16" FontWeight="Bold" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0"/>
-                    <ComboBox ItemsSource="{Binding Codecs}" SelectedItem="{Binding SelectedCodec}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Height="24" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="Cascadia Code" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[CodecLabel]}"/>
-                    <Label Content="{Binding LocalizedStrings[AudioFormatLabel]}" Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="White" FontFamily="Cascadia Code" FontSize="16" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0" FontWeight="Bold"/>
-                    <ComboBox ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding SelectedAudioFormat}" Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" Height="24" FontFamily="Cascadia Code" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[AudioFormatLabel]}"/>
-                    <Label Content="{Binding LocalizedStrings[FileExtensionLabel]}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Cascadia Code" Foreground="White" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0"/>
-                    <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" Height="24" FontFamily="Cascadia Code" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[FileExtensionLabel]}"/>
+                    <Label Content="{Binding LocalizedStrings[ResolutionLabel]}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" hc:Theme.Skin="Dark" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}" Height="29" FontSize="16" FontWeight="Bold" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0"/>
+                    <ComboBox ItemsSource="{Binding Resolutions}" SelectedItem="{Binding SelectedResolution}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Height="24" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[ResolutionLabel]}"/>
+                    <Label Content="{Binding LocalizedStrings[CodecLabel]}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}" Height="27" FontSize="16" FontWeight="Bold" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0"/>
+                    <ComboBox ItemsSource="{Binding Codecs}" SelectedItem="{Binding SelectedCodec}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Height="24" Margin="20, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="150" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[CodecLabel]}"/>
+                    <Label Content="{Binding LocalizedStrings[AudioFormatLabel]}" Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0, 0, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="16" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0" FontWeight="Bold"/>
+                    <ComboBox ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding SelectedAudioFormat}" Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" Height="24" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[AudioFormatLabel]}"/>
+                    <Label Content="{Binding LocalizedStrings[FileExtensionLabel]}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" Margin="20, 0" HorizontalAlignment="Left" VerticalAlignment="Top" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="16" FontWeight="Bold" Background="{x:Null}" BorderThickness="0,0,0,0" Padding="0,0,0,0"/>
+                    <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Left" Margin="20, 0" VerticalAlignment="Top" Width="150" Height="24" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0,0,0,0" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[FileExtensionLabel]}"/>
                 </StackPanel>
             </Border>
-            <Border Grid.Column="1" Background="#FF3A3A3A" Margin="4,0,0,0" Padding="0,10" CornerRadius="4">
+            <Border Grid.Column="1" Background="{StaticResource SurfaceBgrAltBrush}" Margin="4,0,0,0" Padding="0,10" CornerRadius="4">
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                    <CheckBox IsChecked="{Binding IsPlaylist}" Content="{Binding LocalizedStrings[DownloadPlaylist]}" Foreground="White" Margin="20, 5" HorizontalAlignment="Left" FontFamily="Cascadia Code" FontSize="16" VerticalContentAlignment="Center" VerticalAlignment="Top" FontWeight="Bold"/>
-                    <CheckBox IsChecked="{Binding IsAudioOnly}" Content="{Binding LocalizedStrings[AudioOnly]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="Cascadia Code" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                    <CheckBox IsChecked="{Binding IsReEncode}" IsEnabled="{Binding IsAudioOnly, Converter={StaticResource InvertBool}}" Content="{Binding LocalizedStrings[ReEncodeVideo]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="Cascadia Code" FontSize="16" Foreground="White" FontWeight="Bold"/>
-                    <Line X1="0" X2="200" Y1="0" Y2="0" Stroke="#FF555555" StrokeThickness="1" Margin="20, 5" HorizontalAlignment="Left" Stretch="None"/>
-                    <CheckBox IsChecked="{Binding IsDownloadSubtitles}" Content="{Binding LocalizedStrings[DownloadSubtitles]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="Cascadia Code" FontSize="16" Foreground="White" FontWeight="Bold"/>
+                    <CheckBox IsChecked="{Binding IsPlaylist}" Content="{Binding LocalizedStrings[DownloadPlaylist]}" Foreground="{StaticResource TextPrimaryBrush}" Margin="20, 5" HorizontalAlignment="Left" FontFamily="{StaticResource MonoFont}" FontSize="16" VerticalContentAlignment="Center" VerticalAlignment="Top" FontWeight="Bold"/>
+                    <CheckBox IsChecked="{Binding IsAudioOnly}" Content="{Binding LocalizedStrings[AudioOnly]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="{StaticResource MonoFont}" Foreground="{StaticResource TextPrimaryBrush}" FontSize="16" FontWeight="Bold"/>
+                    <CheckBox IsChecked="{Binding IsReEncode}" IsEnabled="{Binding IsAudioOnly, Converter={StaticResource InvertBool}}" Content="{Binding LocalizedStrings[ReEncodeVideo]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="{StaticResource MonoFont}" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold"/>
+                    <Line X1="0" X2="200" Y1="0" Y2="0" Stroke="{StaticResource LineBrush}" StrokeThickness="1" Margin="20, 5" HorizontalAlignment="Left" Stretch="None"/>
+                    <CheckBox IsChecked="{Binding IsDownloadSubtitles}" Content="{Binding LocalizedStrings[DownloadSubtitles]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="{StaticResource MonoFont}" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold"/>
                     <StackPanel Orientation="Horizontal" Visibility="{Binding IsDownloadSubtitles, Converter={StaticResource BoolToVis}}" Margin="20, 0">
-                        <Label Content="{Binding LocalizedStrings[LanguageLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" Padding="0,2,5,0" Background="{x:Null}" BorderThickness="0"/>
-                        <ComboBox ItemsSource="{Binding SubtitleLanguages}" SelectedItem="{Binding SelectedSubtitleLanguage}" Height="24" Width="120" FontFamily="Cascadia Code" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0" FontSize="13" AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
+                        <Label Content="{Binding LocalizedStrings[LanguageLabel]}" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="14" FontWeight="Bold" Padding="0,2,5,0" Background="{x:Null}" BorderThickness="0"/>
+                        <ComboBox ItemsSource="{Binding SubtitleLanguages}" SelectedItem="{Binding SelectedSubtitleLanguage}" Height="24" Width="120" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" hc:Theme.Skin="Dark" BorderThickness="0" FontSize="13" AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
                     </StackPanel>
-                    <CheckBox IsChecked="{Binding IsEmbedSubtitles}" Content="{Binding LocalizedStrings[EmbedSubtitles]}" Visibility="{Binding IsDownloadSubtitles, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="Cascadia Code" FontSize="16" Foreground="White" FontWeight="Bold"/>
-                    <Line X1="0" X2="200" Y1="0" Y2="0" Stroke="#FF555555" StrokeThickness="1" Margin="20, 5" HorizontalAlignment="Left" Stretch="None"/>
-                    <CheckBox IsChecked="{Binding IsClipboardMonitorEnabled}" Content="{Binding LocalizedStrings[ClipboardMonitorLabel]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="Cascadia Code" FontSize="14" Foreground="White" FontWeight="Bold"/>
-                    <CheckBox IsChecked="{Binding MinimizeToTray}" Content="{Binding LocalizedStrings[MinimizeToTrayLabel]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="Cascadia Code" FontSize="14" Foreground="White" FontWeight="Bold"/>
+                    <CheckBox IsChecked="{Binding IsEmbedSubtitles}" Content="{Binding LocalizedStrings[EmbedSubtitles]}" Visibility="{Binding IsDownloadSubtitles, Converter={StaticResource BoolToVis}}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="{StaticResource MonoFont}" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold"/>
+                    <Line X1="0" X2="200" Y1="0" Y2="0" Stroke="{StaticResource LineBrush}" StrokeThickness="1" Margin="20, 5" HorizontalAlignment="Left" Stretch="None"/>
+                    <CheckBox IsChecked="{Binding IsClipboardMonitorEnabled}" Content="{Binding LocalizedStrings[ClipboardMonitorLabel]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="{StaticResource MonoFont}" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold"/>
+                    <CheckBox IsChecked="{Binding MinimizeToTray}" Content="{Binding LocalizedStrings[MinimizeToTrayLabel]}" HorizontalAlignment="Left" Margin="20, 5" VerticalAlignment="Top" FontFamily="{StaticResource MonoFont}" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="Bold"/>
                 </StackPanel>
             </Border>
         </Grid>
 
-        <!-- Индикатор текущей загрузки -->
-        <StackPanel Grid.Row="3" Margin="0,10,0,0">
-            <Label Content="{Binding StatusMessage}" Margin="20,0" HorizontalAlignment="Left" FontFamily="Cascadia Code SemiLight" Foreground="White" Background="{x:Null}" Padding="0,0,0,0" BorderThickness="0,0,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled" ToolTip="{Binding StatusMessage}"/>
-            <ProgressBar Value="{Binding ProgressPercent}" Margin="20, 2" Height="24" VerticalAlignment="Top" Foreground="#FDFF5252" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14" Maximum="100"/>
-            <Grid Margin="20, 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Label Content="{Binding LocalizedStrings[SpeedLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                    <Label Content="{Binding SpeedText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Label Content="{Binding LocalizedStrings[ETALabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                    <Label Content="{Binding EtaText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                </StackPanel>
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <Label Content="{Binding LocalizedStrings[SizeLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                    <Label Content="{Binding TotalSizeText}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                </StackPanel>
-            </Grid>
-        </StackPanel>
-
         <!-- Кнопки -->
-        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 10">
-            <Button Content="{Binding LocalizedStrings[DownloadButton]}" Command="{Binding DownloadCommand}" Height="42" Width="250" hc:Theme.Skin="Dark" Background="#FFBB1818" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="24" FontWeight="Bold" Margin="0,0,10,0" AutomationProperties.Name="{Binding LocalizedStrings[DownloadButton]}" ToolTip="Enter"/>
-            <Button Content="{Binding LocalizedStrings[ClearFinishedButton]}" Command="{Binding ClearFinishedCommand}" Height="42" Padding="12,0" hc:Theme.Skin="Dark" Background="#FF444444" Foreground="White" BorderBrush="White" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 10">
+            <Button Content="{Binding LocalizedStrings[DownloadButton]}" Command="{Binding DownloadCommand}" Height="42" Width="250" hc:Theme.Skin="Dark" Background="{StaticResource AccentDarkBrush}" Foreground="White" BorderBrush="White" FontFamily="{StaticResource MonoFont}" FontSize="24" FontWeight="Bold" Margin="0,0,10,0" AutomationProperties.Name="{Binding LocalizedStrings[DownloadButton]}" ToolTip="Enter"/>
+            <Button Content="{Binding LocalizedStrings[ClearFinishedButton]}" Command="{Binding ClearFinishedCommand}" Height="42" Padding="12,0" hc:Theme.Skin="Dark" Background="{StaticResource ButtonGrayBrush}" Foreground="White" BorderBrush="White" FontFamily="{StaticResource MonoFont}" FontSize="13" FontWeight="Bold"/>
         </StackPanel>
 
-        <!-- Заголовок очереди -->
-        <Grid Grid.Row="5" Margin="20, 6, 20, 2">
+        <!-- Заголовок очереди + агрегат активности -->
+        <Grid Grid.Row="4" Margin="20, 6, 20, 2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Label Content="{Binding LocalizedStrings[QueueSectionLabel]}" Foreground="#FFAAAAAA" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold" Padding="0" BorderThickness="0" Background="{x:Null}"/>
+            <Label Content="{Binding LocalizedStrings[QueueSectionLabel]}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" FontWeight="Bold" Padding="0" BorderThickness="0" Background="{x:Null}"/>
+            <TextBlock Grid.Column="1" Text="{Binding QueueSummaryText}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="12" VerticalAlignment="Center"/>
         </Grid>
 
         <!-- Очередь -->
-        <Grid Grid.Row="6" Margin="8,0,8,8">
+        <Grid Grid.Row="5" Margin="8,0,8,8">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Queue.Items}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type services:DownloadItem}">
-                            <Border Background="#FF2B2B2B" CornerRadius="4" Padding="8,6" Margin="0,0,0,6">
+                            <Border Background="{StaticResource SurfaceBgrBrush}" CornerRadius="4" Padding="10,8" Margin="0,0,0,6"
+                                    ToolTip="{Binding StatusMessage}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Width="4" CornerRadius="2" Background="{Binding Status, Converter={StaticResource StatusToColor}}" Margin="0,0,8,0"/>
-                                    <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding DisplayTitle}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayTitle}"/>
-                                        <Grid Margin="0,4,0,0">
+                                    <Border Width="4" CornerRadius="2" Background="{Binding Status, Converter={StaticResource StatusToColor}}" Margin="0,0,10,0"/>
+                                    <Grid Grid.Column="1" Margin="0,0,8,0">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Заголовок: название плейлиста/видео + бейдж плейлиста со счётчиком -->
+                                        <Grid Grid.Row="0">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <ProgressBar Value="{Binding Percent}" Height="8" Maximum="100" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding Percent, StringFormat={}{0}%}" Foreground="White" FontFamily="Cascadia Code" FontSize="12" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding DisplayTitle}" Foreground="{StaticResource TextPrimaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" FontWeight="Bold" TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}">
+                                                <Border BorderBrush="{StaticResource StatusDownloadingBrush}" BorderThickness="1" CornerRadius="3" Padding="6,1">
+                                                    <TextBlock Text="{Binding DataContext.LocalizedStrings[PlaylistBadge], RelativeSource={RelativeSource AncestorType=Window}}" Foreground="{StaticResource StatusDownloadingBrush}" FontFamily="{StaticResource MonoFont}" FontSize="10" FontWeight="Bold"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding PlaylistCounterText}" Foreground="{StaticResource StatusDownloadingBrush}" FontFamily="{StaticResource MonoFont}" FontSize="11" FontWeight="Bold" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            </StackPanel>
                                         </Grid>
-                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}" FontFamily="Cascadia Code" FontSize="11" VerticalAlignment="Center"/>
-                                            <TextBlock Text="·" Foreground="#FF666666" FontFamily="Cascadia Code" FontSize="11" Margin="8,0,8,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Speed}" Foreground="#FFAAAAAA" FontFamily="Cascadia Code" FontSize="11" VerticalAlignment="Center"/>
-                                            <TextBlock Text="·" Foreground="#FF666666" FontFamily="Cascadia Code" FontSize="11" Margin="8,0,8,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Eta}" Foreground="#FFAAAAAA" FontFamily="Cascadia Code" FontSize="11" VerticalAlignment="Center"/>
-                                            <TextBlock Text="·" Foreground="#FF666666" FontFamily="Cascadia Code" FontSize="11" Margin="8,0,8,0" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding TotalSize}" Foreground="#FFAAAAAA" FontFamily="Cascadia Code" FontSize="11" VerticalAlignment="Center"/>
+
+                                        <!-- Текущее видео плейлиста -->
+                                        <TextBlock Grid.Row="1" Text="{Binding CurrentVideoLine}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoLightFont}" FontSize="11" TextTrimming="CharacterEllipsis" Margin="0,3,0,0" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}" ToolTip="{Binding Title}"/>
+
+                                        <!-- Общий прогресс: для плейлиста — по всем видео, иначе — текущее видео -->
+                                        <Grid Grid.Row="2" Margin="0,5,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ProgressBar Value="{Binding TotalPercent, Mode=OneWay}" Height="12" Maximum="100" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding TotalPercent, StringFormat={}{0}%}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <!-- Мета-строка: статус · скорость · ETA · размер · прогресс текущего видео -->
+                                        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,0">
+                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}" FontFamily="{StaticResource MonoFont}" FontSize="11" VerticalAlignment="Center"/>
+                                            <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
+                                            <TextBlock Text="{Binding Speed}" Style="{StaticResource MetaText}"/>
+                                            <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
+                                            <TextBlock Text="{Binding Eta}" Style="{StaticResource MetaText}"/>
+                                            <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
+                                            <TextBlock Text="{Binding TotalSize}" Style="{StaticResource MetaText}"/>
+                                            <TextBlock Text="·" Style="{StaticResource MetaSeparator}" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}"/>
+                                            <TextBlock Text="{Binding VideoPercentText}" Foreground="{StaticResource StatusDownloadingBrush}" FontFamily="{StaticResource MonoFont}" FontSize="11" VerticalAlignment="Center" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}"/>
                                         </StackPanel>
-                                        <TextBlock Text="{Binding StatusMessage}" Foreground="#FF888888" FontFamily="Cascadia Code" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding StatusMessage}"/>
+
+                                        <!-- Ошибка (только для упавших) -->
+                                        <TextBlock Grid.Row="4" Text="{Binding ErrorMessage}" Foreground="{StaticResource StatusFailedBrush}" FontFamily="{StaticResource MonoLightFont}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip="{Binding ErrorMessage}" Margin="0,3,0,0" Visibility="{Binding ErrorMessage, Converter={StaticResource TextToVis}}"/>
+                                    </Grid>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Button Style="{StaticResource QueueIconButton}" hc:Theme.Skin="Dark" Content="{Binding PauseResumeIcon}" Command="{Binding DataContext.PauseResumeItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" IsEnabled="{Binding CanPauseResume}" AutomationProperties.Name="{Binding DataContext.LocalizedStrings[PauseButton], RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{Binding DataContext.LocalizedStrings[PauseButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                        <Button Style="{StaticResource QueueIconButton}" hc:Theme.Skin="Dark" Content="&#xE711;" Command="{Binding DataContext.CancelItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}" AutomationProperties.Name="{Binding DataContext.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{Binding DataContext.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                        <Button Style="{StaticResource QueueIconButton}" hc:Theme.Skin="Dark" Content="&#xE72C;" Command="{Binding DataContext.RetryItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Visibility="{Binding CanRetry, Converter={StaticResource BoolToVis}}" AutomationProperties.Name="{Binding DataContext.LocalizedStrings[RetryButton], RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{Binding DataContext.LocalizedStrings[RetryButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                        <Button Style="{StaticResource QueueIconButton}" hc:Theme.Skin="Dark" Content="&#xE838;" Command="{Binding DataContext.OpenItemLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Visibility="{Binding CanOpenLocation, Converter={StaticResource BoolToVis}}" AutomationProperties.Name="{Binding DataContext.LocalizedStrings[OpenLocationButton], RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{Binding DataContext.LocalizedStrings[OpenLocationButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                        <Button Style="{StaticResource QueueIconButton}" hc:Theme.Skin="Dark" Content="&#xE74D;" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Visibility="{Binding IsFinished, Converter={StaticResource BoolToVis}}" AutomationProperties.Name="{Binding DataContext.LocalizedStrings[RemoveItemButton], RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{Binding DataContext.LocalizedStrings[RemoveItemButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
                                     </StackPanel>
-                                    <Button Grid.Column="2" Content="{Binding PauseResumeGlyph}" Command="{Binding DataContext.PauseResumeItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" IsEnabled="{Binding CanPauseResume}" Width="34" Height="30" Margin="8,0,0,0" VerticalAlignment="Center" hc:Theme.Skin="Dark" FontSize="14" FontFamily="Segoe UI Symbol" AutomationProperties.Name="{Binding DataContext.LocalizedStrings[PauseButton], RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{Binding DataContext.LocalizedStrings[PauseButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
-                                    <Button Grid.Column="3" Content="✕" Command="{Binding DataContext.CancelItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}" Width="34" Height="30" Margin="4,0,0,0" VerticalAlignment="Center" hc:Theme.Skin="Dark" FontSize="13" FontFamily="Segoe UI Symbol" AutomationProperties.Name="{Binding DataContext.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=Window}}" ToolTip="{Binding DataContext.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-            <TextBlock Text="{Binding LocalizedStrings[QueueEmptyMessage]}" Foreground="#FF666666" FontFamily="Cascadia Code" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding HasQueueItems, Converter={StaticResource InvertBoolToVis}}"/>
+            <TextBlock Text="{Binding LocalizedStrings[QueueEmptyMessage]}" Foreground="{StaticResource TextMutedBrush}" FontFamily="{StaticResource MonoFont}" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding HasQueueItems, Converter={StaticResource InvertBoolToVis}}"/>
         </Grid>
 
-        <!-- Низ: версии и действия -->
-        <StackPanel Grid.Row="7" Margin="0, 0, 0, 10">
+        <!-- Низ: версии, статус обновлений и действия -->
+        <StackPanel Grid.Row="6" Margin="0, 0, 0, 10">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 2">
-                <Label Content="{Binding LocalizedStrings[FFmpegLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                <Label Content="{Binding FfmpegVersion}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                <Button Content="{Binding LocalizedStrings[CheckUpdateButton]}" Command="{Binding CheckFFmpegUpdateCommand}" Height="24" Padding="5,0" Margin="10,0,0,0" FontFamily="Cascadia Code" FontSize="11" FontWeight="Bold"/>
+                <Label Content="{Binding LocalizedStrings[FFmpegLabel]}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
+                <Label Content="{Binding FfmpegVersion}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
+                <Button Content="{Binding LocalizedStrings[CheckUpdateButton]}" Command="{Binding CheckFFmpegUpdateCommand}" Height="24" Padding="5,0" Margin="10,0,0,0" FontFamily="{StaticResource MonoFont}" FontSize="11" FontWeight="Bold"/>
+                <TextBlock Text="·" Foreground="{StaticResource TextMutedBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" Margin="14,0" VerticalAlignment="Center"/>
+                <Label Content="{Binding LocalizedStrings[AppNameLabel]}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
+                <Label Content="{Binding AppVersion}" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
+                <Button Content="{Binding LocalizedStrings[CheckAppUpdateButton]}" Command="{Binding UpdateAppCommand}" Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource BoolToVis}}" Height="24" Padding="5,0" Margin="10,0,0,0" FontFamily="{StaticResource MonoFont}" FontSize="11" FontWeight="Bold" Background="{StaticResource AccentBrush}" Foreground="White"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 2">
-                <Label Content="{Binding LocalizedStrings[AppNameLabel]}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                <Label Content="{Binding AppVersion}" Foreground="White" FontFamily="Cascadia Code" FontSize="13" Padding="0" BorderThickness="0" Background="{x:Null}"/>
-                <Button Content="{Binding LocalizedStrings[CheckAppUpdateButton]}" Command="{Binding UpdateAppCommand}" Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource BoolToVis}}" Height="24" Padding="5,0" Margin="10,0,0,0" FontFamily="Cascadia Code" FontSize="11" FontWeight="Bold" Background="#FF5252" Foreground="White"/>
-            </StackPanel>
+            <TextBlock Text="{Binding UpdateStatusText}" HorizontalAlignment="Center" Margin="0, 2" Foreground="{StaticResource TextSecondaryBrush}" FontFamily="{StaticResource MonoLightFont}" FontSize="11" Visibility="{Binding UpdateStatusText, Converter={StaticResource TextToVis}}"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0, 8, 0, 0">
-                <Button Content="{Binding LocalizedStrings[OpenVideoFolderButton]}" Command="{Binding OpenFolderCommand}" VerticalAlignment="Top" Height="30" Width="200" FontFamily="Cascadia Code" FontSize="14" FontWeight="Bold" Margin="0,0,10,0"/>
-                <Button Content="{Binding LocalizedStrings[HistoryButton]}" Command="{Binding OpenHistoryCommand}" hc:Theme.Skin="Dark" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14" Margin="0,0,10,0"/>
-                <Button Content="{Binding LocalizedStrings[ConverterButton]}" Command="{Binding OpenConverterCommand}" hc:Theme.Skin="Dark" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14" Margin="0,0,10,0"/>
-                <Button Content="{Binding LocalizedStrings[HelpButton]}" Command="{Binding OpenHelpCommand}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="30" Height="30" FontFamily="Cascadia Code" FontWeight="Bold" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[HelpWindowTitle]}"/>
+                <Button Content="{Binding LocalizedStrings[OpenVideoFolderButton]}" Command="{Binding OpenFolderCommand}" VerticalAlignment="Top" Height="30" Width="200" FontFamily="{StaticResource MonoFont}" FontSize="14" FontWeight="Bold" Margin="0,0,10,0"/>
+                <Button Content="{Binding LocalizedStrings[HistoryButton]}" Command="{Binding OpenHistoryCommand}" hc:Theme.Skin="Dark" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" FontSize="14" Margin="0,0,10,0"/>
+                <Button Content="{Binding LocalizedStrings[ConverterButton]}" Command="{Binding OpenConverterCommand}" hc:Theme.Skin="Dark" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" FontSize="14" Margin="0,0,10,0"/>
+                <Button Content="{Binding LocalizedStrings[HelpButton]}" Command="{Binding OpenHelpCommand}" HorizontalAlignment="Left" VerticalAlignment="Top" Width="30" Height="30" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" FontSize="14" AutomationProperties.Name="{Binding LocalizedStrings[HelpWindowTitle]}"/>
             </StackPanel>
         </StackPanel>
     </Grid>

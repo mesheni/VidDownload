@@ -113,5 +113,65 @@ namespace VidDownload.Tests
 
             Assert.Equal(100, progress.Percent);
         }
+
+        [Fact]
+        public void PlaylistItemLine_ParsesIndexAndCount_AndResetsProgress()
+        {
+            var previous = new DownloadProgress
+            {
+                Percent = 100,
+                Speed = "3.00 MiB/s",
+                Eta = "00:10:00",
+                TotalSize = "5.00 MiB"
+            };
+
+            var progress = ParseLog.ParseProgressLine("[download] Downloading item 3 of 15", previous);
+
+            Assert.Equal(3, progress.PlaylistIndex);
+            Assert.Equal(15, progress.PlaylistCount);
+            // Прогресс предыдущего видео плейлиста больше неактуален
+            Assert.Equal(0, progress.Percent);
+            Assert.Equal("--", progress.Speed);
+            Assert.Equal("--", progress.Eta);
+            Assert.Equal("--", progress.TotalSize);
+        }
+
+        [Fact]
+        public void PlaylistVideoLine_ParsesIndexAndCount()
+        {
+            var progress = ParseLog.ParseProgressLine("[download] Downloading video 2 of 9");
+
+            Assert.Equal(2, progress.PlaylistIndex);
+            Assert.Equal(9, progress.PlaylistCount);
+        }
+
+        [Fact]
+        public void PlaylistTitleLine_ParsesTitle_KeepsProgress()
+        {
+            var previous = new DownloadProgress { Percent = 42, Speed = "2.00 MiB/s" };
+
+            var progress = ParseLog.ParseProgressLine("[download] Downloading playlist: My favorite mix", previous);
+
+            Assert.Equal("My favorite mix", progress.PlaylistTitle);
+            Assert.Equal(42, progress.Percent);
+            Assert.Equal("2.00 MiB/s", progress.Speed);
+        }
+
+        [Fact]
+        public void PlaylistFields_CarryForwardOnUnknownLines()
+        {
+            var previous = new DownloadProgress
+            {
+                PlaylistIndex = 2,
+                PlaylistCount = 10,
+                PlaylistTitle = "Mix"
+            };
+
+            var progress = ParseLog.ParseProgressLine("[youtube] PL123: Downloading webpage", previous);
+
+            Assert.Equal(2, progress.PlaylistIndex);
+            Assert.Equal(10, progress.PlaylistCount);
+            Assert.Equal("Mix", progress.PlaylistTitle);
+        }
     }
 }

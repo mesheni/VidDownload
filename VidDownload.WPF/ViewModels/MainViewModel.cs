@@ -31,7 +31,6 @@ namespace VidDownload.WPF.ViewModels
         private readonly IDownloadQueueService _queue;
         private readonly INotificationService _notifications;
         private readonly IClipboardMonitorService _clipboardMonitor;
-        private DownloadItem? _activeItem;
         private bool _isLoading;
         private string _savePath = UserSettings.DefaultDownloadPath;
 
@@ -60,12 +59,6 @@ namespace VidDownload.WPF.ViewModels
         private bool _isReEncode;
 
         [ObservableProperty]
-        private string _statusMessage = string.Empty;
-
-        [ObservableProperty]
-        private int _progressPercent;
-
-        [ObservableProperty]
         private bool _isVideoOptionsVisible = true;
 
         [ObservableProperty]
@@ -76,15 +69,6 @@ namespace VidDownload.WPF.ViewModels
 
         [ObservableProperty]
         private string _selectedLanguage = "RU";
-
-        [ObservableProperty]
-        private string _speedText = "--";
-
-        [ObservableProperty]
-        private string _etaText = "--";
-
-        [ObservableProperty]
-        private string _totalSizeText = "--";
 
         [ObservableProperty]
         private string _ffmpegVersion = LocalizedStrings.Instance["FFmpegChecking"];
@@ -137,7 +121,28 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private bool _hasQueueItems;
 
+        /// <summary>Агрегат в заголовке секции очереди: «1 загружается · 2 в очереди».</summary>
+        [ObservableProperty]
+        private string _queueSummaryText = string.Empty;
+
+        /// <summary>Статус загрузки обновления yt-dlp (для строки статуса в футере).</summary>
+        [ObservableProperty]
+        private string _ytDlpStatusMessage = string.Empty;
+
         private AppUpdateInfo? _appUpdateInfo;
+
+        /// <summary>Первая непустая строка статуса обновлений — показывается в футере.</summary>
+        public string UpdateStatusText
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(YtDlpStatusMessage))
+                    return YtDlpStatusMessage;
+                if (!string.IsNullOrEmpty(AppUpdateStatusMessage))
+                    return AppUpdateStatusMessage;
+                return FfmpegStatusMessage;
+            }
+        }
 
         public LocalizedStrings LocalizedStrings => _loc;
 
@@ -200,7 +205,11 @@ namespace VidDownload.WPF.ViewModels
             _queue.ItemCompleted += OnItemCompleted;
             _queue.ItemFailed += OnItemFailed;
             _queue.ItemCancelled += OnItemCancelled;
-            _queue.Items.CollectionChanged += (_, _) => HasQueueItems = _queue.Items.Count > 0;
+            _queue.Items.CollectionChanged += (_, _) =>
+            {
+                HasQueueItems = _queue.Items.Count > 0;
+                RefreshActivity();
+            };
 
             _clipboardMonitor.UrlDetected += OnClipboardUrlDetected;
 
@@ -222,6 +231,12 @@ namespace VidDownload.WPF.ViewModels
                 AppLog.Error(nameof(MainViewModel), $"{operationName} failed: {ex}");
             }
         }
+
+        partial void OnYtDlpStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
+
+        partial void OnAppUpdateStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
+
+        partial void OnFfmpegStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
 
         partial void OnIsAudioOnlyChanged(bool value)
         {
@@ -254,6 +269,7 @@ namespace VidDownload.WPF.ViewModels
             if (_loc.CurrentLanguage == value.ToUpper())
                 return;
             _loc.SetLanguage(value.ToLower());
+            RefreshActivity();
             RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
         }
 
@@ -295,7 +311,7 @@ namespace VidDownload.WPF.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Url))
             {
-                StatusMessage = _loc["EmptyLink"];
+                _notifications.Info(_loc["EmptyLink"]);
                 return;
             }
 
@@ -408,16 +424,35 @@ namespace VidDownload.WPF.ViewModels
             await CancelItemAsync(active);
         }
 
+        /// <summary>Повторная загрузка упавшего или отменённого элемента с его исходными параметрами.</summary>
+        [RelayCommand]
+        private void RetryItem(DownloadItem? item)
+        {
+            if (item == null || !item.CanRetry)
+                return;
+            _queue.Enqueue(new DownloadItem(item.Url, item.Options.Clone(), item.IsPlaylist, item.IsAudioOnly, item.IsReEncode));
+        }
+
+        /// <summary>Открывает проводник с выделенным скачанным файлом (или папку сохранения).</summary>
+        [RelayCommand]
+        private void OpenItemLocation(DownloadItem? item)
+        {
+            if (item == null)
+                return;
+            if (!string.IsNullOrEmpty(item.FilePath) && File.Exists(item.FilePath))
+                Process.Start("explorer.exe", $"/select,\"{item.FilePath}\"");
+            else if (Directory.Exists(item.Options.SavePath))
+                Process.Start("explorer.exe", $"\"{item.Options.SavePath}\"");
+        }
+
         private void OnItemStarted(object? sender, DownloadItem item)
         {
-            SetActiveItem(item);
             RefreshActivity();
         }
 
         private void OnItemCompleted(object? sender, DownloadItem item)
         {
             RefreshActivity();
-            ResetSummaryIfIdle();
             _notifications.Success(string.Format(_loc["DownloadCompleteNotify"], item.DisplayTitle));
             RunSafe(() => AddHistoryAsync(item, DownloadStatus.Completed), nameof(AddHistoryAsync));
         }
@@ -425,7 +460,6 @@ namespace VidDownload.WPF.ViewModels
         private void OnItemFailed(object? sender, DownloadItem item)
         {
             RefreshActivity();
-            ResetSummaryIfIdle();
             _notifications.Error(string.Format(_loc["DownloadFailedNotify"], item.DisplayTitle));
             RunSafe(() => AddHistoryAsync(item, DownloadStatus.Failed), nameof(AddHistoryAsync));
         }
@@ -433,25 +467,9 @@ namespace VidDownload.WPF.ViewModels
         private void OnItemCancelled(object? sender, DownloadItem item)
         {
             RefreshActivity();
-            ResetSummaryIfIdle();
             // Не записываем в историю элементы, которые ни разу не запускались
             if (item.Started)
                 RunSafe(() => AddHistoryAsync(item, DownloadStatus.Cancelled), nameof(AddHistoryAsync));
-        }
-
-        /// <summary>
-        /// Когда все загрузки завершены, нижний индикатор возвращается в исходное
-        /// состояние — иначе на нём навсегда остаются 100% и скорость последней загрузки.
-        /// </summary>
-        private void ResetSummaryIfIdle()
-        {
-            if (_queue.HasActiveDownloads)
-                return;
-            ProgressPercent = 0;
-            StatusMessage = string.Empty;
-            SpeedText = "--";
-            EtaText = "--";
-            TotalSizeText = "--";
         }
 
         private async Task AddHistoryAsync(DownloadItem item, DownloadStatus status)
@@ -466,43 +484,19 @@ namespace VidDownload.WPF.ViewModels
             });
         }
 
+        /// <summary>Обновляет агрегаты очереди: признак активности и сводку в заголовке секции.</summary>
         private void RefreshActivity()
         {
             HasActiveDownloads = _queue.HasActiveDownloads;
-        }
 
-        private void SetActiveItem(DownloadItem? item)
-        {
-            if (_activeItem != null)
-                _activeItem.PropertyChanged -= OnActiveItemPropertyChanged;
-
-            _activeItem = item;
-
-            if (_activeItem != null)
-            {
-                _activeItem.PropertyChanged += OnActiveItemPropertyChanged;
-                CopyItemToSummary(_activeItem);
-            }
-        }
-
-        private void OnActiveItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (_activeItem == null)
-                return;
-            if (e.PropertyName is null or nameof(DownloadItem.StatusMessage) or nameof(DownloadItem.Percent)
-                or nameof(DownloadItem.Speed) or nameof(DownloadItem.Eta) or nameof(DownloadItem.TotalSize))
-            {
-                CopyItemToSummary(_activeItem);
-            }
-        }
-
-        private void CopyItemToSummary(DownloadItem item)
-        {
-            StatusMessage = item.StatusMessage;
-            ProgressPercent = item.Percent;
-            SpeedText = item.Speed;
-            EtaText = item.Eta;
-            TotalSizeText = item.TotalSize;
+            int downloading = _queue.Items.Count(i => i.Status == DownloadItemStatus.Downloading);
+            int queued = _queue.Items.Count(i => i.Status == DownloadItemStatus.Queued);
+            var parts = new List<string>(2);
+            if (downloading > 0)
+                parts.Add(string.Format(_loc["QueueActiveCount"], downloading));
+            if (queued > 0)
+                parts.Add(string.Format(_loc["QueueQueuedCount"], queued));
+            QueueSummaryText = string.Join("  ·  ", parts);
         }
 
         // ==== Папка сохранения и прочие команды ====
@@ -752,12 +746,8 @@ namespace VidDownload.WPF.ViewModels
             {
                 var progress = new Progress<DownloadProgress>(p =>
                 {
-                    // Общий индикатор занят только когда нет активных загрузок
-                    if (_activeItem == null)
-                    {
-                        ProgressPercent = p.Percent;
-                        StatusMessage = p.StatusMessage;
-                    }
+                    if (!string.IsNullOrEmpty(p.StatusMessage))
+                        YtDlpStatusMessage = p.StatusMessage;
                 });
 
                 await _updateService.DownloadUpdateAsync(info, progress);
@@ -770,11 +760,7 @@ namespace VidDownload.WPF.ViewModels
             }
             finally
             {
-                if (_activeItem == null)
-                {
-                    ProgressPercent = 0;
-                    StatusMessage = string.Empty;
-                }
+                YtDlpStatusMessage = string.Empty;
             }
         }
 

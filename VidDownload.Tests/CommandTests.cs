@@ -63,6 +63,34 @@ namespace VidDownload.Tests
         }
 
         [Fact]
+        public void LoadVideo_Playlist_AddsYesPlaylistFlag()
+        {
+            var args = Command.LoadVideo("url", BaseSettings(), isPlaylist: true, isCheckCoder: false);
+
+            Assert.Contains("--yes-playlist", args);
+            Assert.DoesNotContain("--no-playlist", args);
+        }
+
+        [Fact]
+        public void LoadVideo_Single_AddsNoPlaylistFlag()
+        {
+            var args = Command.LoadVideo("url", BaseSettings(), isPlaylist: false, isCheckCoder: false);
+
+            Assert.Contains("--no-playlist", args);
+            Assert.DoesNotContain("--yes-playlist", args);
+        }
+
+        [Fact]
+        public void LoadAudio_PlaylistFlags()
+        {
+            var playlistArgs = Command.LoadAudio(BaseSettings(), "url", isPlaylist: true);
+            Assert.Contains("--yes-playlist", playlistArgs);
+
+            var singleArgs = Command.LoadAudio(BaseSettings(), "url", isPlaylist: false);
+            Assert.Contains("--no-playlist", singleArgs);
+        }
+
+        [Fact]
         public void LoadAudio_ContainsExtractAndFormat()
         {
             var args = Command.LoadAudio(BaseSettings(), "url", isPlaylist: false);

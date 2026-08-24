@@ -123,6 +123,14 @@ namespace VidDownload.WPF.Resources
         public static string FFmpegUpdatedShort => GetString(nameof(FFmpegUpdatedShort));
         public static string InputFileNotFound => GetString(nameof(InputFileNotFound));
         public static string DownloadingProgress => GetString(nameof(DownloadingProgress));
+        public static string PlaylistBadge => GetString(nameof(PlaylistBadge));
+        public static string VideoOfPlaylist => GetString(nameof(VideoOfPlaylist));
+        public static string VideoPercentFormat => GetString(nameof(VideoPercentFormat));
+        public static string QueueActiveCount => GetString(nameof(QueueActiveCount));
+        public static string QueueQueuedCount => GetString(nameof(QueueQueuedCount));
+        public static string RetryButton => GetString(nameof(RetryButton));
+        public static string OpenLocationButton => GetString(nameof(OpenLocationButton));
+        public static string RemoveItemButton => GetString(nameof(RemoveItemButton));
 
         private static string GetString(string key) => ResourceManager.GetString(key, resourceCulture);
     }

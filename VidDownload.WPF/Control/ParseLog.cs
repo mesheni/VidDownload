@@ -36,6 +36,20 @@ namespace VidDownload.WPF.Control
             @"^\[Merger\]\s+Merging formats into\s+""(?<path>.+)""",
             RegexOptions.Compiled);
 
+        // Начало нового видео плейлиста. yt-dlp печатает "item" или "video"
+        // в зависимости от экстрактора:
+        // [download] Downloading item 3 of 15
+        // [download] Downloading video 3 of 15
+        private static readonly Regex PlaylistItemRegex = new(
+            @"^\[download\]\s+Downloading\s+(?:item|video)\s+(?<n>\d+)\s+of\s+(?<m>\d+)",
+            RegexOptions.Compiled);
+
+        // Название плейлиста:
+        // [download] Downloading playlist: My favorite mix
+        private static readonly Regex PlaylistTitleRegex = new(
+            @"^\[download\]\s+Downloading\s+playlist:\s*(?<title>.+)$",
+            RegexOptions.Compiled);
+
         public static DownloadProgress ParseProgressLine(string log, DownloadProgress? previous = null)
         {
             var result = new DownloadProgress
@@ -44,6 +58,9 @@ namespace VidDownload.WPF.Control
                 Speed = previous?.Speed ?? "--",
                 Eta = previous?.Eta ?? "--",
                 TotalSize = previous?.TotalSize ?? "--",
+                PlaylistIndex = previous?.PlaylistIndex,
+                PlaylistCount = previous?.PlaylistCount,
+                PlaylistTitle = previous?.PlaylistTitle,
                 StatusMessage = log
             };
 
@@ -58,6 +75,26 @@ namespace VidDownload.WPF.Control
             if (merger.Success)
             {
                 result.DestinationPath = merger.Groups["path"].Value.Trim();
+                return result;
+            }
+
+            var playlistItem = PlaylistItemRegex.Match(log);
+            if (playlistItem.Success)
+            {
+                // Началось новое видео плейлиста: прогресс предыдущего уже неактуален.
+                result.PlaylistIndex = int.Parse(playlistItem.Groups["n"].Value, CultureInfo.InvariantCulture);
+                result.PlaylistCount = int.Parse(playlistItem.Groups["m"].Value, CultureInfo.InvariantCulture);
+                result.Percent = 0;
+                result.Speed = "--";
+                result.Eta = "--";
+                result.TotalSize = "--";
+                return result;
+            }
+
+            var playlistTitle = PlaylistTitleRegex.Match(log);
+            if (playlistTitle.Success)
+            {
+                result.PlaylistTitle = playlistTitle.Groups["title"].Value.Trim();
                 return result;
             }
 

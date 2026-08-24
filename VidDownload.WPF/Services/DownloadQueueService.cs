@@ -127,21 +127,7 @@ namespace VidDownload.WPF.Services
             item.Cts = new CancellationTokenSource();
             ItemStarted?.Invoke(this, item);
 
-            var progress = new Progress<DownloadProgress>(p =>
-            {
-                if (p.DestinationPath != null && item.Status == DownloadItemStatus.Downloading)
-                {
-                    item.FilePath = p.DestinationPath;
-                    if (string.IsNullOrEmpty(item.Title))
-                        item.Title = Path.GetFileNameWithoutExtension(p.DestinationPath);
-                }
-                item.Percent = p.Percent;
-                item.Speed = p.Speed;
-                item.Eta = p.Eta;
-                item.TotalSize = p.TotalSize;
-                if (!string.IsNullOrEmpty(p.StatusMessage))
-                    item.StatusMessage = p.StatusMessage;
-            });
+            var progress = new Progress<DownloadProgress>(p => ApplyProgress(item, p));
 
             try
             {
@@ -198,6 +184,34 @@ namespace VidDownload.WPF.Services
                 item.Cts = null;
                 Pump();
             }
+        }
+
+        /// <summary>Переносит распарсенный прогресс yt-dlp в observable-свойства элемента очереди.</summary>
+        internal void ApplyProgress(DownloadItem item, DownloadProgress p)
+        {
+            if (p.DestinationPath != null && item.Status == DownloadItemStatus.Downloading)
+            {
+                item.FilePath = p.DestinationPath;
+                if (string.IsNullOrEmpty(item.Title))
+                    item.Title = Path.GetFileNameWithoutExtension(p.DestinationPath);
+            }
+            if (p.PlaylistIndex is int index && index != item.PlaylistIndex)
+            {
+                // Началось новое видео плейлиста: парсер уже сбросил проценты,
+                // здесь сбрасываем название, чтобы его заполнила строка Destination.
+                item.Title = string.Empty;
+                item.PlaylistIndex = index;
+            }
+            if (p.PlaylistCount is > 0)
+                item.PlaylistCount = p.PlaylistCount.Value;
+            if (!string.IsNullOrEmpty(p.PlaylistTitle) && string.IsNullOrEmpty(item.PlaylistTitle))
+                item.PlaylistTitle = p.PlaylistTitle;
+            item.Percent = p.Percent;
+            item.Speed = p.Speed;
+            item.Eta = p.Eta;
+            item.TotalSize = p.TotalSize;
+            if (!string.IsNullOrEmpty(p.StatusMessage))
+                item.StatusMessage = p.StatusMessage;
         }
     }
 }
