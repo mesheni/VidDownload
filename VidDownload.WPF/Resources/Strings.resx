@@ -783,4 +783,97 @@
   <data name="HelpAboutSection" xml:space="preserve">
     <value>О программе</value>
   </data>
+  <data name="PreviewWindowTitle" xml:space="preserve">
+    <value>Предпросмотр</value>
+  </data>
+  <data name="PreviewPlaylistSection" xml:space="preserve">
+    <value>Элементы плейлиста</value>
+  </data>
+  <data name="PreviewSelectAll" xml:space="preserve">
+    <value>Все</value>
+  </data>
+  <data name="PreviewSelectNone" xml:space="preserve">
+    <value>Снять выделение</value>
+  </data>
+  <data name="PreviewSelectedCount" xml:space="preserve">
+    <value>Выбрано {0} из {1}</value>
+  </data>
+  <data name="PreviewFormatsSection" xml:space="preserve">
+    <value>Формат</value>
+  </data>
+  <data name="PreviewAutoFormat" xml:space="preserve">
+    <value>Авто (лучшее)</value>
+  </data>
+  <data name="PreviewFailedAsk" xml:space="preserve">
+    <value>Не удалось получить информацию о видео: {0}. Скачать без предпросмотра?</value>
+  </data>
+  <data name="QueueRestored" xml:space="preserve">
+    <value>Восстановлена очередь после перезапуска: {0}</value>
+  </data>
+  <data name="EmbedThumbnailLabel" xml:space="preserve">
+    <value>Обложка в файл</value>
+  </data>
+  <data name="EmbedMetadataLabel" xml:space="preserve">
+    <value>Метаданные в файл</value>
+  </data>
+  <data name="ConvertSubsSrtLabel" xml:space="preserve">
+    <value>В SRT</value>
+  </data>
+  <data name="AudioQualityLabel" xml:space="preserve">
+    <value>Качество аудио</value>
+  </data>
+  <data name="AudioQualityHint" xml:space="preserve">
+    <value>Качество при извлечении звука (0 — лучшее)</value>
+  </data>
+  <data name="SectionLabel" xml:space="preserve">
+    <value>Фрагмент</value>
+  </data>
+  <data name="SectionHint" xml:space="preserve">
+    <value>Таймкоды начала и конца (например 1:30 и 5:00); пусто — скачать целиком</value>
+  </data>
+  <data name="SectionStartPlaceholder" xml:space="preserve">
+    <value>0:00</value>
+  </data>
+  <data name="SectionEndPlaceholder" xml:space="preserve">
+    <value>0:00</value>
+  </data>
+  <data name="SectionInvalid" xml:space="preserve">
+    <value>Неверные таймкоды фрагмента: используйте формат mm:ss или hh:mm:ss, начало должно быть меньше конца</value>
+  </data>
+  <data name="SettingsNetworkSection" xml:space="preserve">
+    <value>Сеть</value>
+  </data>
+  <data name="ProxyLabel" xml:space="preserve">
+    <value>Прокси</value>
+  </data>
+  <data name="CookiesSourceLabel" xml:space="preserve">
+    <value>Куки</value>
+  </data>
+  <data name="CookiesNone" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="CookiesFileOption" xml:space="preserve">
+    <value>Файл cookies.txt</value>
+  </data>
+  <data name="CookiesHint" xml:space="preserve">
+    <value>Куки нужны для приватных видео. Браузер должен быть закрыт на время загрузки (Chrome блокирует доступ к профилю).</value>
+  </data>
+  <data name="CookiesFileDialogTitle" xml:space="preserve">
+    <value>Выбор cookies.txt</value>
+  </data>
+  <data name="AllFilesFilter" xml:space="preserve">
+    <value>Все файлы (*.*)|*.*</value>
+  </data>
+  <data name="RetriesLabel" xml:space="preserve">
+    <value>Повторы</value>
+  </data>
+  <data name="RetriesHint" xml:space="preserve">
+    <value>Повторы yt-dlp при сетевых ошибках (0 — по умолчанию)</value>
+  </data>
+  <data name="UseArchiveLabel" xml:space="preserve">
+    <value>Пропускать скачанные</value>
+  </data>
+  <data name="UseArchiveHint" xml:space="preserve">
+    <value>Вести архив загрузок (downloaded.txt в папке сохранения) и не качать повторно</value>
+  </data>
 </root>

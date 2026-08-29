@@ -5,9 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[SettingsWindowTitle]}" Width="470" SizeToContent="Height"
+        Title="{Binding LocalizedStrings[SettingsWindowTitle]}" Width="500" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Icon="/icon.png"
         ExtendsContentIntoTitleBar="True">
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis" xmlns:converters="clr-namespace:VidDownload.WPF.Converters"/>
+    </Window.Resources>
     <Grid Margin="16,4,16,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -49,6 +52,53 @@
                                       ToolTip="{Binding LocalizedStrings[MaxConcurrentHint]}"
                                       AutomationProperties.Name="{Binding LocalizedStrings[MaxConcurrentLabel]}"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="2,6,0,2">
+                        <TextBlock Text="{Binding LocalizedStrings[RetriesLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Width="148"
+                                   VerticalAlignment="Center" ToolTip="{Binding LocalizedStrings[RetriesHint]}"/>
+                        <ui:NumberBox Value="{Binding Retries, UpdateSourceTrigger=PropertyChanged}" Width="92" MinHeight="30"
+                                      Minimum="0" Maximum="20" SmallChange="1" ClearButtonEnabled="False" FontSize="12.5"
+                                      ToolTip="{Binding LocalizedStrings[RetriesHint]}"
+                                      AutomationProperties.Name="{Binding LocalizedStrings[RetriesLabel]}"/>
+                    </StackPanel>
+                    <ui:ToggleSwitch IsChecked="{Binding UseDownloadArchive}" Content="{Binding LocalizedStrings[UseArchiveLabel]}" FontSize="13" Margin="2,4"
+                                     ToolTip="{Binding LocalizedStrings[UseArchiveHint]}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Сеть -->
+            <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,8,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding LocalizedStrings[SettingsNetworkSection]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                        <TextBlock Text="{Binding LocalizedStrings[ProxyLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Width="148"
+                                   VerticalAlignment="Center"/>
+                        <ui:TextBox Text="{Binding Proxy, UpdateSourceTrigger=PropertyChanged}" Width="230" MinHeight="30" FontSize="12"
+                                    FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"
+                                    PlaceholderText="socks5://127.0.0.1:1080"
+                                    AutomationProperties.Name="{Binding LocalizedStrings[ProxyLabel]}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="2,0,0,6">
+                        <TextBlock Text="{Binding LocalizedStrings[CookiesSourceLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Width="148"
+                                   VerticalAlignment="Center" ToolTip="{Binding LocalizedStrings[CookiesHint]}"/>
+                        <ComboBox ItemsSource="{Binding CookiesSources}" SelectedIndex="{Binding SelectedCookiesIndex}"
+                                  Width="160" MinHeight="30" FontSize="12.5"
+                                  ToolTip="{Binding LocalizedStrings[CookiesHint]}"
+                                  AutomationProperties.Name="{Binding LocalizedStrings[CookiesSourceLabel]}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="2,0,0,2"
+                                Visibility="{Binding IsCookiesFileSelected, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="cookies.txt" Style="{StaticResource FieldLabelText}" FontSize="12" Width="148" VerticalAlignment="Center"/>
+                        <ui:TextBox Text="{Binding CookiesFilePath, UpdateSourceTrigger=PropertyChanged}" Width="152" MinHeight="29" FontSize="11.5"
+                                    FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"/>
+                        <Button Content="{Binding LocalizedStrings[BrowseButton]}" Command="{Binding BrowseCookiesFileCommand}"
+                                MinHeight="29" Padding="10,0" Margin="6,0,0,0" FontSize="12"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding LocalizedStrings[CookiesHint]}" TextWrapping="Wrap" FontSize="11"
+                               Foreground="{DynamicResource TextMutedBrush}" Margin="2,6,0,0"/>
                 </StackPanel>
             </Border>
 

@@ -38,6 +38,48 @@ namespace VidDownload.WPF.Services
         {
             Items.Add(item);
             Pump();
+            SavePending();
+        }
+
+        /// <summary>
+        /// Сохраняет незавершённые элементы (Queued/Downloading/Paused) в queue.json —
+        /// при следующем запуске они восстановятся в состоянии Paused.
+        /// </summary>
+        public void SavePending()
+        {
+            var pending = new List<QueuedItemDto>();
+            foreach (var item in Items)
+            {
+                if (item.Status is not (DownloadItemStatus.Queued or DownloadItemStatus.Downloading or DownloadItemStatus.Paused))
+                    continue;
+                pending.Add(new QueuedItemDto
+                {
+                    Url = item.Url,
+                    Options = item.Options,
+                    IsPlaylist = item.IsPlaylist,
+                    IsAudioOnly = item.IsAudioOnly,
+                    IsReEncode = item.IsReEncode
+                });
+            }
+            QueuePersistenceService.Save(pending);
+        }
+
+        /// <summary>Восстанавливает сохранённую очередь: все элементы в состоянии Paused.</summary>
+        public List<DownloadItem> LoadPending()
+        {
+            var items = new List<DownloadItem>();
+            foreach (var dto in QueuePersistenceService.Load())
+            {
+                if (string.IsNullOrEmpty(dto.Url))
+                    continue;
+                var item = new DownloadItem(dto.Url, dto.Options, dto.IsPlaylist, dto.IsAudioOnly, dto.IsReEncode)
+                {
+                    Status = DownloadItemStatus.Paused,
+                    StatusMessage = LocalizedStrings.Instance["StatusPaused"]
+                };
+                items.Add(item);
+            }
+            return items;
         }
 
         public void Pause(DownloadItem item)
@@ -62,6 +104,7 @@ namespace VidDownload.WPF.Services
             item.PauseRequested = false;
             item.Status = DownloadItemStatus.Queued;
             Pump();
+            SavePending();
         }
 
         public void Cancel(DownloadItem item)
@@ -80,6 +123,7 @@ namespace VidDownload.WPF.Services
                     ItemCancelled?.Invoke(this, item);
                     break;
             }
+            SavePending();
         }
 
         public void Remove(DownloadItem item)
@@ -87,6 +131,7 @@ namespace VidDownload.WPF.Services
             if (item.Status == DownloadItemStatus.Downloading)
                 item.Cts?.Cancel();
             Items.Remove(item);
+            SavePending();
         }
 
         public void ClearFinished()
@@ -95,6 +140,7 @@ namespace VidDownload.WPF.Services
             {
                 Items.Remove(item);
             }
+            SavePending();
         }
 
         /// <summary>Останавливает все активные и стоящие в очереди загрузки (выход из приложения).</summary>
@@ -183,6 +229,7 @@ namespace VidDownload.WPF.Services
                 item.Cts?.Dispose();
                 item.Cts = null;
                 Pump();
+                SavePending();
             }
         }
 

@@ -129,5 +129,131 @@ namespace VidDownload.Tests
             Assert.Contains("en", args);
             Assert.Contains("--embed-subs", args);
         }
+
+        // ==== Новые аргументы v0.11 ====
+
+        [Fact]
+        public void LoadVideo_WithFormatSelector_UsesFormatFlagInsteadOfSort()
+        {
+            var settings = BaseSettings();
+            settings.FormatSelector = "137+ba";
+
+            var args = Command.LoadVideo("url", settings, isPlaylist: false, isCheckCoder: false);
+
+            int index = args.IndexOf("-f");
+            Assert.True(index >= 0);
+            Assert.Equal("137+ba", args[index + 1]);
+            Assert.DoesNotContain("-S", args);
+        }
+
+        [Fact]
+        public void LoadVideo_PlaylistItems_AddedOnlyForPlaylist()
+        {
+            var settings = BaseSettings();
+            settings.PlaylistItems = "1-3,7";
+
+            var playlistArgs = Command.LoadVideo("url", settings, isPlaylist: true, isCheckCoder: false);
+            var singleArgs = Command.LoadVideo("url", settings, isPlaylist: false, isCheckCoder: false);
+
+            int index = playlistArgs.IndexOf("--playlist-items");
+            Assert.True(index >= 0);
+            Assert.Equal("1-3,7", playlistArgs[index + 1]);
+            Assert.DoesNotContain("--playlist-items", singleArgs);
+        }
+
+        [Fact]
+        public void LoadVideo_CookiesFromBrowser_AndCookiesFile_AreMutuallyExclusive()
+        {
+            var browser = BaseSettings();
+            browser.CookiesFromBrowser = "chrome";
+            var file = BaseSettings();
+            file.CookiesFile = @"C:\cookies.txt";
+
+            var browserArgs = Command.LoadVideo("url", browser, isPlaylist: false, isCheckCoder: false);
+            var fileArgs = Command.LoadVideo("url", file, isPlaylist: false, isCheckCoder: false);
+
+            Assert.Equal("chrome", browserArgs[browserArgs.IndexOf("--cookies-from-browser") + 1]);
+            Assert.DoesNotContain("--cookies", browserArgs);
+            int index = fileArgs.IndexOf("--cookies");
+            Assert.True(index >= 0);
+            Assert.Equal(@"C:\cookies.txt", fileArgs[index + 1]);
+            Assert.DoesNotContain("--cookies-from-browser", fileArgs);
+        }
+
+        [Fact]
+        public void LoadVideo_ProxyRetriesArchiveAndSections()
+        {
+            var settings = BaseSettings();
+            settings.Proxy = "socks5://127.0.0.1:1080";
+            settings.Retries = 5;
+            settings.UseDownloadArchive = true;
+            settings.DownloadSections = "*00:01:30-00:05:00";
+
+            var args = Command.LoadVideo("url", settings, isPlaylist: false, isCheckCoder: false);
+
+            Assert.Equal("socks5://127.0.0.1:1080", args[args.IndexOf("--proxy") + 1]);
+            Assert.Equal("5", args[args.IndexOf("--retries") + 1]);
+            Assert.Equal("5", args[args.IndexOf("--fragment-retries") + 1]);
+            Assert.Equal(System.IO.Path.Combine(@"C:\videos", "downloaded.txt"), args[args.IndexOf("--download-archive") + 1]);
+            Assert.Equal("*00:01:30-00:05:00", args[args.IndexOf("--download-sections") + 1]);
+        }
+
+        [Fact]
+        public void LoadVideo_EmbedThumbnailAndMetadata()
+        {
+            var settings = BaseSettings();
+            settings.EmbedThumbnail = true;
+            settings.EmbedMetadata = true;
+
+            var args = Command.LoadVideo("url", settings, isPlaylist: false, isCheckCoder: false);
+
+            Assert.Contains("--embed-thumbnail", args);
+            Assert.Contains("--embed-metadata", args);
+        }
+
+        [Fact]
+        public void LoadVideo_SubtitlesWithSrtConversion()
+        {
+            var settings = BaseSettings();
+            settings.DownloadSubtitles = true;
+            settings.SubtitleLanguage = "en";
+            settings.ConvertSubsToSrt = true;
+
+            var args = Command.LoadVideo("url", settings, isPlaylist: false, isCheckCoder: false);
+
+            Assert.Contains("--write-subs", args);
+            int index = args.IndexOf("--convert-subs");
+            Assert.True(index >= 0);
+            Assert.Equal("srt", args[index + 1]);
+        }
+
+        [Fact]
+        public void LoadAudio_AudioQuality()
+        {
+            var settings = BaseSettings();
+            settings.AudioQuality = "0";
+
+            var args = Command.LoadAudio(settings, "url", isPlaylist: false);
+
+            int index = args.IndexOf("--audio-quality");
+            Assert.True(index >= 0);
+            Assert.Equal("0", args[index + 1]);
+        }
+
+        [Fact]
+        public void FetchInfo_SingleAndPlaylist()
+        {
+            var single = Command.FetchInfo("url", isPlaylist: false);
+            var playlist = Command.FetchInfo("url", isPlaylist: true);
+
+            Assert.Contains("-J", single);
+            Assert.Contains("--no-playlist", single);
+            Assert.DoesNotContain("--flat-playlist", single);
+            Assert.Equal("url", single.Last());
+
+            Assert.Contains("--yes-playlist", playlist);
+            Assert.Contains("--flat-playlist", playlist);
+            Assert.DoesNotContain("--no-playlist", playlist);
+        }
     }
 }

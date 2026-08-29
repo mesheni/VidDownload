@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace VidDownload.WPF.Control
 {
@@ -15,37 +16,20 @@ namespace VidDownload.WPF.Control
                 "--audio-format", _acodec
             };
 
-            AppendRateLimit(args, settings);
-
-            if (settings.DownloadSubtitles)
+            if (!string.IsNullOrEmpty(settings.AudioQuality))
             {
-                args.Add("--write-subs");
-                args.Add("--write-auto-subs");
-                if (!string.IsNullOrEmpty(settings.SubtitleLanguage))
-                {
-                    args.Add("--sub-langs");
-                    args.Add(settings.SubtitleLanguage);
-                }
-                if (settings.EmbedSubtitles)
-                {
-                    args.Add("--embed-subs");
-                }
+                args.Add("--audio-quality");
+                args.Add(settings.AudioQuality);
             }
+
+            AppendCommon(args, settings);
 
             // Галочка «Плейлист» реально управляет скачиванием, а не только раскладкой файлов:
             // без неё даже плейлист-ссылка качается как одиночное видео.
             args.Add(_isPlaylist ? "--yes-playlist" : "--no-playlist");
 
-            if (_isPlaylist)
-            {
-                args.Add("-o");
-                args.Add($"{settings.SavePath}/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
-            }
-            else
-            {
-                args.Add("-P");
-                args.Add(settings.SavePath);
-            }
+            AppendPlaylistItems(args, settings, _isPlaylist);
+            AppendOutput(args, settings, _isPlaylist);
 
             args.Add(reference);
             return args;
@@ -61,6 +45,13 @@ namespace VidDownload.WPF.Control
 
             var args = new List<string>();
 
+            // Точный формат из предпросмотра имеет приоритет над сортировкой -S
+            if (!string.IsNullOrEmpty(settings.FormatSelector))
+            {
+                args.Add("-f");
+                args.Add(settings.FormatSelector);
+            }
+
             if (_isCheckCoder)
             {
                 args.Add("--recode-video");
@@ -72,10 +63,33 @@ namespace VidDownload.WPF.Control
                 args.Add(settings.Format);
             }
 
-            args.Add("-S");
-            args.Add($"+codec:{_vcodec},res:{_res},fps");
+            if (string.IsNullOrEmpty(settings.FormatSelector))
+            {
+                args.Add("-S");
+                args.Add($"+codec:{_vcodec},res:{_res},fps");
+            }
 
-            AppendRateLimit(args, settings);
+            AppendCommon(args, settings);
+
+            // Галочка «Плейлист» реально управляет скачиванием, а не только раскладкой файлов:
+            // без неё даже плейлист-ссылка качается как одиночное видео.
+            args.Add(_isPlaylist ? "--yes-playlist" : "--no-playlist");
+
+            AppendPlaylistItems(args, settings, _isPlaylist);
+            AppendOutput(args, settings, _isPlaylist);
+
+            args.Add(reference);
+            return args;
+        }
+
+        /// <summary>Общие для видео и аудио аргументы: лимит скорости, субтитры, куки, прокси и т.д.</summary>
+        private static void AppendCommon(List<string> args, Settings settings)
+        {
+            if (!string.IsNullOrWhiteSpace(settings.RateLimit))
+            {
+                args.Add("--limit-rate");
+                args.Add(settings.RateLimit.Trim());
+            }
 
             if (settings.DownloadSubtitles)
             {
@@ -90,13 +104,69 @@ namespace VidDownload.WPF.Control
                 {
                     args.Add("--embed-subs");
                 }
+                if (settings.ConvertSubsToSrt)
+                {
+                    args.Add("--convert-subs");
+                    args.Add("srt");
+                }
             }
 
-            // Галочка «Плейлист» реально управляет скачиванием, а не только раскладкой файлов:
-            // без неё даже плейлист-ссылка качается как одиночное видео.
-            args.Add(_isPlaylist ? "--yes-playlist" : "--no-playlist");
+            if (settings.EmbedThumbnail)
+                args.Add("--embed-thumbnail");
 
-            if (_isPlaylist)
+            if (settings.EmbedMetadata)
+                args.Add("--embed-metadata");
+
+            if (!string.IsNullOrWhiteSpace(settings.CookiesFromBrowser))
+            {
+                args.Add("--cookies-from-browser");
+                args.Add(settings.CookiesFromBrowser.Trim());
+            }
+            else if (!string.IsNullOrWhiteSpace(settings.CookiesFile))
+            {
+                args.Add("--cookies");
+                args.Add(settings.CookiesFile.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.Proxy))
+            {
+                args.Add("--proxy");
+                args.Add(settings.Proxy.Trim());
+            }
+
+            if (settings.Retries > 0)
+            {
+                args.Add("--retries");
+                args.Add(settings.Retries.ToString());
+                args.Add("--fragment-retries");
+                args.Add(settings.Retries.ToString());
+            }
+
+            if (settings.UseDownloadArchive && !string.IsNullOrEmpty(settings.SavePath))
+            {
+                args.Add("--download-archive");
+                args.Add(Path.Combine(settings.SavePath, "downloaded.txt"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.DownloadSections))
+            {
+                args.Add("--download-sections");
+                args.Add(settings.DownloadSections.Trim());
+            }
+        }
+
+        private static void AppendPlaylistItems(List<string> args, Settings settings, bool isPlaylist)
+        {
+            if (isPlaylist && !string.IsNullOrWhiteSpace(settings.PlaylistItems))
+            {
+                args.Add("--playlist-items");
+                args.Add(settings.PlaylistItems.Trim());
+            }
+        }
+
+        private static void AppendOutput(List<string> args, Settings settings, bool isPlaylist)
+        {
+            if (isPlaylist)
             {
                 args.Add("-o");
                 args.Add($"{settings.SavePath}/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
@@ -106,18 +176,25 @@ namespace VidDownload.WPF.Control
                 args.Add("-P");
                 args.Add(settings.SavePath);
             }
+        }
+
+        /// <summary>Аргументы запроса метаданных (`yt-dlp -J`) — синхронное поведение с загрузкой.</summary>
+        public static List<string> FetchInfo(string reference, bool isPlaylist)
+        {
+            var args = new List<string>
+            {
+                "-J",
+                isPlaylist ? "--yes-playlist" : "--no-playlist"
+            };
+
+            if (isPlaylist)
+            {
+                // Быстрый список элементов без разбора каждого видео
+                args.Add("--flat-playlist");
+            }
 
             args.Add(reference);
             return args;
-        }
-
-        private static void AppendRateLimit(List<string> args, Settings settings)
-        {
-            if (!string.IsNullOrWhiteSpace(settings.RateLimit))
-            {
-                args.Add("--limit-rate");
-                args.Add(settings.RateLimit.Trim());
-            }
         }
     }
 }

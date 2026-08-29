@@ -26,6 +26,33 @@ namespace VidDownload.WPF.Services
         /// <summary>Действие после завершения очереди: "" — ничего, Shutdown/Sleep/Hibernate.</summary>
         public string PostQueueAction { get; set; } = string.Empty;
 
+        /// <summary>Куки из браузера для yt-dlp (--cookies-from-browser): chrome/edge/firefox/opera. Пусто = нет.</summary>
+        public string CookiesFromBrowser { get; set; } = string.Empty;
+
+        /// <summary>Путь к cookies.txt (--cookies). Пусто = нет.</summary>
+        public string CookiesFile { get; set; } = string.Empty;
+
+        /// <summary>Прокси (--proxy). Пусто = без прокси.</summary>
+        public string Proxy { get; set; } = string.Empty;
+
+        /// <summary>Повторы при ошибках yt-dlp (--retries). 0 = по умолчанию.</summary>
+        public int Retries { get; set; } = 3;
+
+        /// <summary>Пропускать уже скачанные видео (--download-archive).</summary>
+        public bool UseDownloadArchive { get; set; }
+
+        /// <summary>Встраивать обложку в файл (--embed-thumbnail).</summary>
+        public bool EmbedThumbnail { get; set; }
+
+        /// <summary>Встраивать метаданные (--embed-metadata).</summary>
+        public bool EmbedMetadata { get; set; }
+
+        /// <summary>Качество аудио по умолчанию при извлечении (--audio-quality). Пусто = по умолчанию.</summary>
+        public string AudioQuality { get; set; } = string.Empty;
+
+        /// <summary>Конвертировать субтитры в SRT по умолчанию.</summary>
+        public bool ConvertSubsToSrt { get; set; }
+
         /// <summary>Сворачивать приложение в трей при закрытии окна вместо выхода.</summary>
         public bool MinimizeToTray { get; set; }
 

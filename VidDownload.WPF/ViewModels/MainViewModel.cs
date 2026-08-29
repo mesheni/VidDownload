@@ -31,8 +31,15 @@ namespace VidDownload.WPF.ViewModels
         private readonly IDownloadQueueService _queue;
         private readonly INotificationService _notifications;
         private readonly IClipboardMonitorService _clipboardMonitor;
+        private readonly IYtDlpService _ytDlpService;
         private bool _isLoading;
         private string _savePath = UserSettings.DefaultDownloadPath;
+
+        /// <summary>Последний загруженный снимок настроек — источник сетевых параметров (куки/прокси/ретраи/архив).</summary>
+        private UserSettings? _persisted;
+
+        /// <summary>Собранный --download-sections (валидируется в ValidateOptionsAsync).</summary>
+        private string _sectionValue = string.Empty;
 
         [ObservableProperty]
         private string _url = string.Empty;
@@ -87,6 +94,27 @@ namespace VidDownload.WPF.ViewModels
 
         [ObservableProperty]
         private bool _isEmbedSubtitles;
+
+        [ObservableProperty]
+        private bool _isEmbedThumbnail;
+
+        [ObservableProperty]
+        private bool _isEmbedMetadata;
+
+        [ObservableProperty]
+        private bool _isConvertSubsToSrt;
+
+        [ObservableProperty]
+        private string _selectedAudioQuality = string.Empty;
+
+        [ObservableProperty]
+        private string _sectionStart = string.Empty;
+
+        [ObservableProperty]
+        private string _sectionEnd = string.Empty;
+
+        [ObservableProperty]
+        private bool _isFetchingInfo;
 
         [ObservableProperty]
         private string _appVersion = string.Empty;
@@ -208,6 +236,12 @@ namespace VidDownload.WPF.ViewModels
             "", "all", "en", "ru", "de", "fr", "es", "ja", "zh-Hans", "ar", "pt"
         };
 
+        /// <summary>Качество аудио при извлечении (--audio-quality, 0 — лучшее; пусто — по умолчанию).</summary>
+        public ObservableCollection<string> AudioQualities { get; } = new()
+        {
+            "", "0", "3", "5", "7", "9"
+        };
+
         /// <summary>Ключи действий «после очереди» — индекс синхронен с PostQueueActionItems.</summary>
         private static readonly string[] PostQueueActionKeys = { "", "Shutdown", "Sleep", "Hibernate" };
 
@@ -228,6 +262,7 @@ namespace VidDownload.WPF.ViewModels
             IDownloadQueueService queue,
             INotificationService notifications,
             IClipboardMonitorService clipboardMonitor,
+            IYtDlpService ytDlpService,
             LocalizedStrings localizedStrings)
         {
             _loc = localizedStrings;
@@ -240,6 +275,7 @@ namespace VidDownload.WPF.ViewModels
             _queue = queue;
             _notifications = notifications;
             _clipboardMonitor = clipboardMonitor;
+            _ytDlpService = ytDlpService;
 
             _queue.ItemStarted += OnItemStarted;
             _queue.ItemCompleted += OnItemCompleted;
@@ -259,7 +295,19 @@ namespace VidDownload.WPF.ViewModels
             RunSafe(CheckFFmpegUpdateAsync, nameof(CheckFFmpegUpdateAsync));
             RunSafe(CheckAppUpdateAsync, nameof(CheckAppUpdateAsync));
             RunSafe(LoadSettingsAsync, nameof(LoadSettingsAsync));
+            RunSafe(RestorePendingQueueAsync, nameof(RestorePendingQueueAsync));
             AppVersion = GetAppVersion();
+        }
+
+        /// <summary>Восстанавливает очередь из прошлого сеанса (все элементы — в паузе).</summary>
+        private Task RestorePendingQueueAsync()
+        {
+            var items = _queue.LoadPending();
+            foreach (var item in items)
+                _queue.Items.Add(item);
+            if (items.Count > 0)
+                _notifications.Info(string.Format(_loc["QueueRestored"], items.Count));
+            return Task.CompletedTask;
         }
 
         private async void RunSafe(Func<Task> action, string operationName)
@@ -374,8 +422,52 @@ namespace VidDownload.WPF.ViewModels
             if (!await ValidateOptionsAsync())
                 return;
 
-            Enqueue(Url);
-            Url = string.Empty;
+            if (await EnqueueWithPreviewAsync())
+                Url = string.Empty;
+        }
+
+        /// <summary>
+        /// Предпросмотр метаданных (название, обложка, форматы/элементы плейлиста) и постановка в очередь.
+        /// При недоступности предпросмотра предлагает скачать напрямую.
+        /// </summary>
+        private async Task<bool> EnqueueWithPreviewAsync()
+        {
+            VideoInfo? info = null;
+            IsFetchingInfo = true;
+            try
+            {
+                info = await _ytDlpService.FetchInfoAsync(Url, IsPlaylist);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(MainViewModel), $"FetchInfo failed: {ex.Message}");
+                if (!await _dialogService.AskAsync(string.Format(_loc["PreviewFailedAsk"], ex.Message), _loc["WarningTitle"]))
+                    return false;
+            }
+            finally
+            {
+                IsFetchingInfo = false;
+            }
+
+            ApplySelectionsToSettings();
+            _settings.FormatSelector = string.Empty;
+            _settings.PlaylistItems = string.Empty;
+
+            if (info != null)
+            {
+                var window = AppServices.ServiceProvider.GetRequiredService<VideoInfoWindow.VideoInfoWindow>();
+                window.Owner = System.Windows.Application.Current.MainWindow;
+                window.ViewModel.Initialize(info, IsAudioOnly);
+                window.ShowDialog();
+                if (!window.ViewModel.Confirmed)
+                    return false;
+                _settings.FormatSelector = window.ViewModel.FormatSelector;
+                _settings.PlaylistItems = window.ViewModel.PlaylistItems;
+            }
+
+            _queue.Enqueue(new DownloadItem(Url, _settings.Clone(), IsPlaylist, IsAudioOnly, IsReEncode));
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+            return true;
         }
 
         /// <summary>Добавляет ссылку в очередь с текущими настройками (без интерактивных проверок).</summary>
@@ -407,8 +499,20 @@ namespace VidDownload.WPF.ViewModels
             _settings.DownloadSubtitles = IsDownloadSubtitles;
             _settings.SubtitleLanguage = SelectedSubtitleLanguage;
             _settings.EmbedSubtitles = IsEmbedSubtitles;
+            _settings.ConvertSubsToSrt = IsConvertSubsToSrt;
+            _settings.EmbedThumbnail = IsEmbedThumbnail;
+            _settings.EmbedMetadata = IsEmbedMetadata;
+            _settings.AudioQuality = SelectedAudioQuality ?? string.Empty;
+            _settings.DownloadSections = _sectionValue;
             _settings.SavePath = _savePath;
             _settings.RateLimit = RateLimit?.Trim() ?? string.Empty;
+
+            // Сетевые параметры принадлежат окну настроек — берём последний снимок оттуда
+            _settings.CookiesFromBrowser = _persisted?.CookiesFromBrowser ?? string.Empty;
+            _settings.CookiesFile = _persisted?.CookiesFile ?? string.Empty;
+            _settings.Proxy = _persisted?.Proxy ?? string.Empty;
+            _settings.Retries = _persisted?.Retries ?? 0;
+            _settings.UseDownloadArchive = _persisted?.UseDownloadArchive ?? false;
         }
 
         private async Task<bool> ValidateOptionsAsync()
@@ -423,6 +527,21 @@ namespace VidDownload.WPF.ViewModels
                 if (!await _dialogService.AskAsync(_loc["AviSubtitleWarning"], _loc["WarningTitle"]))
                     return false;
             }
+
+            // Фрагмент по таймкодам: либо оба поля, либо ни одного
+            if (!string.IsNullOrWhiteSpace(SectionStart) || !string.IsNullOrWhiteSpace(SectionEnd))
+            {
+                if (!Timecodes.TryBuildSection(SectionStart, SectionEnd, out _sectionValue))
+                {
+                    _messageService.Warning(_loc["SectionInvalid"], _loc["WarningTitle"]);
+                    return false;
+                }
+            }
+            else
+            {
+                _sectionValue = string.Empty;
+            }
+
             return true;
         }
 
@@ -726,6 +845,7 @@ namespace VidDownload.WPF.ViewModels
         {
             _isLoading = true;
             var userSettings = await _settingsService.LoadAsync();
+            _persisted = userSettings;
             if (!string.IsNullOrEmpty(userSettings.Resolution))
                 SelectedResolution = userSettings.Resolution;
             if (!string.IsNullOrEmpty(userSettings.VideoCodec))
@@ -738,6 +858,11 @@ namespace VidDownload.WPF.ViewModels
             if (!string.IsNullOrEmpty(userSettings.SubtitleLanguage))
                 SelectedSubtitleLanguage = userSettings.SubtitleLanguage;
             IsEmbedSubtitles = userSettings.EmbedSubtitles;
+            IsConvertSubsToSrt = userSettings.ConvertSubsToSrt;
+            IsEmbedThumbnail = userSettings.EmbedThumbnail;
+            IsEmbedMetadata = userSettings.EmbedMetadata;
+            if (!string.IsNullOrEmpty(userSettings.AudioQuality))
+                SelectedAudioQuality = userSettings.AudioQuality;
             if (!string.IsNullOrEmpty(userSettings.Language))
                 _loc.SetLanguage(userSettings.Language.ToLower());
             _savePath = !string.IsNullOrEmpty(userSettings.SavePath)
@@ -787,6 +912,10 @@ namespace VidDownload.WPF.ViewModels
             settings.DownloadSubtitles = _settings.DownloadSubtitles;
             settings.SubtitleLanguage = _settings.SubtitleLanguage;
             settings.EmbedSubtitles = _settings.EmbedSubtitles;
+            settings.ConvertSubsToSrt = _settings.ConvertSubsToSrt;
+            settings.EmbedThumbnail = _settings.EmbedThumbnail;
+            settings.EmbedMetadata = _settings.EmbedMetadata;
+            settings.AudioQuality = SelectedAudioQuality ?? string.Empty;
             settings.SavePath = _savePath;
             settings.RateLimit = RateLimit ?? string.Empty;
             settings.Appearance = AppTheme.ToString();

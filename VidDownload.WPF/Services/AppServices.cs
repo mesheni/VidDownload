@@ -46,12 +46,14 @@ namespace VidDownload.WPF.Services
             services.AddTransient<ConvertViewModel>();
             services.AddTransient<HistoryViewModel>();
             services.AddTransient<SettingsViewModel>();
+            services.AddTransient<VideoInfoViewModel>();
 
             services.AddTransient<VidDownload.WPF.MainWindow>();
             services.AddTransient<ConvertWindow.ConvertWindow>();
             services.AddTransient<HistoryWindow.HistoryWindow>();
             services.AddTransient<HelpWindow>();
             services.AddTransient<SettingsWindow.SettingsWindow>();
+            services.AddTransient<VideoInfoWindow.VideoInfoWindow>();
 
             ServiceProvider = services.BuildServiceProvider();
         }

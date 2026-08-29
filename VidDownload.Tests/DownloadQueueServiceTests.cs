@@ -21,6 +21,10 @@ namespace VidDownload.Tests
                 => Handler(cancellationToken);
 
             public Task<string> GetLocalVersionAsync() => Task.FromResult("2025.01.01");
+
+            public Task<VidDownload.WPF.Control.VideoInfo> FetchInfoAsync(
+                string url, bool isPlaylist, CancellationToken cancellationToken = default)
+                => Task.FromResult(new VidDownload.WPF.Control.VideoInfo());
         }
 
         private static DownloadItem MakeItem(string url = "https://youtu.be/x") =>

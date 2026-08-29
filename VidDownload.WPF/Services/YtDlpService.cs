@@ -145,6 +145,64 @@ namespace VidDownload.WPF.Services
             return result;
         }
 
+        /// <summary>
+        /// Получает метаданные до загрузки (`yt-dlp -J`, для плейлистов — --flat-playlist).
+        /// Бросает исключение с текстом stderr при ненулевом коде выхода.
+        /// </summary>
+        public async Task<VideoInfo> FetchInfoAsync(string url, bool isPlaylist, CancellationToken cancellationToken = default)
+        {
+            string ytDlpPath = AppPaths.ResolveToolPath("yt-dlp.exe");
+            if (!File.Exists(ytDlpPath))
+                throw new InvalidOperationException(LocalizedStrings.Instance["YtDlpMissing"]);
+
+            List<string> args = Command.FetchInfo(url, isPlaylist);
+
+            using Process proc = new();
+            proc.StartInfo.FileName = ytDlpPath;
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.CreateNoWindow = true;
+
+            foreach (var arg in args)
+            {
+                proc.StartInfo.ArgumentList.Add(arg);
+            }
+
+            proc.Start();
+
+            var stdoutTask = proc.StandardOutput.ReadToEndAsync();
+            var stderrTask = proc.StandardError.ReadToEndAsync();
+
+            using (cancellationToken.Register(() =>
+            {
+                try
+                {
+                    proc.Kill(true);
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }))
+            {
+                await Task.Run(() => proc.WaitForExit()).ConfigureAwait(false);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (proc.ExitCode != 0)
+            {
+                string stderr = (await stderrTask.ConfigureAwait(false)).Trim();
+                string message = string.Format(LocalizedStrings.Instance["YtDlpProcessError"], proc.ExitCode);
+                if (!string.IsNullOrEmpty(stderr))
+                    message += Environment.NewLine + stderr;
+                throw new Exception(message);
+            }
+
+            string json = await stdoutTask.ConfigureAwait(false);
+            return MetadataParser.ParseVideoInfo(json);
+        }
+
         public async Task<string> GetLocalVersionAsync()
         {
             try

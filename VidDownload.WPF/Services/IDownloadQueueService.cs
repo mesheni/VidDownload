@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace VidDownload.WPF.Services
@@ -24,5 +25,11 @@ namespace VidDownload.WPF.Services
         void Remove(DownloadItem item);
         void ClearFinished();
         void CancelAll();
+
+        /// <summary>Сохраняет незавершённые элементы в queue.json.</summary>
+        void SavePending();
+
+        /// <summary>Восстанавливает сохранённую очередь (все элементы — в паузе).</summary>
+        List<DownloadItem> LoadPending();
     }
 }
