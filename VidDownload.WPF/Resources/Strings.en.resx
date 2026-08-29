@@ -870,6 +870,30 @@ Leave 0 for auto</value>
   <data name="UseArchiveLabel" xml:space="preserve">
     <value>Skip downloaded</value>
   </data>
+  <data name="AudioOnlyModeLabel" xml:space="preserve">
+    <value>Audio only</value>
+  </data>
+  <data name="BatchModeLabel" xml:space="preserve">
+    <value>Batch conversion</value>
+  </data>
+  <data name="BatchAddButton" xml:space="preserve">
+    <value>Add files</value>
+  </data>
+  <data name="BatchRemoveButton" xml:space="preserve">
+    <value>Remove selected</value>
+  </data>
+  <data name="BatchClearButton" xml:space="preserve">
+    <value>Clear list</value>
+  </data>
+  <data name="BatchEmptyWarning" xml:space="preserve">
+    <value>Add at least one file to the list</value>
+  </data>
+  <data name="BatchOverwriteAsk" xml:space="preserve">
+    <value>Some output files already exist. Overwrite them? (if declined, they will be skipped)</value>
+  </data>
+  <data name="BatchDone" xml:space="preserve">
+    <value>Done: {0} succeeded, {1} failed</value>
+  </data>
   <data name="UseArchiveHint" xml:space="preserve">
     <value>Keep a download archive (downloaded.txt in the output folder) and never re-download</value>
   </data>

@@ -16,9 +16,28 @@ namespace VidDownload.WPF.Control
         public int? AudioBitrate { get; set; }
         public string Preset { get; set; } = "medium";
 
+        /// <summary>Режим «только аудио»: видео отбрасывается (-vn), кодируется только звук.</summary>
+        public bool AudioOnly { get; set; }
+
         public static readonly IReadOnlyList<string> AllFormats = new[]
         {
             "MP4", "MKV", "MOV", "AVI", "WebM", "FLV", "WMV", "TS"
+        };
+
+        public static readonly IReadOnlyList<string> AudioOnlyFormats = new[]
+        {
+            "MP3", "AAC", "FLAC", "OPUS", "WAV", "M4A"
+        };
+
+        /// <summary>Аудиокодек ffmpeg для аудио-формата в режиме «только аудио».</summary>
+        public static string GetAudioCodecForAudioFormat(string format) => (format ?? string.Empty).ToUpperInvariant() switch
+        {
+            "MP3" => "libmp3lame",
+            "AAC" or "M4A" => "aac",
+            "FLAC" => "flac",
+            "OPUS" => "libopus",
+            "WAV" => "pcm_s16le",
+            _ => "libmp3lame"
         };
 
         public static readonly IReadOnlyList<string> CpuVideoCodecs = new[]

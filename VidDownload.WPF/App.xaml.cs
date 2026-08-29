@@ -40,6 +40,8 @@ namespace VidDownload.WPF
             var listener = new Thread(WaitForActivateSignal) { IsBackground = true };
             listener.Start();
 
+            CleanupUpdaterLeftovers();
+
             DispatcherUnhandledException += (_, ex) =>
                 AppLog.Error(nameof(App), $"Unhandled UI exception: {ex.Exception}");
 
@@ -116,6 +118,21 @@ namespace VidDownload.WPF
                 {
                     return;
                 }
+            }
+        }
+
+        /// <summary>Удаляет хвост самообновления Updater.exe.old, если обновлятор не успел.</summary>
+        private static void CleanupUpdaterLeftovers()
+        {
+            try
+            {
+                string? oldUpdater = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Updater.exe.old");
+                if (File.Exists(oldUpdater))
+                    File.Delete(oldUpdater);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(App), $"Updater cleanup failed: {ex.Message}");
             }
         }
 

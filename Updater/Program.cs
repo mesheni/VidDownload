@@ -8,6 +8,7 @@ internal static class Program
     {
         string? src = null;
         string? dst = null;
+        string? updaterSrc = null;
         int pid = -1;
 
         for (int i = 0; i < args.Length; i++)
@@ -16,6 +17,9 @@ internal static class Program
             {
                 case "--src" when i + 1 < args.Length:
                     src = args[++i];
+                    break;
+                case "--updater-src" when i + 1 < args.Length:
+                    updaterSrc = args[++i];
                     break;
                 case "--dst" when i + 1 < args.Length:
                     dst = args[++i];
@@ -28,7 +32,7 @@ internal static class Program
 
         if (string.IsNullOrEmpty(src) || string.IsNullOrEmpty(dst) || pid == -1)
         {
-            Console.Error.WriteLine("Usage: Updater.exe --src <temp\\new.exe> --dst <app\\VidDownload.WPF.exe> --pid <current-pid>");
+            Console.Error.WriteLine("Usage: Updater.exe --src <temp\\new.exe> --dst <app\\VidDownload.WPF.exe> --pid <current-pid> [--updater-src <temp\\Updater.exe>]");
             return 1;
         }
 
@@ -82,6 +86,32 @@ internal static class Program
         try { File.Delete(src); }
         catch { /* не критично */ }
 
+        // Самообновление Updater: запущенный exe нельзя перезаписать, но можно
+        // переименовать — образ процесса следует за файлом. Хвост .old удаляется
+        // после запуска приложения (или при следующем старте приложения).
+        if (!string.IsNullOrEmpty(updaterSrc) && File.Exists(updaterSrc) && IsPortableExecutable(updaterSrc))
+        {
+            try
+            {
+                string? currentUpdater = Environment.ProcessPath;
+                if (!string.IsNullOrEmpty(currentUpdater))
+                {
+                    string oldCopy = currentUpdater + ".old";
+                    TryDelete(oldCopy);
+                    File.Move(currentUpdater, oldCopy);
+                    File.Copy(updaterSrc, currentUpdater, overwrite: true);
+                    Console.WriteLine($"Replaced updater: {currentUpdater}");
+                }
+                try { File.Delete(updaterSrc); }
+                catch { /* не критично */ }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Updater self-update failed: {ex.Message}");
+                // Не критично: приложение уже обновлено, старый Updater продолжит работать
+            }
+        }
+
         try
         {
             var startInfo = new ProcessStartInfo(dst)
@@ -98,7 +128,30 @@ internal static class Program
             return 4;
         }
 
+        // Хвост от самообновления: после запуска приложения даём файлу освободиться
+        if (Environment.ProcessPath is { } selfPath)
+        {
+            TryDelete(selfPath + ".old");
+        }
+
         return 0;
+    }
+
+    private static void TryDelete(string path)
+    {
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            try
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+                return;
+            }
+            catch
+            {
+                Thread.Sleep(500);
+            }
+        }
     }
 
     private static bool IsPortableExecutable(string path)

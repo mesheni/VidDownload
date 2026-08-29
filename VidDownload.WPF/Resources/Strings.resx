@@ -873,6 +873,30 @@
   <data name="UseArchiveLabel" xml:space="preserve">
     <value>Пропускать скачанные</value>
   </data>
+  <data name="AudioOnlyModeLabel" xml:space="preserve">
+    <value>Только аудио</value>
+  </data>
+  <data name="BatchModeLabel" xml:space="preserve">
+    <value>Пакетная конвертация</value>
+  </data>
+  <data name="BatchAddButton" xml:space="preserve">
+    <value>Добавить файлы</value>
+  </data>
+  <data name="BatchRemoveButton" xml:space="preserve">
+    <value>Убрать выбранный</value>
+  </data>
+  <data name="BatchClearButton" xml:space="preserve">
+    <value>Очистить список</value>
+  </data>
+  <data name="BatchEmptyWarning" xml:space="preserve">
+    <value>Добавьте хотя бы один файл в список</value>
+  </data>
+  <data name="BatchOverwriteAsk" xml:space="preserve">
+    <value>Некоторые выходные файлы уже существуют. Перезаписать их? (при отказе они будут пропущены)</value>
+  </data>
+  <data name="BatchDone" xml:space="preserve">
+    <value>Готово: успешно {0}, с ошибками {1}</value>
+  </data>
   <data name="UseArchiveHint" xml:space="preserve">
     <value>Вести архив загрузок (downloaded.txt в папке сохранения) и не качать повторно</value>
   </data>

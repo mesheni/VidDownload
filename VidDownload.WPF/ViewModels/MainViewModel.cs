@@ -1134,6 +1134,9 @@ namespace VidDownload.WPF.ViewModels
                 if (!File.Exists(downloadedPath))
                     throw new FileNotFoundException(downloadedPath);
 
+                // Вместе с приложением обновляем и Updater.exe, если ассет есть в релизе
+                string? updaterPackagePath = await _updateService.DownloadUpdaterUpdateAsync(_appUpdateInfo, progress);
+
                 if (!await _dialogService.AskAsync(_loc["AppUpdateReady"], _loc["AppRestartTitle"]))
                     return;
 
@@ -1150,7 +1153,8 @@ namespace VidDownload.WPF.ViewModels
                 var updaterInfo = new ProcessStartInfo
                 {
                     FileName = updaterPath,
-                    Arguments = $"--src \"{downloadedPath}\" --dst \"{appExe}\" --pid {Environment.ProcessId}",
+                    Arguments = $"--src \"{downloadedPath}\" --dst \"{appExe}\" --pid {Environment.ProcessId}" +
+                        (string.IsNullOrEmpty(updaterPackagePath) ? string.Empty : $" --updater-src \"{updaterPackagePath}\""),
                     UseShellExecute = true,
                     Verb = "runas",
                     CreateNoWindow = true

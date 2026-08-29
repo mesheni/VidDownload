@@ -104,6 +104,15 @@ namespace VidDownload.WPF.Services
                             asset.Name.Contains("VidDownload", StringComparison.OrdinalIgnoreCase))
                         {
                             info.DownloadUrl = asset.BrowserDownloadUrl;
+                        }
+                        else if (string.Equals(asset.Name, "Updater.exe", StringComparison.OrdinalIgnoreCase))
+                        {
+                            info.UpdaterDownloadUrl = asset.BrowserDownloadUrl;
+                        }
+
+                        if (!string.IsNullOrEmpty(info.DownloadUrl) &&
+                            !string.IsNullOrEmpty(info.UpdaterDownloadUrl))
+                        {
                             break;
                         }
                     }
@@ -144,6 +153,27 @@ namespace VidDownload.WPF.Services
                 .ConfigureAwait(false);
 
             return destPath;
+        }
+
+        public async Task<string?> DownloadUpdaterUpdateAsync(AppUpdateInfo info, IProgress<DownloadProgress> progress)
+        {
+            if (string.IsNullOrEmpty(info.UpdaterDownloadUrl))
+                return null;
+
+            try
+            {
+                string tempDir = Path.Combine(Path.GetTempPath(), "VidDownloadUpdate");
+                string destPath = Path.Combine(tempDir, "Updater.exe");
+                await NetworkHelper.DownloadFileAsync(info.UpdaterDownloadUrl, destPath, progress, "Updater.exe")
+                    .ConfigureAwait(false);
+                return destPath;
+            }
+            catch (Exception ex)
+            {
+                // Обновление Updater не критично: главное приложение обновится штатно
+                AppLog.Error(nameof(UpdateService), $"Updater download failed: {ex.Message}");
+                return null;
+            }
         }
 
         public static string ReleasesUrl => AppReleasesUrl;

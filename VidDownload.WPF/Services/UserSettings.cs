@@ -63,6 +63,9 @@ namespace VidDownload.WPF.Services
         public string Appearance { get; set; } = "Dark";
 
         public string ConvertOutputFormat { get; set; } = "MP4";
+
+        /// <summary>Конвертер в режиме «только аудио» при последнем использовании.</summary>
+        public bool ConvertAudioOnlyMode { get; set; }
         public string ConvertVideoCodec { get; set; } = "libx264";
         public string ConvertAudioCodec { get; set; } = "aac";
         public string ConvertHardwareEncoder { get; set; } = string.Empty;

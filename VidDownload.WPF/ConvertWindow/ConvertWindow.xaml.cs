@@ -39,12 +39,17 @@ namespace VidDownload.WPF.ConvertWindow
                 e.Data.GetData(DataFormats.FileDrop) is not string[] files)
                 return;
 
-            var file = files.FirstOrDefault(File.Exists);
-            if (file == null)
+            var existing = files.Where(File.Exists).ToList();
+            if (existing.Count == 0)
                 return;
 
             if (DataContext is ConvertViewModel vm)
-                vm.FilePath = file;
+            {
+                if (vm.IsBatchMode)
+                    vm.AddBatchFiles(existing);
+                else
+                    vm.FilePath = existing[0];
+            }
         }
     }
 }

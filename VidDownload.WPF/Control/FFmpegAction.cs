@@ -118,6 +118,18 @@
         {
             var parameters = new List<string>();
 
+            if (options.AudioOnly)
+            {
+                parameters.Add("-vn");
+                parameters.Add($"-c:a {options.AudioCodec}");
+
+                if (options.AudioBitrate.HasValue && options.AudioBitrate.Value > 0)
+                {
+                    parameters.Add($"-b:a {options.AudioBitrate.Value}k");
+                }
+                return parameters;
+            }
+
             parameters.Add($"-c:v {options.VideoCodec}");
             parameters.Add($"-c:a {options.AudioCodec}");
 

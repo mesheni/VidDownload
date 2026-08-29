@@ -80,6 +80,28 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private string _ffmpegCommandPreview = string.Empty;
 
+        /// <summary>Режим «только аудио»: выходной файл — звук без видеодорожки.</summary>
+        [ObservableProperty]
+        private bool _isAudioOnlyMode;
+
+        /// <summary>Пакетная конвертация списка файлов.</summary>
+        [ObservableProperty]
+        private bool _isBatchMode;
+
+        [ObservableProperty]
+        private string? _selectedBatchFile;
+
+        /// <summary>Файлы пакетной конвертации.</summary>
+        public ObservableCollection<string> BatchFiles { get; } = new();
+
+        public bool ShowSingleInput => !IsBatchMode;
+
+        public bool ShowBatchInput => IsBatchMode;
+
+        public bool ShowOutputFileName => !IsBatchMode;
+
+        public bool ShowVideoEncoding => !IsAudioOnlyMode;
+
         public ObservableCollection<string> Formats { get; }
 
         public ObservableCollection<string> VideoCodecs { get; } = new();
@@ -121,7 +143,10 @@ namespace VidDownload.WPF.ViewModels
         public async Task InitializeAsync()
         {
             var settings = await _settingsService.LoadAsync().ConfigureAwait(true);
+            IsAudioOnlyMode = settings.ConvertAudioOnlyMode;
             SelectedFormat = string.IsNullOrEmpty(settings.ConvertOutputFormat) ? "MP4" : settings.ConvertOutputFormat;
+            if (IsAudioOnlyMode && !Formats.Contains(SelectedFormat))
+                SelectedFormat = "MP3";
             SelectedVideoCodec = string.IsNullOrEmpty(settings.ConvertVideoCodec) ? "libx264" : settings.ConvertVideoCodec;
             SelectedAudioCodec = string.IsNullOrEmpty(settings.ConvertAudioCodec) ? "aac" : settings.ConvertAudioCodec;
             SelectedHardwareEncoder = string.IsNullOrEmpty(settings.ConvertHardwareEncoder) ? string.Empty : settings.ConvertHardwareEncoder;
@@ -135,7 +160,10 @@ namespace VidDownload.WPF.ViewModels
             RefreshCommandPreview();
         }
 
-        private bool CanConvert() => !IsConverting && !string.IsNullOrEmpty(FilePath) && File.Exists(FilePath);
+        private bool CanConvert() => !IsConverting &&
+            (IsBatchMode
+                ? BatchFiles.Count > 0
+                : !string.IsNullOrEmpty(FilePath) && File.Exists(FilePath));
 
         private bool CanBrowseFile() => !IsConverting;
 
@@ -147,6 +175,36 @@ namespace VidDownload.WPF.ViewModels
         {
             RefreshCodecLists();
             RefreshCommandPreview();
+        }
+
+        partial void OnIsBatchModeChanged(bool value)
+        {
+            OnPropertyChanged(nameof(ShowSingleInput));
+            OnPropertyChanged(nameof(ShowBatchInput));
+            OnPropertyChanged(nameof(ShowOutputFileName));
+            ConvertCommand.NotifyCanExecuteChanged();
+            RefreshCommandPreview();
+        }
+
+        partial void OnIsAudioOnlyModeChanged(bool value)
+        {
+            OnPropertyChanged(nameof(ShowVideoEncoding));
+            RebuildFormatList();
+        }
+
+        /// <summary>Пересобирает список форматов под текущий режим (видео или аудио).</summary>
+        private void RebuildFormatList()
+        {
+            string current = SelectedFormat ?? string.Empty;
+            var source = IsAudioOnlyMode ? ConversionOptions.AudioOnlyFormats : ConversionOptions.AllFormats;
+
+            Formats.Clear();
+            foreach (var format in source)
+                Formats.Add(format);
+
+            SelectedFormat = Formats.Contains(current)
+                ? current
+                : (IsAudioOnlyMode ? "MP3" : "MP4");
         }
 
         partial void OnSelectedHardwareEncoderChanged(string value)
@@ -169,6 +227,18 @@ namespace VidDownload.WPF.ViewModels
         {
             string format = SelectedFormat ?? "MP4";
             string hwEncoder = MapHardwareEncoderDisplayToKey(SelectedHardwareEncoder ?? string.Empty);
+
+            if (IsAudioOnlyMode)
+            {
+                // В аудио-режиме видеокодек не нужен, аудиокодек определяется форматом
+                VideoCodecs.Clear();
+                string audioCodec = ConversionOptions.GetAudioCodecForAudioFormat(format);
+                AudioCodecs.Clear();
+                AudioCodecs.Add(audioCodec);
+                SelectedVideoCodec = string.Empty;
+                SelectedAudioCodec = audioCodec;
+                return;
+            }
 
             var videoList = new List<string>();
             var candidates = ConversionOptions.GetVideoCodecsForHardwareEncoder(hwEncoder);
@@ -228,14 +298,19 @@ namespace VidDownload.WPF.ViewModels
 
         private ConversionOptions BuildConversionOptions()
         {
+            return BuildConversionOptions(FilePath);
+        }
+
+        private ConversionOptions BuildConversionOptions(string inputPath)
+        {
             string format = (SelectedFormat ?? "MP4").ToLower();
             string outputDir = string.IsNullOrEmpty(OutputDirectory)
-                ? Path.GetDirectoryName(FilePath) ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                ? Path.GetDirectoryName(inputPath) ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
                 : OutputDirectory;
 
-            string fileName = !string.IsNullOrEmpty(OutputFileName)
+            string fileName = !IsBatchMode && !string.IsNullOrEmpty(OutputFileName)
                 ? OutputFileName
-                : Path.GetFileNameWithoutExtension(FilePath) + "." + format;
+                : Path.GetFileNameWithoutExtension(inputPath) + "." + format;
 
             if (!fileName.EndsWith("." + format, StringComparison.OrdinalIgnoreCase))
                 fileName += "." + format;
@@ -244,14 +319,15 @@ namespace VidDownload.WPF.ViewModels
 
             return new ConversionOptions
             {
-                InputPath = FilePath,
+                InputPath = inputPath,
                 OutputPath = outputPath,
                 OutputFormat = format,
                 VideoCodec = SelectedVideoCodec ?? "libx264",
                 AudioCodec = SelectedAudioCodec ?? "aac",
                 HardwareEncoder = MapHardwareEncoderDisplayToKey(SelectedHardwareEncoder ?? string.Empty),
-                Crf = Crf > 0 ? Crf : null,
-                VideoBitrate = VideoBitrate > 0 ? VideoBitrate : null,
+                AudioOnly = IsAudioOnlyMode,
+                Crf = !IsAudioOnlyMode && Crf > 0 ? Crf : null,
+                VideoBitrate = !IsAudioOnlyMode && VideoBitrate > 0 ? VideoBitrate : null,
                 AudioBitrate = AudioBitrate > 0 ? AudioBitrate : null,
                 Preset = SelectedPreset ?? "medium"
             };
@@ -260,6 +336,12 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private async Task ConvertAsync()
         {
+            if (IsBatchMode)
+            {
+                await ConvertBatchAsync();
+                return;
+            }
+
             if (string.IsNullOrEmpty(FilePath) || !File.Exists(FilePath))
             {
                 _messageService.Warning(_loc["SelectFileForConversion"], _loc["ErrorTitle"]);
@@ -339,6 +421,140 @@ namespace VidDownload.WPF.ViewModels
                 _cts.Cancel();
                 IsCancellable = false;
             }
+        }
+
+        // ==== Пакетная конвертация ====
+
+        /// <summary>Последовательно конвертирует все файлы списка с общим прогрессом.</summary>
+        private async Task ConvertBatchAsync()
+        {
+            var files = BatchFiles.Where(File.Exists).ToList();
+            if (files.Count == 0)
+            {
+                _messageService.Warning(_loc["BatchEmptyWarning"], _loc["WarningTitle"]);
+                return;
+            }
+
+            var optionsList = files.Select(BuildConversionOptions).ToList();
+
+            // Папка вывода одна на весь пакет
+            string? outputDir = Path.GetDirectoryName(optionsList[0].OutputPath);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                try { Directory.CreateDirectory(outputDir); }
+                catch
+                {
+                    _messageService.Error(
+                        string.Format(_loc["NoSaveFolderAccess"], outputDir), _loc["ErrorTitle"]);
+                    return;
+                }
+            }
+
+            var existing = optionsList.Where(o => File.Exists(o.OutputPath)).ToList();
+            if (existing.Count > 0 &&
+                !await _dialogService.AskAsync(_loc["BatchOverwriteAsk"], _loc["ConfirmationTitle"]))
+            {
+                optionsList = optionsList.Where(o => !existing.Contains(o)).ToList();
+                if (optionsList.Count == 0)
+                    return;
+            }
+
+            IsConverting = true;
+            IsCancellable = true;
+            _cts = new CancellationTokenSource();
+            int done = 0;
+            int failed = 0;
+
+            try
+            {
+                foreach (var options in optionsList)
+                {
+                    int index = done + 1;
+                    var progress = new Progress<DownloadProgress>(p =>
+                    {
+                        ProgressPercent = (int)Math.Round((done + p.Percent / 100.0) / optionsList.Count * 100);
+                        StatusMessage = $"[{index}/{optionsList.Count}] {Path.GetFileName(options.InputPath)} — {p.Percent}%";
+                    });
+
+                    var resultPath = await _ffmpegAction.ConvertVideoAsync(options, progress, _cts.Token);
+                    if (resultPath == null)
+                        failed++;
+                    done++;
+                }
+
+                ProgressPercent = 100;
+                StatusMessage = string.Format(_loc["BatchDone"], optionsList.Count - failed, failed);
+                await SaveSettingsAsync();
+            }
+            catch (OperationCanceledException)
+            {
+                StatusMessage = _loc["DownloadCancelled"];
+                ProgressPercent = 0;
+            }
+            catch (Exception ex)
+            {
+                _messageService.Error(string.Format(_loc["ConversionError"], ex.Message), _loc["ErrorTitle"]);
+                StatusMessage = string.Empty;
+                ProgressPercent = 0;
+            }
+            finally
+            {
+                IsCancellable = false;
+                IsConverting = false;
+                _cts?.Dispose();
+                _cts = null;
+            }
+        }
+
+        [RelayCommand]
+        private void AddBatchFiles()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Filter = _loc["VideoFileFilter"],
+                Title = _loc["SelectVideoFileDialogTitle"],
+                Multiselect = true
+            };
+
+            if (dialog.ShowDialog() != true)
+                return;
+
+            foreach (var file in dialog.FileNames)
+            {
+                if (!BatchFiles.Contains(file))
+                    BatchFiles.Add(file);
+            }
+            ConvertCommand.NotifyCanExecuteChanged();
+        }
+
+        /// <summary>Добавляет файлы в пакет (drag&drop из окна).</summary>
+        public void AddBatchFiles(IEnumerable<string> files)
+        {
+            foreach (var file in files.Where(File.Exists))
+            {
+                if (!BatchFiles.Contains(file))
+                    BatchFiles.Add(file);
+            }
+            ConvertCommand.NotifyCanExecuteChanged();
+        }
+
+        [RelayCommand]
+        private void RemoveBatchFile()
+        {
+            if (SelectedBatchFile != null)
+            {
+                BatchFiles.Remove(SelectedBatchFile);
+                SelectedBatchFile = BatchFiles.LastOrDefault();
+                ConvertCommand.NotifyCanExecuteChanged();
+            }
+        }
+
+        [RelayCommand]
+        private void ClearBatchFiles()
+        {
+            BatchFiles.Clear();
+            SelectedBatchFile = null;
+            ConvertCommand.NotifyCanExecuteChanged();
         }
 
         [RelayCommand]
@@ -433,6 +649,7 @@ namespace VidDownload.WPF.ViewModels
         {
             var settings = await _settingsService.LoadAsync().ConfigureAwait(true);
             settings.ConvertOutputFormat = SelectedFormat ?? "MP4";
+            settings.ConvertAudioOnlyMode = IsAudioOnlyMode;
             settings.ConvertVideoCodec = SelectedVideoCodec ?? "libx264";
             settings.ConvertAudioCodec = SelectedAudioCodec ?? "aac";
             settings.ConvertHardwareEncoder = MapHardwareEncoderDisplayToKey(SelectedHardwareEncoder ?? string.Empty);

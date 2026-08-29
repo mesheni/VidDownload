@@ -13,5 +13,8 @@ namespace VidDownload.WPF.Services
 
         /// <summary>Возвращает путь к скачанному файлу обновления приложения.</summary>
         Task<string> DownloadAppUpdateAsync(AppUpdateInfo info, IProgress<DownloadProgress> progress);
+
+        /// <summary>Скачивает новый Updater.exe из релиза (если ассет есть).</summary>
+        Task<string?> DownloadUpdaterUpdateAsync(AppUpdateInfo info, IProgress<DownloadProgress> progress);
     }
 }
