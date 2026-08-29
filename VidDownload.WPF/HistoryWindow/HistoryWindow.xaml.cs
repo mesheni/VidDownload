@@ -8,7 +8,7 @@ using VidDownload.WPF.ViewModels;
 
 namespace VidDownload.WPF.HistoryWindow
 {
-    public partial class HistoryWindow : System.Windows.Window
+    public partial class HistoryWindow
     {
         public string? SelectedUrl { get; private set; }
 
@@ -18,6 +18,7 @@ namespace VidDownload.WPF.HistoryWindow
         {
             InitializeComponent();
             DataContext = AppServices.ServiceProvider.GetRequiredService<HistoryViewModel>();
+            UiDialogHost.Attach(this);
 
             DownloadAgainCommand = new RelayCommand<DownloadHistoryEntry>(OnDownloadAgain);
         }
@@ -53,7 +54,7 @@ namespace VidDownload.WPF.HistoryWindow
             var availableWidth = listView.ActualWidth - SystemParameters.VerticalScrollBarWidth - 6;
             var dateWidth = 170.0;
             var statusWidth = 100.0;
-            var buttonWidth = 100.0;
+            var buttonWidth = 120.0;
 
             gridView.Columns[0].Width = dateWidth;
             gridView.Columns[2].Width = statusWidth;

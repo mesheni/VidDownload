@@ -121,6 +121,47 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private bool _hasQueueItems;
 
+        /// <summary>Предпочтение темы интерфейса (Авто/Светлая/Тёмная) — иконка-переключатель в заголовке.</summary>
+        [ObservableProperty]
+        private AppThemePreference _appTheme = AppThemePreference.Dark;
+
+        /// <summary>Иконка переключателя темы в заголовке окна.</summary>
+        public Wpf.Ui.Controls.SymbolRegular ThemeSymbol => AppTheme switch
+        {
+            AppThemePreference.Light => Wpf.Ui.Controls.SymbolRegular.WeatherSunny24,
+            AppThemePreference.Dark => Wpf.Ui.Controls.SymbolRegular.WeatherMoon24,
+            _ => Wpf.Ui.Controls.SymbolRegular.DesktopMac24
+        };
+
+        /// <summary>Подсказка переключателя темы.</summary>
+        public string ThemeTooltip => $"{_loc["AppearanceLabel"]}: {AppTheme switch
+        {
+            AppThemePreference.Light => _loc["ThemeLight"],
+            AppThemePreference.Dark => _loc["ThemeDark"],
+            _ => _loc["ThemeAuto"]
+        }}";
+
+        partial void OnAppThemeChanged(AppThemePreference value)
+        {
+            OnPropertyChanged(nameof(ThemeSymbol));
+            OnPropertyChanged(nameof(ThemeTooltip));
+        }
+
+        /// <summary>Авто → Светлая → Тёмная → Авто. Применяет и сохраняет тему.</summary>
+        [RelayCommand]
+        private void CycleAppTheme()
+        {
+            AppTheme = AppTheme switch
+            {
+                AppThemePreference.Auto => AppThemePreference.Light,
+                AppThemePreference.Light => AppThemePreference.Dark,
+                _ => AppThemePreference.Auto
+            };
+            UiThemeService.SetPreference(AppTheme);
+            if (!_isLoading)
+                RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
         /// <summary>Агрегат в заголовке секции очереди: «1 загружается · 2 в очереди».</summary>
         [ObservableProperty]
         private string _queueSummaryText = string.Empty;
@@ -596,6 +637,8 @@ namespace VidDownload.WPF.ViewModels
             _settings.RateLimit = RateLimit;
             MinimizeToTray = userSettings.MinimizeToTray;
             IsClipboardMonitorEnabled = userSettings.ClipboardMonitorEnabled;
+            AppTheme = UiThemeService.TryParse(userSettings.Appearance);
+            UiThemeService.SetPreference(AppTheme);
             _queue.MaxConcurrent = Math.Clamp(userSettings.MaxConcurrentDownloads <= 0 ? 1 : userSettings.MaxConcurrentDownloads, 1, 3);
 
             try
@@ -630,7 +673,8 @@ namespace VidDownload.WPF.ViewModels
                 RateLimit = RateLimit ?? string.Empty,
                 MaxConcurrentDownloads = _queue.MaxConcurrent,
                 MinimizeToTray = MinimizeToTray,
-                ClipboardMonitorEnabled = IsClipboardMonitorEnabled
+                ClipboardMonitorEnabled = IsClipboardMonitorEnabled,
+                Appearance = AppTheme.ToString()
             });
         }
 

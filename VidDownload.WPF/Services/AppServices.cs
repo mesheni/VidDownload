@@ -24,15 +24,23 @@ namespace VidDownload.WPF.Services
             services.AddSingleton<IUpdateService, UpdateService>();
             services.AddSingleton<IFFmpegService, FFmpegService>();
             services.AddSingleton<ISettingsService, JsonSettingsService>();
-            services.AddSingleton<IMessageService, HandyControlMessageService>();
-            services.AddSingleton<IDialogService, HandyControlDialogService>();
+            services.AddSingleton<IMessageService, FluentMessageService>();
+            services.AddSingleton<IDialogService, FluentDialogService>();
             services.AddSingleton<IDownloadHistoryService, JsonDownloadHistoryService>();
             services.AddSingleton<IClipboardMonitorService, ClipboardMonitorService>();
             services.AddSingleton<ITrayService, TrayService>();
-            services.AddSingleton(sp => new GrowlNotificationService(
+
+            // WPF-UI сервисы представления
+            services.AddSingleton<Wpf.Ui.ISnackbarService, Wpf.Ui.SnackbarService>();
+            services.AddSingleton<Wpf.Ui.IContentDialogService, Wpf.Ui.ContentDialogService>();
+
+            services.AddSingleton(sp => new SnackbarNotificationService(
+                sp.GetRequiredService<Wpf.Ui.ISnackbarService>(),
+                sp.GetRequiredService<Wpf.Ui.IContentDialogService>(),
+                localizedStrings,
                 new Lazy<ITrayService>(() => sp.GetRequiredService<ITrayService>())));
             services.AddSingleton<INotificationService>(sp =>
-                sp.GetRequiredService<GrowlNotificationService>());
+                sp.GetRequiredService<SnackbarNotificationService>());
 
             services.AddTransient<MainViewModel>();
             services.AddTransient<ConvertViewModel>();

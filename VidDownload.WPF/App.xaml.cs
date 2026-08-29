@@ -18,6 +18,19 @@ namespace VidDownload.WPF
 
             AppServices.Initialize();
 
+            // Применяем сохранённую тему до показа первого окна, чтобы не мигало
+            try
+            {
+                var settings = AppServices.ServiceProvider.GetRequiredService<ISettingsService>()
+                    .LoadAsync().GetAwaiter().GetResult();
+                UiThemeService.Initialize(UiThemeService.TryParse(settings.Appearance));
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(App), $"Theme startup failed, using dark: {ex.Message}");
+                UiThemeService.Initialize(AppThemePreference.Dark);
+            }
+
             _mainWindow = AppServices.ServiceProvider.GetRequiredService<MainWindow>();
             _mainWindow.Show();
 

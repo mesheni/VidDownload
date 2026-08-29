@@ -29,6 +29,9 @@ namespace VidDownload.WPF.Services
         /// <summary>Следить за буфером обмена и предлагать добавить ссылки в очередь.</summary>
         public bool ClipboardMonitorEnabled { get; set; }
 
+        /// <summary>Тема интерфейса: "Auto" — следовать системе, либо явные "Light"/"Dark".</summary>
+        public string Appearance { get; set; } = "Dark";
+
         public string ConvertOutputFormat { get; set; } = "MP4";
         public string ConvertVideoCodec { get; set; } = "libx264";
         public string ConvertAudioCodec { get; set; } = "aac";

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -623,5 +623,29 @@
   </data>
   <data name="RemoveItemButton" xml:space="preserve">
     <value>Убрать из списка</value>
+  </data>
+  <data name="YesButton" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="NoButton" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="OkButton" xml:space="preserve">
+    <value>ОК</value>
+  </data>
+  <data name="AppearanceLabel" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>Как в системе</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Светлая</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Тёмная</value>
+  </data>
+  <data name="PasteClipboardTooltip" xml:space="preserve">
+    <value>Вставить ссылку из буфера</value>
   </data>
 </root>

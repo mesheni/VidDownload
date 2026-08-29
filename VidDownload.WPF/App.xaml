@@ -1,28 +1,23 @@
-﻿<Application
+<Application
     x:Class="VidDownload.WPF.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:local="clr-namespace:VidDownload.WPF">
 
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml" />
-                <hc:StandaloneTheme AccentColor="#FFFFEFEF" />
-
-
-                <hc:Theme Skin="Dark" />
-
-                <hc:Theme SyncWithSystem="True"/>
-                <ResourceDictionary Source="/Themes/Colors.xaml" />
+                <!-- WPF-UI (Fluent Design). Словарь темы можно менять в рантайме через UiThemeService. -->
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+                <!-- Общие токены и стили приложения -->
+                <ResourceDictionary Source="/Themes/Shared.xaml" />
+                <ResourceDictionary Source="/Themes/Styles.xaml" />
+                <!-- Палитра поверхностей/текста; Dark.Colors.xaml подменяется на Light при смене темы -->
+                <ResourceDictionary Source="/Themes/Dark.Colors.xaml" />
             </ResourceDictionary.MergedDictionaries>
-
         </ResourceDictionary>
-
-
-
     </Application.Resources>
 
 </Application>

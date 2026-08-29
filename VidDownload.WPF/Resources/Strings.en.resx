@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -620,5 +620,29 @@ Leave 0 for auto</value>
   </data>
   <data name="RemoveItemButton" xml:space="preserve">
     <value>Remove from list</value>
+  </data>
+  <data name="YesButton" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="NoButton" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="OkButton" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="AppearanceLabel" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>Match system</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="PasteClipboardTooltip" xml:space="preserve">
+    <value>Paste URL from clipboard</value>
   </data>
 </root>

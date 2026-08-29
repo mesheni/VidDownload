@@ -1,0 +1,31 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Общие токены дизайна: шрифты, радиусы, акцент и статусы.
+         Значения статусов синхронизированы с Themes/StatusPalette.cs (для конвертеров)
+         и одинаковы для светлой и тёмной темы. Поверхности и текст — в Dark/Light.Colors.xaml. -->
+
+    <!-- Шрифты -->
+    <FontFamily x:Key="MonoFont">Cascadia Code</FontFamily>
+    <FontFamily x:Key="MonoLightFont">Cascadia Code SemiLight</FontFamily>
+    <FontFamily x:Key="IconFont">Segoe Fluent Icons</FontFamily>
+    <FontFamily x:Key="TextFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="DisplayFont">Segoe UI Variable Display, Segoe UI</FontFamily>
+
+    <!-- Радиусы скругления -->
+    <CornerRadius x:Key="SmallRadius">4</CornerRadius>
+    <CornerRadius x:Key="MediumRadius">8</CornerRadius>
+    <CornerRadius x:Key="LargeRadius">12</CornerRadius>
+    <CornerRadius x:Key="PillRadius">20</CornerRadius>
+
+    <!-- Акцент: фирменный красный VidDownload -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#E5484D"/>
+    <SolidColorBrush x:Key="AccentDarkBrush" Color="#BB2127"/>
+
+    <!-- Статусные цвета очереди/истории -->
+    <SolidColorBrush x:Key="StatusQueuedBrush" Color="#8A8A8A"/>
+    <SolidColorBrush x:Key="StatusDownloadingBrush" Color="#3574F0"/>
+    <SolidColorBrush x:Key="StatusPausedBrush" Color="#DC6803"/>
+    <SolidColorBrush x:Key="StatusCompletedBrush" Color="#34A853"/>
+    <SolidColorBrush x:Key="StatusFailedBrush" Color="#D32F2F"/>
+    <SolidColorBrush x:Key="StatusCancelledBrush" Color="#757575"/>
+</ResourceDictionary>

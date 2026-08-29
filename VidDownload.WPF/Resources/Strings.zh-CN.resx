@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -620,5 +620,29 @@
   </data>
   <data name="RemoveItemButton" xml:space="preserve">
     <value>从列表移除</value>
+  </data>
+  <data name="YesButton" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="NoButton" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="OkButton" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="AppearanceLabel" xml:space="preserve">
+    <value>主题</value>
+  </data>
+  <data name="ThemeAuto" xml:space="preserve">
+    <value>跟随系统</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>浅色</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>深色</value>
+  </data>
+  <data name="PasteClipboardTooltip" xml:space="preserve">
+    <value>从剪贴板粘贴链接</value>
   </data>
 </root>

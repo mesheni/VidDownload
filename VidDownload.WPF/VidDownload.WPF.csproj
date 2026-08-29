@@ -4,15 +4,15 @@
     <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>0.8.1</Version>
+    <Version>0.9.0</Version>
     <Company />
     <Authors>mesh</Authors>
     <Description>Программа для скачивания видео с различных платформ на основе yt-dlp.</Description>
-    <AssemblyVersion>0.8.1</AssemblyVersion>
+    <AssemblyVersion>0.9.0</AssemblyVersion>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>6.0-all</AnalysisLevel>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <FileVersion>0.8.1</FileVersion>
+    <FileVersion>0.9.0</FileVersion>
     <Copyright>mesh</Copyright>
     <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/mesheni/VidDownload</RepositoryUrl>
@@ -46,12 +46,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="HandyControl" Version="3.5.1" />
-    <PackageReference Include="HandyControl.Lang.en" Version="3.5.1" />
-    <PackageReference Include="HandyControls.Lang.ru" Version="3.6.0" />
     <PackageReference Include="H.NotifyIcon.Wpf" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
     <PackageReference Include="Octokit" Version="14.0.0" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
     <PackageReference Include="Xabe.FFmpeg" Version="6.0.2" />
   </ItemGroup>
   <ItemGroup>
