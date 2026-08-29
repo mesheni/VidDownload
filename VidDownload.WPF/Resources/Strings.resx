@@ -690,4 +690,97 @@
   <data name="TelegramLinkText" xml:space="preserve">
     <value>Telegram</value>
   </data>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="SettingsAppSection" xml:space="preserve">
+    <value>Приложение</value>
+  </data>
+  <data name="SettingsDownloadsSection" xml:space="preserve">
+    <value>Загрузки</value>
+  </data>
+  <data name="SettingsDiagnosticsSection" xml:space="preserve">
+    <value>Диагностика</value>
+  </data>
+  <data name="SettingsOpenLogsFolder" xml:space="preserve">
+    <value>Открыть папку логов</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="PostQueueActionLabel" xml:space="preserve">
+    <value>После очереди</value>
+  </data>
+  <data name="PostQueueActionHint" xml:space="preserve">
+    <value>Что сделать, когда очередь опустеет</value>
+  </data>
+  <data name="PostQueueNone" xml:space="preserve">
+    <value>Ничего</value>
+  </data>
+  <data name="PostQueueShutdown" xml:space="preserve">
+    <value>Выключение</value>
+  </data>
+  <data name="PostQueueSleep" xml:space="preserve">
+    <value>Сон</value>
+  </data>
+  <data name="PostQueueHibernate" xml:space="preserve">
+    <value>Гибернация</value>
+  </data>
+  <data name="PostQueueConfirm" xml:space="preserve">
+    <value>Очередь завершена. Выполнить «{0}»?</value>
+  </data>
+  <data name="PostQueueConfirmShutdown" xml:space="preserve">
+    <value>Очередь завершена. Выключить компьютер через 30 секунд? (отмена — команда shutdown /a)</value>
+  </data>
+  <data name="ShowMoreButton" xml:space="preserve">
+    <value>Показать ещё</value>
+  </data>
+  <data name="ExportCsvButton" xml:space="preserve">
+    <value>Экспорт CSV</value>
+  </data>
+  <data name="CsvFileFilter" xml:space="preserve">
+    <value>CSV-файл (*.csv)|*.csv</value>
+  </data>
+  <data name="HistoryExportDone" xml:space="preserve">
+    <value>История экспортирована: {0}</value>
+  </data>
+  <data name="HelpQuickStartTitle" xml:space="preserve">
+    <value>Быстрый старт</value>
+  </data>
+  <data name="HelpQuickStartText" xml:space="preserve">
+    <value>Вставьте ссылку в поле сверху (кнопка вставки или Ctrl+V), выберите разрешение, кодек и формат, при необходимости включите субтитры или аудио-режим, затем нажмите «Скачать» или Enter. Папка сохранения и лимит скорости задаются под полем ссылки. Список ссылок можно импортировать из .txt или перетащить в окно.</value>
+  </data>
+  <data name="HelpQueueTitle" xml:space="preserve">
+    <value>Очередь и плейлисты</value>
+  </data>
+  <data name="HelpQueueText" xml:space="preserve">
+    <value>Несколько ссылок ставятся в очередь и качаются до 3 штук одновременно (лимит — в настройках). Пауза сохраняет частичный файл и продолжается докачкой. Для плейлиста включите переключатель «Скачивать плейлист» — файлы сложатся в подпапку с нумерацией. В строке очереди доступны пауза, отмена, повтор и открытие папки.</value>
+  </data>
+  <data name="HelpSubsTitle" xml:space="preserve">
+    <value>Субтитры</value>
+  </data>
+  <data name="HelpSubsText" xml:space="preserve">
+    <value>Включите «Скачивать субтитры» и выберите язык («all» — все доступные). «Встроить в файл» упаковывает субтитры в контейнер (лучше всего — MP4/MKV). Автоматические субтитры скачиваются вместе с ручными.</value>
+  </data>
+  <data name="HelpConverterTitle" xml:space="preserve">
+    <value>Конвертер</value>
+  </data>
+  <data name="HelpConverterText" xml:space="preserve">
+    <value>Кнопка «Конвертер» внизу открывает окно перекодировки: форматы MP4/MKV/MOV и другие, аппаратные энкодеры NVENC/AMF/QSV, качество через CRF или битрейт. Итоговая команда ffmpeg показывается до запуска. Файл можно перетащить прямо в окно.</value>
+  </data>
+  <data name="HelpHotkeysTitle" xml:space="preserve">
+    <value>Горячие клавиши</value>
+  </data>
+  <data name="HelpHotkeysText" xml:space="preserve">
+    <value>Enter — добавить ссылку в очередь. Esc — отменить активную загрузку (с подтверждением). Переключение темы — кнопка в заголовке окна.</value>
+  </data>
+  <data name="HelpTroubleshootingTitle" xml:space="preserve">
+    <value>Решение проблем</value>
+  </data>
+  <data name="HelpTroubleshootingText" xml:space="preserve">
+    <value>Если видео не скачивается — обновите yt-dlp (кнопка проверки обновления в подвале окна). FFmpeg нужен для склейки потоков и конвертера, скачивается там же. Логи каждой загрузки лежат в %LocalAppData%\VidDownload\logs (кнопка в настройках). Приватные видео пока не поддерживаются.</value>
+  </data>
+  <data name="HelpAboutSection" xml:space="preserve">
+    <value>О программе</value>
+  </data>
 </root>

@@ -68,9 +68,6 @@ namespace VidDownload.WPF.ViewModels
         private string _linkLabelText = LocalizedStrings.Instance["LinkLabelVideo"];
 
         [ObservableProperty]
-        private string _selectedLanguage = "RU";
-
-        [ObservableProperty]
         private string _ffmpegVersion = LocalizedStrings.Instance["FFmpegChecking"];
 
         [ObservableProperty]
@@ -111,12 +108,6 @@ namespace VidDownload.WPF.ViewModels
 
         [ObservableProperty]
         private bool _minimizeToTray;
-
-        [ObservableProperty]
-        private int _maxConcurrentDownloads = 1;
-
-        [ObservableProperty]
-        private bool _isClipboardMonitorEnabled;
 
         [ObservableProperty]
         private bool _hasActiveDownloads;
@@ -192,11 +183,6 @@ namespace VidDownload.WPF.ViewModels
 
         public IDownloadQueueService Queue => _queue;
 
-        public ObservableCollection<string> AvailableLanguages { get; } = new()
-        {
-            "RU", "EN", "ZH"
-        };
-
         public ObservableCollection<string> Resolutions { get; } = new()
         {
             "", "144", "240", "360", "480", "720", "1080", "1440", "2160"
@@ -221,6 +207,16 @@ namespace VidDownload.WPF.ViewModels
         {
             "", "all", "en", "ru", "de", "fr", "es", "ja", "zh-Hans", "ar", "pt"
         };
+
+        /// <summary>Ключи действий «после очереди» — индекс синхронен с PostQueueActionItems.</summary>
+        private static readonly string[] PostQueueActionKeys = { "", "Shutdown", "Sleep", "Hibernate" };
+
+        /// <summary>Локализованные подписи действий «после очереди» (пересобирается при смене языка).</summary>
+        public ObservableCollection<string> PostQueueActionItems { get; } = new();
+
+        /// <summary>Выбранное действие после завершения очереди (индекс в PostQueueActionItems).</summary>
+        [ObservableProperty]
+        private int _selectedPostQueueIndex;
 
         public MainViewModel(
             IUpdateService updateService,
@@ -256,6 +252,8 @@ namespace VidDownload.WPF.ViewModels
             };
 
             _clipboardMonitor.UrlDetected += OnClipboardUrlDetected;
+            _loc.PropertyChanged += OnLocalizedStringsChanged;
+            BuildPostQueueActionItems();
 
             RunSafe(CheckUpdateAsync, nameof(CheckUpdateAsync));
             RunSafe(CheckFFmpegUpdateAsync, nameof(CheckFFmpegUpdateAsync));
@@ -293,6 +291,33 @@ namespace VidDownload.WPF.ViewModels
             LinkLabelText = value ? _loc["LinkLabelPlaylist"] : _loc["LinkLabelVideo"];
         }
 
+        private void OnLocalizedStringsChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(e.PropertyName))
+                BuildPostQueueActionItems();
+        }
+
+        private void BuildPostQueueActionItems()
+        {
+            int selected = SelectedPostQueueIndex;
+            PostQueueActionItems.Clear();
+            PostQueueActionItems.Add(_loc["PostQueueNone"]);
+            PostQueueActionItems.Add(_loc["PostQueueShutdown"]);
+            PostQueueActionItems.Add(_loc["PostQueueSleep"]);
+            PostQueueActionItems.Add(_loc["PostQueueHibernate"]);
+            SelectedPostQueueIndex = selected;
+        }
+
+        partial void OnSelectedPostQueueIndexChanged(int value)
+        {
+            if (_isLoading)
+                return;
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
+        /// <summary>Ключ выбранного действия после очереди ("", Shutdown, Sleep, Hibernate).</summary>
+        private string PostQueueAction => PostQueueActionKeys[Math.Clamp(SelectedPostQueueIndex, 0, PostQueueActionKeys.Length - 1)];
+
         partial void OnIsReEncodeChanged(bool value)
         {
             if (value)
@@ -304,17 +329,6 @@ namespace VidDownload.WPF.ViewModels
             {
                 Formats.Remove("mov");
             }
-        }
-
-        partial void OnSelectedLanguageChanged(string value)
-        {
-            if (_isLoading)
-                return;
-            if (_loc.CurrentLanguage == value.ToUpper())
-                return;
-            _loc.SetLanguage(value.ToLower());
-            RefreshActivity();
-            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
         }
 
         partial void OnSavePathTextChanged(string value)
@@ -337,28 +351,6 @@ namespace VidDownload.WPF.ViewModels
         {
             if (_isLoading)
                 return;
-            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
-        }
-
-        partial void OnIsClipboardMonitorEnabledChanged(bool value)
-        {
-            if (_isLoading)
-                return;
-            _clipboardMonitor.IsEnabled = value;
-            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
-        }
-
-        partial void OnMaxConcurrentDownloadsChanged(int value)
-        {
-            if (_isLoading)
-                return;
-            var clamped = Math.Clamp(value <= 0 ? 1 : value, 1, 3);
-            if (clamped != value)
-            {
-                MaxConcurrentDownloads = clamped;
-                return;
-            }
-            _queue.MaxConcurrent = clamped;
             RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
         }
 
@@ -564,6 +556,51 @@ namespace VidDownload.WPF.ViewModels
             RefreshActivity();
             _notifications.Success(string.Format(_loc["DownloadCompleteNotify"], item.DisplayTitle));
             RunSafe(() => AddHistoryAsync(item, DownloadStatus.Completed), nameof(AddHistoryAsync));
+            RunSafe(CheckPostQueueActionAsync, nameof(CheckPostQueueActionAsync));
+        }
+
+        /// <summary>
+        /// Действие после очереди (выключение/сон/гибернация): спрашивает подтверждение,
+        /// когда после завершения загрузки в очереди не осталось активных элементов.
+        /// </summary>
+        private async Task CheckPostQueueActionAsync()
+        {
+            if (PostQueueAction.Length == 0)
+                return;
+
+            if (_queue.Items.Any(i => i.Status is DownloadItemStatus.Downloading
+                or DownloadItemStatus.Queued
+                or DownloadItemStatus.Paused))
+                return;
+
+            string actionName = PostQueueActionItems[Math.Clamp(SelectedPostQueueIndex, 0, PostQueueActionItems.Count - 1)];
+            string message = PostQueueAction == "Shutdown"
+                ? _loc["PostQueueConfirmShutdown"]
+                : string.Format(_loc["PostQueueConfirm"], actionName);
+
+            if (!await _dialogService.AskAsync(message, _loc["ConfirmationTitle"]))
+                return;
+
+            try
+            {
+                switch (PostQueueAction)
+                {
+                    case "Shutdown":
+                        // 30 секунд на отмену: shutdown /a
+                        Process.Start("shutdown", "/s /t 30");
+                        break;
+                    case "Sleep":
+                        Process.Start("rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0");
+                        break;
+                    case "Hibernate":
+                        Process.Start("rundll32.exe", "powrprof.dll,SetSuspendState 1,1,0");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(MainViewModel), $"Post-queue action failed: {ex.Message}");
+            }
         }
 
         private void OnItemFailed(object? sender, DownloadItem item)
@@ -645,6 +682,15 @@ namespace VidDownload.WPF.ViewModels
         }
 
         [RelayCommand]
+        private void OpenSettings()
+        {
+            var settings = AppServices.ServiceProvider.GetRequiredService<SettingsWindow.SettingsWindow>();
+            settings.Owner = System.Windows.Application.Current.MainWindow;
+            if (settings.ShowDialog() == true)
+                RunSafe(LoadSettingsAsync, nameof(LoadSettingsAsync));
+        }
+
+        [RelayCommand]
         private void OpenHelp()
         {
             var help = AppServices.ServiceProvider.GetRequiredService<HelpWindow>();
@@ -693,10 +739,7 @@ namespace VidDownload.WPF.ViewModels
                 SelectedSubtitleLanguage = userSettings.SubtitleLanguage;
             IsEmbedSubtitles = userSettings.EmbedSubtitles;
             if (!string.IsNullOrEmpty(userSettings.Language))
-            {
-                SelectedLanguage = userSettings.Language;
                 _loc.SetLanguage(userSettings.Language.ToLower());
-            }
             _savePath = !string.IsNullOrEmpty(userSettings.SavePath)
                 ? userSettings.SavePath
                 : UserSettings.DefaultDownloadPath;
@@ -704,11 +747,13 @@ namespace VidDownload.WPF.ViewModels
             RateLimit = userSettings.RateLimit ?? string.Empty;
             _settings.RateLimit = RateLimit;
             MinimizeToTray = userSettings.MinimizeToTray;
-            IsClipboardMonitorEnabled = userSettings.ClipboardMonitorEnabled;
             AppTheme = UiThemeService.TryParse(userSettings.Appearance);
             UiThemeService.SetPreference(AppTheme);
-            MaxConcurrentDownloads = Math.Clamp(userSettings.MaxConcurrentDownloads <= 0 ? 1 : userSettings.MaxConcurrentDownloads, 1, 3);
-            _queue.MaxConcurrent = MaxConcurrentDownloads;
+            _queue.MaxConcurrent = Math.Clamp(userSettings.MaxConcurrentDownloads <= 0 ? 1 : userSettings.MaxConcurrentDownloads, 1, 3);
+            _clipboardMonitor.IsEnabled = userSettings.ClipboardMonitorEnabled;
+            int postQueueIndex = Array.IndexOf(PostQueueActionKeys,
+                string.IsNullOrEmpty(userSettings.PostQueueAction) ? string.Empty : userSettings.PostQueueAction);
+            SelectedPostQueueIndex = postQueueIndex < 0 ? 0 : postQueueIndex;
 
             try
             {
@@ -725,26 +770,29 @@ namespace VidDownload.WPF.ViewModels
             _isLoading = false;
         }
 
+        /// <summary>
+        /// Сохраняет только поля, которыми владеет главное окно (параметры загрузки, папка,
+        /// лимит скорости, тема). Остальное (язык, трей, буфер, конвертер) читается из файла —
+        /// так одновременные правки из окна настроек и конвертера не затираются.
+        /// </summary>
         private async Task SaveSettingsAsync()
         {
             ApplySelectionsToSettings();
-            await _settingsService.SaveAsync(new UserSettings
-            {
-                Resolution = _settings.Resolution,
-                VideoCodec = _settings.VideoCodec,
-                AudioCodec = _settings.AudioCodec,
-                Format = _settings.Format,
-                DownloadSubtitles = _settings.DownloadSubtitles,
-                SubtitleLanguage = _settings.SubtitleLanguage,
-                EmbedSubtitles = _settings.EmbedSubtitles,
-                SavePath = _savePath,
-                Language = SelectedLanguage,
-                RateLimit = RateLimit ?? string.Empty,
-                MaxConcurrentDownloads = _queue.MaxConcurrent,
-                MinimizeToTray = MinimizeToTray,
-                ClipboardMonitorEnabled = IsClipboardMonitorEnabled,
-                Appearance = AppTheme.ToString()
-            });
+
+            var settings = await _settingsService.LoadAsync().ConfigureAwait(true);
+            settings.Resolution = _settings.Resolution;
+            settings.VideoCodec = _settings.VideoCodec;
+            settings.AudioCodec = _settings.AudioCodec;
+            settings.Format = _settings.Format;
+            settings.DownloadSubtitles = _settings.DownloadSubtitles;
+            settings.SubtitleLanguage = _settings.SubtitleLanguage;
+            settings.EmbedSubtitles = _settings.EmbedSubtitles;
+            settings.SavePath = _savePath;
+            settings.RateLimit = RateLimit ?? string.Empty;
+            settings.Appearance = AppTheme.ToString();
+            settings.MinimizeToTray = MinimizeToTray;
+            settings.PostQueueAction = PostQueueAction;
+            await _settingsService.SaveAsync(settings).ConfigureAwait(true);
         }
 
         // ==== Обновление FFmpeg ====

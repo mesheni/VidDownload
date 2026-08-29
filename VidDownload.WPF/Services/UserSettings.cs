@@ -23,6 +23,9 @@ namespace VidDownload.WPF.Services
         /// <summary>Максимум одновременных загрузок очереди (1–3).</summary>
         public int MaxConcurrentDownloads { get; set; } = 1;
 
+        /// <summary>Действие после завершения очереди: "" — ничего, Shutdown/Sleep/Hibernate.</summary>
+        public string PostQueueAction { get; set; } = string.Empty;
+
         /// <summary>Сворачивать приложение в трей при закрытии окна вместо выхода.</summary>
         public bool MinimizeToTray { get; set; }
 

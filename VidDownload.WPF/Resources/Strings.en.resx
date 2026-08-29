@@ -687,4 +687,97 @@ Leave 0 for auto</value>
   <data name="TelegramLinkText" xml:space="preserve">
     <value>Telegram</value>
   </data>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsAppSection" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="SettingsDownloadsSection" xml:space="preserve">
+    <value>Downloads</value>
+  </data>
+  <data name="SettingsDiagnosticsSection" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
+  <data name="SettingsOpenLogsFolder" xml:space="preserve">
+    <value>Open logs folder</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="PostQueueActionLabel" xml:space="preserve">
+    <value>After queue</value>
+  </data>
+  <data name="PostQueueActionHint" xml:space="preserve">
+    <value>What to do when the queue becomes empty</value>
+  </data>
+  <data name="PostQueueNone" xml:space="preserve">
+    <value>Nothing</value>
+  </data>
+  <data name="PostQueueShutdown" xml:space="preserve">
+    <value>Shut down</value>
+  </data>
+  <data name="PostQueueSleep" xml:space="preserve">
+    <value>Sleep</value>
+  </data>
+  <data name="PostQueueHibernate" xml:space="preserve">
+    <value>Hibernate</value>
+  </data>
+  <data name="PostQueueConfirm" xml:space="preserve">
+    <value>The queue is finished. Perform "{0}"?</value>
+  </data>
+  <data name="PostQueueConfirmShutdown" xml:space="preserve">
+    <value>The queue is finished. Shut down the PC in 30 seconds? (cancel with: shutdown /a)</value>
+  </data>
+  <data name="ShowMoreButton" xml:space="preserve">
+    <value>Show more</value>
+  </data>
+  <data name="ExportCsvButton" xml:space="preserve">
+    <value>Export CSV</value>
+  </data>
+  <data name="CsvFileFilter" xml:space="preserve">
+    <value>CSV file (*.csv)|*.csv</value>
+  </data>
+  <data name="HistoryExportDone" xml:space="preserve">
+    <value>History exported: {0}</value>
+  </data>
+  <data name="HelpQuickStartTitle" xml:space="preserve">
+    <value>Quick start</value>
+  </data>
+  <data name="HelpQuickStartText" xml:space="preserve">
+    <value>Paste a link into the field above (paste button or Ctrl+V), pick resolution, codec and container, optionally enable subtitles or audio-only mode, then press "Download" or Enter. The output folder and speed limit are set below the link field. A list of links can be imported from .txt or dragged into the window.</value>
+  </data>
+  <data name="HelpQueueTitle" xml:space="preserve">
+    <value>Queue and playlists</value>
+  </data>
+  <data name="HelpQueueText" xml:space="preserve">
+    <value>Multiple links are queued and up to 3 download in parallel (the limit is in Settings). Pause keeps the partial file and resumes later. For playlists enable the "Download playlist" switch — files go into a numbered subfolder. Each queue row offers pause, cancel, retry and opening the folder.</value>
+  </data>
+  <data name="HelpSubsTitle" xml:space="preserve">
+    <value>Subtitles</value>
+  </data>
+  <data name="HelpSubsText" xml:space="preserve">
+    <value>Enable "Download subtitles" and pick a language ("all" — every language available). "Embed into file" packs subtitles into the container (MP4/MKV work best). Auto-generated subtitles are downloaded along with manual ones.</value>
+  </data>
+  <data name="HelpConverterTitle" xml:space="preserve">
+    <value>Converter</value>
+  </data>
+  <data name="HelpConverterText" xml:space="preserve">
+    <value>The "Converter" button at the bottom opens the transcoding window: MP4/MKV/MOV and other containers, NVENC/AMF/QSV hardware encoders, quality via CRF or bitrate. The final ffmpeg command is previewed before running. Files can be dragged into the window.</value>
+  </data>
+  <data name="HelpHotkeysTitle" xml:space="preserve">
+    <value>Keyboard shortcuts</value>
+  </data>
+  <data name="HelpHotkeysText" xml:space="preserve">
+    <value>Enter — add the link to the queue. Esc — cancel the active download (with confirmation). Theme switching — the button in the window title bar.</value>
+  </data>
+  <data name="HelpTroubleshootingTitle" xml:space="preserve">
+    <value>Troubleshooting</value>
+  </data>
+  <data name="HelpTroubleshootingText" xml:space="preserve">
+    <value>If a video fails to download, update yt-dlp (the update check button in the window footer). FFmpeg is required for stream merging and the converter and is downloaded there too. Per-download logs live in %LocalAppData%\VidDownload\logs (button in Settings). Private videos are not supported yet.</value>
+  </data>
+  <data name="HelpAboutSection" xml:space="preserve">
+    <value>About</value>
+  </data>
 </root>

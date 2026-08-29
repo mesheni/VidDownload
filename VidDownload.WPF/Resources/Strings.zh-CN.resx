@@ -687,4 +687,97 @@
   <data name="TelegramLinkText" xml:space="preserve">
     <value>Telegram</value>
   </data>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="SettingsAppSection" xml:space="preserve">
+    <value>应用程序</value>
+  </data>
+  <data name="SettingsDownloadsSection" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="SettingsDiagnosticsSection" xml:space="preserve">
+    <value>诊断</value>
+  </data>
+  <data name="SettingsOpenLogsFolder" xml:space="preserve">
+    <value>打开日志文件夹</value>
+  </data>
+  <data name="SaveButton" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="PostQueueActionLabel" xml:space="preserve">
+    <value>队列完成后</value>
+  </data>
+  <data name="PostQueueActionHint" xml:space="preserve">
+    <value>队列清空后执行的操作</value>
+  </data>
+  <data name="PostQueueNone" xml:space="preserve">
+    <value>无操作</value>
+  </data>
+  <data name="PostQueueShutdown" xml:space="preserve">
+    <value>关机</value>
+  </data>
+  <data name="PostQueueSleep" xml:space="preserve">
+    <value>睡眠</value>
+  </data>
+  <data name="PostQueueHibernate" xml:space="preserve">
+    <value>休眠</value>
+  </data>
+  <data name="PostQueueConfirm" xml:space="preserve">
+    <value>队列已完成。执行“{0}”？</value>
+  </data>
+  <data name="PostQueueConfirmShutdown" xml:space="preserve">
+    <value>队列已完成。将在 30 秒后关机？（取消命令：shutdown /a）</value>
+  </data>
+  <data name="ShowMoreButton" xml:space="preserve">
+    <value>显示更多</value>
+  </data>
+  <data name="ExportCsvButton" xml:space="preserve">
+    <value>导出 CSV</value>
+  </data>
+  <data name="CsvFileFilter" xml:space="preserve">
+    <value>CSV 文件 (*.csv)|*.csv</value>
+  </data>
+  <data name="HistoryExportDone" xml:space="preserve">
+    <value>历史已导出：{0}</value>
+  </data>
+  <data name="HelpQuickStartTitle" xml:space="preserve">
+    <value>快速上手</value>
+  </data>
+  <data name="HelpQuickStartText" xml:space="preserve">
+    <value>将链接粘贴到顶部输入框（粘贴按钮或 Ctrl+V），选择分辨率、编码器和容器，按需开启字幕或纯音频模式，然后点击“下载”或按 Enter。保存文件夹和限速在链接输入框下方设置。也可以从 .txt 导入链接列表，或直接拖入窗口。</value>
+  </data>
+  <data name="HelpQueueTitle" xml:space="preserve">
+    <value>队列与播放列表</value>
+  </data>
+  <data name="HelpQueueText" xml:space="preserve">
+    <value>多个链接会进入队列，最多 3 个并行下载（上限在设置中调整）。暂停会保留已下载部分并支持续传。开启“下载播放列表”开关后，文件会按编号存入子文件夹。队列每行提供暂停、取消、重试和打开文件夹。</value>
+  </data>
+  <data name="HelpSubsTitle" xml:space="preserve">
+    <value>字幕</value>
+  </data>
+  <data name="HelpSubsText" xml:space="preserve">
+    <value>开启“下载字幕”并选择语言（“all”表示所有可用语言）。“嵌入文件”会将字幕打包进容器（MP4/MKV 效果最佳）。自动生成字幕会与手动字幕一起下载。</value>
+  </data>
+  <data name="HelpConverterTitle" xml:space="preserve">
+    <value>转换器</value>
+  </data>
+  <data name="HelpConverterText" xml:space="preserve">
+    <value>底部的“转换器”按钮打开转码窗口：支持 MP4/MKV/MOV 等容器、NVENC/AMF/QSV 硬件编码器、CRF 或码率质量控制。运行前会预览最终的 ffmpeg 命令。可将文件直接拖入窗口。</value>
+  </data>
+  <data name="HelpHotkeysTitle" xml:space="preserve">
+    <value>快捷键</value>
+  </data>
+  <data name="HelpHotkeysText" xml:space="preserve">
+    <value>Enter — 将链接加入队列。Esc — 取消当前下载（需确认）。切换主题 — 窗口标题栏按钮。</value>
+  </data>
+  <data name="HelpTroubleshootingTitle" xml:space="preserve">
+    <value>故障排除</value>
+  </data>
+  <data name="HelpTroubleshootingText" xml:space="preserve">
+    <value>如果视频无法下载，请更新 yt-dlp（窗口底部的更新检查按钮）。FFmpeg 用于合并流和转换器，也可在那里下载。每次下载的日志位于 %LocalAppData%\VidDownload\logs（设置中有打开按钮）。暂不支持私密视频。</value>
+  </data>
+  <data name="HelpAboutSection" xml:space="preserve">
+    <value>关于程序</value>
+  </data>
 </root>

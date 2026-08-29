@@ -44,6 +44,14 @@
             <ui:TitleBar.TrailingContent>
                 <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
                     <ui:Button Appearance="Transparent"
+                               Command="{Binding OpenSettingsCommand}"
+                               ToolTip="{Binding LocalizedStrings[SettingsWindowTitle]}"
+                               AutomationProperties.Name="{Binding LocalizedStrings[SettingsWindowTitle]}">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="Settings24"/>
+                        </ui:Button.Icon>
+                    </ui:Button>
+                    <ui:Button Appearance="Transparent"
                                Command="{Binding CycleAppThemeCommand}"
                                ToolTip="{Binding ThemeTooltip}"
                                AutomationProperties.Name="{Binding ThemeTooltip}">
@@ -55,11 +63,8 @@
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
 
-        <!-- ═══ Ссылка: поле с подсказкой и кнопкой очистки + язык ═══ -->
+        <!-- ═══ Ссылка: поле с подсказкой и кнопкой очистки + импорт/вставка ═══ -->
         <DockPanel Grid.Row="1" LastChildFill="True" Margin="12,4,12,0">
-            <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding AvailableLanguages}" SelectedItem="{Binding SelectedLanguage}"
-                      Width="68" Height="44" Margin="8,0,0,0" VerticalAlignment="Top" FontSize="12" Padding="8,0,0,0"
-                      AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
             <Button DockPanel.Dock="Right" Width="44" Height="44" Margin="8,0,0,0" VerticalAlignment="Top"
                     Command="{Binding ImportListCommand}" FontFamily="{StaticResource IconFont}" FontSize="14"
                     Content="&#xE8FD;"
@@ -92,13 +97,6 @@
                             FontSize="12.5" FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"
                             ToolTip="{Binding LocalizedStrings[RateLimitHint]}"
                             AutomationProperties.Name="{Binding LocalizedStrings[RateLimitLabel]}"/>
-                <TextBlock Text="{Binding LocalizedStrings[MaxConcurrentLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="18,0,7,0"
-                           ToolTip="{Binding LocalizedStrings[MaxConcurrentHint]}"
-                           AutomationProperties.Name="{Binding LocalizedStrings[MaxConcurrentLabel]}"/>
-                <ui:NumberBox Value="{Binding MaxConcurrentDownloads, UpdateSourceTrigger=PropertyChanged}" Width="72" Height="32"
-                              Minimum="1" Maximum="3" SmallChange="1" ClearButtonEnabled="False"
-                              ToolTip="{Binding LocalizedStrings[MaxConcurrentHint]}"
-                              AutomationProperties.Name="{Binding LocalizedStrings[MaxConcurrentLabel]}"/>
             </StackPanel>
         </DockPanel>
 
@@ -152,11 +150,6 @@
                                   AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
                         <CheckBox IsChecked="{Binding IsEmbedSubtitles}" Content="{Binding LocalizedStrings[EmbedSubtitles]}" FontSize="13" Margin="10,0,0,0"/>
                     </StackPanel>
-
-                    <Line X1="0" X2="300" Y1="0" Y2="0" Stroke="{DynamicResource LineBrush}" StrokeThickness="1" Stretch="Uniform" Margin="0,7"/>
-
-                    <ui:ToggleSwitch IsChecked="{Binding IsClipboardMonitorEnabled}" Content="{Binding LocalizedStrings[ClipboardMonitorLabel]}" FontSize="13" Margin="0,2"/>
-                    <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray}" Content="{Binding LocalizedStrings[MinimizeToTrayLabel]}" FontSize="13" Margin="0,2"/>
                 </StackPanel>
             </Border>
         </Grid>
@@ -186,9 +179,19 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding LocalizedStrings[QueueSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="0" VerticalAlignment="Center"/>
-            <TextBlock Grid.Column="2" Text="{Binding QueueSummaryText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="2" Text="{Binding QueueSummaryText}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{Binding LocalizedStrings[PostQueueActionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12" Margin="0,0,6,0"
+                           ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
+                           AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
+                <ComboBox ItemsSource="{Binding PostQueueActionItems}" SelectedIndex="{Binding SelectedPostQueueIndex}"
+                          Width="112" MinHeight="26" FontSize="12"
+                          ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
+                          AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
+            </StackPanel>
         </Grid>
 
         <!-- ═══ Очередь + футер ═══ -->

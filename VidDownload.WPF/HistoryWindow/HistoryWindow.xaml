@@ -129,10 +129,17 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <ui:Button Content="{Binding LocalizedStrings[ClearHistoryButton]}" Command="{Binding ClearHistoryCommand}"
                        Appearance="Danger" MinWidth="150" Height="34" FontSize="13"/>
-            <ui:Button Grid.Column="2" Content="{Binding LocalizedStrings[CloseButton]}" Click="CloseButton_Click"
+            <ui:Button Grid.Column="2" Content="{Binding LocalizedStrings[ShowMoreButton]}" Command="{Binding LoadMoreCommand}"
+                       Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"
+                       Visibility="{Binding CanLoadMore, Converter={StaticResource BoolToVis}}"/>
+            <ui:Button Grid.Column="3" Content="{Binding LocalizedStrings[ExportCsvButton]}" Command="{Binding ExportCsvCommand}"
+                       Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"/>
+            <ui:Button Grid.Column="4" Content="{Binding LocalizedStrings[CloseButton]}" Click="CloseButton_Click"
                        Appearance="Secondary" MinWidth="110" Height="34" FontSize="13"/>
         </Grid>
 

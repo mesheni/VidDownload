@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[HelpWindowTitle], FallbackValue=VidDownload}" ResizeMode="NoResize"
-        WindowStartupLocation="CenterScreen" Width="520" Height="470" Icon="/icon.png"
+        Title="{Binding LocalizedStrings[HelpWindowTitle], FallbackValue=VidDownload}" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen" Width="560" Height="680" MinWidth="480" MinHeight="420" Icon="/icon.png"
         ExtendsContentIntoTitleBar="True">
     <Grid>
         <Grid.RowDefinitions>
@@ -19,49 +19,108 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="24,8,24,20">
 
-                <!-- Логотип и название -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
-                    <Border CornerRadius="9" Padding="4" Background="{DynamicResource SurfaceBgrBrush}"
-                            BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
-                        <Image Source="/icon.png" Width="40" Height="40"/>
-                    </Border>
-                </StackPanel>
+                <TextBlock Text="{Binding LocalizedStrings[HelpWindowTitle]}" FontFamily="{StaticResource DisplayFont}" FontSize="17"
+                           FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,10"/>
 
-                <!-- Автор -->
-                <TextBlock Text="{Binding LocalizedStrings[HelpAuthorLabel]}" FontFamily="{StaticResource DisplayFont}" FontSize="15"
-                           FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-
-                <!-- Версия в бейдже -->
-                <Border HorizontalAlignment="Center" CornerRadius="{StaticResource PillRadius}" Padding="13,3" Margin="0,8,0,0"
-                        Background="{DynamicResource SurfaceBgrElevatedBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
-                    <TextBlock FontFamily="{StaticResource MonoFont}" FontSize="12">
-                        <Run Text="v"/>
-                        <Run Text="{Binding AppVersion, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
-                    </TextBlock>
+                <!-- Быстрый старт -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpQuickStartTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpQuickStartText]}" TextWrapping="Wrap" FontSize="12.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                    </StackPanel>
                 </Border>
 
-                <!-- Ссылки -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0">
-                    <ui:Button Appearance="Secondary" Height="32" Padding="12,0" Margin="0,0,8,0" FontSize="12" Click="Hyperlink_Vk_Click"
-                               Content="{Binding LocalizedStrings[TelegramLinkText]}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Globe24" FontSize="13"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button Appearance="Secondary" Height="32" Padding="12,0" FontSize="12" Click="Hyperlink_Gh_Click"
-                               Content="{Binding LocalizedStrings[GitHubLinkText]}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="OpenFolder24" FontSize="13"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                </StackPanel>
+                <!-- Очередь и плейлисты -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpQueueTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpQueueText]}" TextWrapping="Wrap" FontSize="12.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                    </StackPanel>
+                </Border>
 
-                <!-- Изображение автора канала -->
-                <Border CornerRadius="{StaticResource MediumRadius}" ClipToBounds="True" Margin="0,14,0,0"
-                        BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
-                        Cursor="Hand" MouseLeftButtonDown="imgJojack_MouseLeftButtonDown"
-                        ToolTip="https://vk.com/jojacki">
-                    <Image x:Name="imgJojack" Source="/jojack.jpg" Height="168" Stretch="Uniform"/>
+                <!-- Субтитры -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpSubsTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpSubsText]}" TextWrapping="Wrap" FontSize="12.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Конвертер -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpConverterTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpConverterText]}" TextWrapping="Wrap" FontSize="12.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Горячие клавиши -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpHotkeysTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpHotkeysText]}" TextWrapping="Wrap" FontSize="12.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Решение проблем -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpTroubleshootingTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpTroubleshootingText]}" TextWrapping="Wrap" FontSize="12.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- О программе -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,10">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpAboutSection]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,8"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2,0,0">
+                            <Border CornerRadius="9" Padding="4" Background="{DynamicResource SurfaceBgrBrush}"
+                                    BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
+                                <Image Source="/icon.png" Width="40" Height="40"/>
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding LocalizedStrings[HelpAuthorLabel]}" FontFamily="{StaticResource DisplayFont}" FontSize="15"
+                                   FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+
+                        <Border HorizontalAlignment="Center" CornerRadius="{StaticResource PillRadius}" Padding="13,3" Margin="0,8,0,0"
+                                Background="{DynamicResource SurfaceBgrElevatedBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
+                            <TextBlock FontFamily="{StaticResource MonoFont}" FontSize="12">
+                                <Run Text="v"/>
+                                <Run Text="{Binding AppVersion, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
+                            </TextBlock>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0">
+                            <ui:Button Appearance="Secondary" Height="32" Padding="12,0" Margin="0,0,8,0" FontSize="12" Click="Hyperlink_Vk_Click"
+                                       Content="{Binding LocalizedStrings[TelegramLinkText]}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="Globe24" FontSize="13"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
+                            <ui:Button Appearance="Secondary" Height="32" Padding="12,0" FontSize="12" Click="Hyperlink_Gh_Click"
+                                       Content="{Binding LocalizedStrings[GitHubLinkText]}">
+                                <ui:Button.Icon>
+                                    <ui:SymbolIcon Symbol="OpenFolder24" FontSize="13"/>
+                                </ui:Button.Icon>
+                            </ui:Button>
+                        </StackPanel>
+
+                        <Border CornerRadius="{StaticResource MediumRadius}" ClipToBounds="True" Margin="0,14,0,0"
+                                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
+                                Cursor="Hand" MouseLeftButtonDown="imgJojack_MouseLeftButtonDown"
+                                ToolTip="https://vk.com/jojacki">
+                            <Image x:Name="imgJojack" Source="/jojack.jpg" Height="168" Stretch="Uniform"/>
+                        </Border>
+                    </StackPanel>
                 </Border>
 
                 <ui:ContentDialogHost x:Name="RootContentDialog" Panel.ZIndex="50"/>
