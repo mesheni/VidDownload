@@ -22,6 +22,7 @@
 - История загрузок с реальными названиями видео и повторным скачиванием
 - Сохранение настроек между сессиями (JSON, атомарная запись)
 - Переключение языка интерфейса на лету (RU / EN / ZH)
+- Темы оформления: Авто (по системе) / Светлая / Тёмная — переключатель в заголовке окна
 - Логирование операций
 
 ---
@@ -43,6 +44,7 @@
 | `Updater/` | Консольный помощник автообновления (net10.0, single-file, с проверкой PE-подписности) |
 | `VidDownload.Tests/` | Модульные тесты xUnit (парсер прогресса, версии, аргументы yt-dlp, очередь загрузок) |
 | `Setup.wxs` | Описание MSI-инсталлятора (WiX v7) |
+| `CHANGELOG.md` | История версий |
 | `build-installer.ps1` | Скрипт сборки MSI |
 | `.github/workflows/` | CI/CD: MSI + portable `.exe` при push тега `v*` |
 
@@ -57,12 +59,13 @@
   - `FFmpegService` — проверка/загрузка обновлений FFmpeg
   - `SettingsService` — сохранение настроек в JSON (атомарно)
   - `DownloadHistoryService` — история загрузок (JSON, атомарно)
-  - `TrayService` / `ClipboardMonitorService` / `GrowlNotificationService` — трей, буфер обмена, уведомления
+  - `TrayService` / `ClipboardMonitorService` / `SnackbarNotificationService` — трей, буфер обмена, уведомления (Snackbar + balloon в трей)
   - `NetworkHelper` — общий HttpClient, проверка интернета, безопасное скачивание файлов (проверка HTTP-статуса, temp+move)
-  - `MessageService` / `DialogService` — абстракция над HandyControl
+  - `FluentMessageService` / `FluentDialogService` — неблокирующие сообщения и диалоги поверх ContentDialog (WPF-UI)
+  - `UiThemeService` / `UiDialogHost` — тема Авто/Светлая/Тёмная и хостинг ContentDialog в дочерних окнах
   - `LocalizationService` — переключение языка во время выполнения
 - **ViewModels**: `MainViewModel`, `ConvertViewModel`, `HistoryViewModel`
-- **UI-библиотека**: HandyControl 3.5, трей — H.NotifyIcon.Wpf
+- **UI-библиотека**: WPF-UI 4.3 (Fluent Design, Mica), трей — H.NotifyIcon.Wpf
 
 ---
 
