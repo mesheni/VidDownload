@@ -46,14 +46,20 @@
     <Grid Margin="14,4,14,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[HistoryWindowTitle]}"/>
 
-        <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="0" Margin="0,6,0,0">
-            <ListView ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}"
+        <ui:TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                    PlaceholderText="{Binding LocalizedStrings[HistorySearchPlaceholder]}"
+                    MinHeight="32" Margin="0,6,0,0" FontSize="12.5" ClearButtonEnabled="True"
+                    AutomationProperties.Name="{Binding LocalizedStrings[HistorySearchPlaceholder]}"/>
+
+        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="0" Margin="0,8,0,0">
+            <ListView ItemsSource="{Binding EntriesView}" SelectedItem="{Binding SelectedEntry}"
                       BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
                       FontSize="13"
                       ItemContainerStyle="{StaticResource HistoryRow}"
@@ -91,11 +97,25 @@
                         <GridViewColumn Header="" HeaderContainerStyle="{StaticResource ColumnHeader}">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Content="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[DownloadActionColumn]}"
-                                            Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
-                                            CommandParameter="{Binding}"
-                                            MinWidth="96" MinHeight="28" Padding="12,0" Margin="6,2"
-                                            FontSize="12" HorizontalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Button Content="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[DownloadActionColumn]}"
+                                                Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
+                                                CommandParameter="{Binding}"
+                                                MinWidth="96" MinHeight="28" Padding="12,0" Margin="0,2"
+                                                FontSize="12" HorizontalAlignment="Center"/>
+                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE8E5;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                Command="{Binding ElementName=HistoryWin, Path=DataContext.OpenEntryFileCommand}" CommandParameter="{Binding}" Margin="2,2"
+                                                AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFileButton]}"
+                                                ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFileButton]}"/>
+                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE8B7;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                Command="{Binding ElementName=HistoryWin, Path=DataContext.OpenEntryFolderCommand}" CommandParameter="{Binding}" Margin="2,2"
+                                                AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFolderButton]}"
+                                                ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFolderButton]}"/>
+                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE74D;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                Command="{Binding ElementName=HistoryWin, Path=DataContext.RemoveEntryCommand}" CommandParameter="{Binding}" Margin="2,2"
+                                                AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryRemoveEntryButton]}"
+                                                ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryRemoveEntryButton]}"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
@@ -104,7 +124,7 @@
             </ListView>
         </Border>
 
-        <Grid Grid.Row="2" Margin="0,12,0,0">
+        <Grid Grid.Row="3" Margin="0,12,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -116,6 +136,6 @@
                        Appearance="Secondary" MinWidth="110" Height="34" FontSize="13"/>
         </Grid>
 
-        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="3" Panel.ZIndex="50"/>
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="4" Panel.ZIndex="50"/>
     </Grid>
 </ui:FluentWindow>

@@ -645,4 +645,46 @@ Leave 0 for auto</value>
   <data name="PasteClipboardTooltip" xml:space="preserve">
     <value>Paste URL from clipboard</value>
   </data>
+  <data name="FfmpegMissingConvert" xml:space="preserve">
+    <value>FFmpeg was not found. Download it now via the built-in updater?</value>
+  </data>
+  <data name="HistorySearchPlaceholder" xml:space="preserve">
+    <value>Search by title, URL or status…</value>
+  </data>
+  <data name="HistoryOpenFileButton" xml:space="preserve">
+    <value>Open file</value>
+  </data>
+  <data name="HistoryOpenFolderButton" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="HistoryRemoveEntryButton" xml:space="preserve">
+    <value>Delete entry</value>
+  </data>
+  <data name="HistoryFileMissing" xml:space="preserve">
+    <value>File not found: {0}</value>
+  </data>
+  <data name="ImportListButton" xml:space="preserve">
+    <value>Import list</value>
+  </data>
+  <data name="ImportListDialogTitle" xml:space="preserve">
+    <value>Choose a file with a list of URLs</value>
+  </data>
+  <data name="ImportListFilter" xml:space="preserve">
+    <value>Text files (*.txt)|*.txt|All files (*.*)|*.*</value>
+  </data>
+  <data name="ImportedCountNotify" xml:space="preserve">
+    <value>Added to queue: {0} of {1} links</value>
+  </data>
+  <data name="NoValidLinksInList" xml:space="preserve">
+    <value>No recognizable links in the list</value>
+  </data>
+  <data name="MaxConcurrentLabel" xml:space="preserve">
+    <value>Parallel</value>
+  </data>
+  <data name="MaxConcurrentHint" xml:space="preserve">
+    <value>Simultaneous downloads: 1–3</value>
+  </data>
+  <data name="TelegramLinkText" xml:space="preserve">
+    <value>Telegram</value>
+  </data>
 </root>

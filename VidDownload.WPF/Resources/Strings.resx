@@ -648,4 +648,46 @@
   <data name="PasteClipboardTooltip" xml:space="preserve">
     <value>Вставить ссылку из буфера</value>
   </data>
+  <data name="FfmpegMissingConvert" xml:space="preserve">
+    <value>FFmpeg не найден. Скачать его сейчас через встроенный обновлятор?</value>
+  </data>
+  <data name="HistorySearchPlaceholder" xml:space="preserve">
+    <value>Поиск по названию, ссылке или статусу…</value>
+  </data>
+  <data name="HistoryOpenFileButton" xml:space="preserve">
+    <value>Открыть файл</value>
+  </data>
+  <data name="HistoryOpenFolderButton" xml:space="preserve">
+    <value>Открыть папку</value>
+  </data>
+  <data name="HistoryRemoveEntryButton" xml:space="preserve">
+    <value>Удалить запись</value>
+  </data>
+  <data name="HistoryFileMissing" xml:space="preserve">
+    <value>Файл не найден: {0}</value>
+  </data>
+  <data name="ImportListButton" xml:space="preserve">
+    <value>Импорт списка</value>
+  </data>
+  <data name="ImportListDialogTitle" xml:space="preserve">
+    <value>Выберите файл со списком ссылок</value>
+  </data>
+  <data name="ImportListFilter" xml:space="preserve">
+    <value>Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*</value>
+  </data>
+  <data name="ImportedCountNotify" xml:space="preserve">
+    <value>Добавлено в очередь: {0} из {1} ссылок</value>
+  </data>
+  <data name="NoValidLinksInList" xml:space="preserve">
+    <value>В списке нет распознанных ссылок</value>
+  </data>
+  <data name="MaxConcurrentLabel" xml:space="preserve">
+    <value>Параллельно</value>
+  </data>
+  <data name="MaxConcurrentHint" xml:space="preserve">
+    <value>Одновременных загрузок: 1–3</value>
+  </data>
+  <data name="TelegramLinkText" xml:space="preserve">
+    <value>Telegram</value>
+  </data>
 </root>

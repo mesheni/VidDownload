@@ -43,7 +43,7 @@
                 <!-- Ссылки -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0">
                     <ui:Button Appearance="Secondary" Height="32" Padding="12,0" Margin="0,0,8,0" FontSize="12" Click="Hyperlink_Vk_Click"
-                               Content="{Binding LocalizedStrings[VkLinkText]}">
+                               Content="{Binding LocalizedStrings[TelegramLinkText]}">
                         <ui:Button.Icon>
                             <ui:SymbolIcon Symbol="Globe24" FontSize="13"/>
                         </ui:Button.Icon>

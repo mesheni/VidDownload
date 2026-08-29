@@ -8,7 +8,8 @@
         mc:Ignorable="d"
         Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="780" Height="690" MinWidth="780" MinHeight="690"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-        ExtendsContentIntoTitleBar="True">
+        ExtendsContentIntoTitleBar="True"
+        AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop">
     <Window.Resources>
         <converters:BooleanInvertConverter x:Key="InvertBool"/>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
@@ -32,7 +33,7 @@
                             Command="{Binding BrowseFileCommand}" MinWidth="100" MinHeight="30" Margin="8,0,0,0" FontSize="12.5"
                             IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
                     <TextBox Text="{Binding FilePath}" MinHeight="30" VerticalContentAlignment="Center"
-                             FontFamily="{StaticResource MonoFont}" FontSize="12.5" AllowDrop="True"/>
+                             FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
                 </DockPanel>
             </Border>
 

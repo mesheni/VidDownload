@@ -54,13 +54,13 @@ namespace VidDownload.WPF.HistoryWindow
             var availableWidth = listView.ActualWidth - SystemParameters.VerticalScrollBarWidth - 6;
             var dateWidth = 170.0;
             var statusWidth = 100.0;
-            var buttonWidth = 120.0;
+            var actionsWidth = 264.0;
 
             gridView.Columns[0].Width = dateWidth;
             gridView.Columns[2].Width = statusWidth;
-            gridView.Columns[3].Width = buttonWidth;
+            gridView.Columns[3].Width = actionsWidth;
 
-            var remaining = availableWidth - dateWidth - statusWidth - buttonWidth;
+            var remaining = availableWidth - dateWidth - statusWidth - actionsWidth;
             if (remaining > 50)
                 gridView.Columns[1].Width = remaining;
         }

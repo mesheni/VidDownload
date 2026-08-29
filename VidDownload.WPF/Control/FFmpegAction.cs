@@ -14,6 +14,28 @@
 
     internal class FFmpegAction
     {
+        private static bool _executablesPathConfigured;
+
+        /// <summary>
+        /// Направляет Xabe.FFmpeg на локальный ffmpeg из tools\ — сам он ищет бинарники только в PATH.
+        /// </summary>
+        public static bool EnsureExecutablesPath()
+        {
+            if (_executablesPathConfigured)
+                return true;
+
+            string path = FindFfmpegPath();
+            if (string.IsNullOrEmpty(path))
+                return false;
+
+            FFmpeg.SetExecutablesPath(Path.GetDirectoryName(path));
+            _executablesPathConfigured = true;
+            return true;
+        }
+
+        /// <summary>Сбрасывает закэшированный путь (после скачивания новой версии FFmpeg).</summary>
+        public static void ResetExecutablesPath() => _executablesPathConfigured = false;
+
         public async Task<string?> ConvertVideoAsync(
             ConversionOptions options,
             IProgress<DownloadProgress>? progress = null,
@@ -25,6 +47,16 @@
                 {
                     Percent = 0,
                     StatusMessage = string.Format(LocalizedStrings.Instance["InputFileNotFound"], options.InputPath)
+                });
+                return null;
+            }
+
+            if (!EnsureExecutablesPath())
+            {
+                progress?.Report(new DownloadProgress
+                {
+                    Percent = 0,
+                    StatusMessage = LocalizedStrings.Instance["FfmpegMissingConvert"]
                 });
                 return null;
             }
@@ -213,6 +245,11 @@
         public async Task<IMediaInfo?> GetMediaInfoAsync(string filePath)
         {
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                return null;
+            }
+
+            if (!EnsureExecutablesPath())
             {
                 return null;
             }

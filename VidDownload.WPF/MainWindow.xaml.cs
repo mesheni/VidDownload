@@ -1,4 +1,7 @@
+using System;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.Resources;
@@ -42,11 +45,42 @@ namespace VidDownload.WPF
                     ? System.Windows.Clipboard.GetText().Trim()
                     : string.Empty;
                 if (!string.IsNullOrEmpty(text))
-                    _viewModel.Url = text;
+                _viewModel.Url = text;
             }
             catch (Exception ex)
             {
                 AppLog.Error(nameof(MainWindow), $"Paste failed: {ex.Message}");
+            }
+        }
+
+        private void OnWindowDragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent(DataFormats.UnicodeText)
+                ? DragDropEffects.Copy
+                : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        private void OnWindowDrop(object sender, DragEventArgs e)
+        {
+            // Файл со списком ссылок (.txt)
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
+                e.Data.GetData(DataFormats.FileDrop) is string[] files)
+            {
+                var list = files.FirstOrDefault(f =>
+                    string.Equals(Path.GetExtension(f), ".txt", StringComparison.OrdinalIgnoreCase));
+                if (list != null)
+                {
+                    _viewModel.ImportUrlsFromFile(list);
+                    return;
+                }
+            }
+
+            // Перетащенный текст со ссылками (одной или несколькими строками)
+            if (e.Data.GetDataPresent(DataFormats.UnicodeText) &&
+                e.Data.GetData(DataFormats.UnicodeText) is string text)
+            {
+                _viewModel.ImportUrlsFromText(text);
             }
         }
 

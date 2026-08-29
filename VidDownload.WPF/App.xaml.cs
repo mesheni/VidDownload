@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.Services;
@@ -9,10 +10,36 @@ namespace VidDownload.WPF
 {
     public partial class App : Application
     {
+        private const string SingleInstanceMutexName = @"Local\VidDownload.SingleInstance";
+        private const string ActivateSignalName = @"Local\VidDownload.ActivateSignal";
+
         private MainWindow? _mainWindow;
+        private Mutex? _singleInstanceMutex;
+        private EventWaitHandle? _activateSignal;
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            _singleInstanceMutex = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out bool isFirstInstance);
+            if (!isFirstInstance)
+            {
+                // Вторая копия: просим первую показать окно и тихо выходим
+                try
+                {
+                    using var signal = EventWaitHandle.OpenExisting(ActivateSignalName);
+                    signal.Set();
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Error(nameof(App), $"Failed to signal first instance: {ex.Message}");
+                }
+                Shutdown();
+                return;
+            }
+
+            _activateSignal = new EventWaitHandle(false, EventResetMode.AutoReset, ActivateSignalName);
+            var listener = new Thread(WaitForActivateSignal) { IsBackground = true };
+            listener.Start();
+
             DispatcherUnhandledException += (_, ex) =>
                 AppLog.Error(nameof(App), $"Unhandled UI exception: {ex.Exception}");
 
@@ -74,12 +101,32 @@ namespace VidDownload.WPF
             }
         }
 
+        /// <summary>Ждёт сигнал от второй копии и разворачивает окно (в т.ч. из трея).</summary>
+        private void WaitForActivateSignal()
+        {
+            while (_activateSignal is { } signal)
+            {
+                try
+                {
+                    if (!signal.WaitOne())
+                        return;
+                    Dispatcher.BeginInvoke(ShowMainWindow);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return;
+                }
+            }
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
             // Останавливаем активные процессы yt-dlp, чтобы не оставлять сирот
             AppServices.ServiceProvider.GetService<IDownloadQueueService>()?.CancelAll();
             AppServices.ServiceProvider.GetService<ITrayService>()?.Dispose();
             AppServices.ServiceProvider.GetService<IClipboardMonitorService>()?.Dispose();
+            _activateSignal?.Dispose();
+            _singleInstanceMutex?.Dispose();
             base.OnExit(e);
         }
     }

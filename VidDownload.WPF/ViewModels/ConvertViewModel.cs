@@ -21,6 +21,7 @@ namespace VidDownload.WPF.ViewModels
         private readonly IMessageService _messageService;
         private readonly IDialogService _dialogService;
         private readonly ISettingsService _settingsService;
+        private readonly IFFmpegService _ffmpegService;
         private readonly LocalizedStrings _loc;
         private CancellationTokenSource? _cts;
 
@@ -100,12 +101,14 @@ namespace VidDownload.WPF.ViewModels
             IMessageService messageService,
             IDialogService dialogService,
             ISettingsService settingsService,
+            IFFmpegService ffmpegService,
             LocalizedStrings localizedStrings)
         {
             _ffmpegAction = new FFmpegAction();
             _messageService = messageService;
             _dialogService = dialogService;
             _settingsService = settingsService;
+            _ffmpegService = ffmpegService;
             _loc = localizedStrings;
 
             Formats = new ObservableCollection<string>(ConversionOptions.AllFormats);
@@ -263,6 +266,9 @@ namespace VidDownload.WPF.ViewModels
                 return;
             }
 
+            if (!await EnsureFfmpegAvailableAsync())
+                return;
+
             var options = BuildConversionOptions();
 
             if (!Directory.Exists(Path.GetDirectoryName(options.OutputPath) ?? string.Empty))
@@ -367,6 +373,60 @@ namespace VidDownload.WPF.ViewModels
                 OutputDirectory = dialog.FolderName;
                 RefreshCommandPreview();
             }
+        }
+
+        /// <summary>
+        /// Проверяет доступность ffmpeg для конвертации; при отсутствии предлагает скачать
+        /// через встроенный обновлятор и повторяет проверку.
+        /// </summary>
+        private async Task<bool> EnsureFfmpegAvailableAsync()
+        {
+            if (FFmpegAction.EnsureExecutablesPath())
+                return true;
+
+            if (!await _dialogService.AskAsync(_loc["FfmpegMissingConvert"], _loc["ErrorTitle"]))
+                return false;
+
+            IsConverting = true;
+            try
+            {
+                StatusMessage = _loc["CheckingFFmpeg"];
+                var info = await _ffmpegService.CheckForUpdateAsync();
+
+                if (string.IsNullOrEmpty(info.DownloadUrl))
+                {
+                    _messageService.Error(_loc["FFmpegDownloadLinkError"], _loc["UpdateErrorTitle"]);
+                    return false;
+                }
+
+                var progress = new Progress<DownloadProgress>(p =>
+                {
+                    StatusMessage = p.StatusMessage;
+                    ProgressPercent = p.Percent;
+                });
+
+                await _ffmpegService.DownloadUpdateAsync(info, progress);
+            }
+            catch (Exception ex)
+            {
+                _messageService.Error(string.Format(_loc["FFmpegUpdateFailed"], ex.Message), _loc["UpdateErrorTitle"]);
+                return false;
+            }
+            finally
+            {
+                IsConverting = false;
+                ProgressPercent = 0;
+                StatusMessage = string.Empty;
+            }
+
+            FFmpegAction.ResetExecutablesPath();
+            if (!FFmpegAction.EnsureExecutablesPath())
+            {
+                _messageService.Error(_loc["FfmpegMissingConvert"], _loc["ErrorTitle"]);
+                return false;
+            }
+
+            return true;
         }
 
         private async Task SaveSettingsAsync()

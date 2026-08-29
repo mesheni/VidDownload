@@ -9,7 +9,8 @@
         mc:Ignorable="d"
         Title="{Binding LocalizedStrings[MainWindowTitle]}" WindowStartupLocation="CenterScreen" Icon="/icon.png"
         ResizeMode="CanResize" Width="704" Height="716" MinWidth="620" MinHeight="560"
-        ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica">
+        ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
+        AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop">
     <Window.InputBindings>
         <KeyBinding Key="Enter" Command="{Binding DownloadCommand}"/>
         <KeyBinding Key="Esc" Command="{Binding CancelActiveCommand}"/>
@@ -60,6 +61,11 @@
                       Width="68" Height="44" Margin="8,0,0,0" VerticalAlignment="Top" FontSize="12" Padding="8,0,0,0"
                       AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
             <Button DockPanel.Dock="Right" Width="44" Height="44" Margin="8,0,0,0" VerticalAlignment="Top"
+                    Command="{Binding ImportListCommand}" FontFamily="{StaticResource IconFont}" FontSize="14"
+                    Content="&#xE8FD;"
+                    ToolTip="{Binding LocalizedStrings[ImportListButton]}"
+                    AutomationProperties.Name="{Binding LocalizedStrings[ImportListButton]}"/>
+            <Button DockPanel.Dock="Right" Width="44" Height="44" Margin="8,0,0,0" VerticalAlignment="Top"
                     Click="OnPasteFromClipboard" FontFamily="{StaticResource IconFont}" FontSize="14"
                     Content="&#xE77F;"
                     ToolTip="{Binding LocalizedStrings[PasteClipboardTooltip]}"
@@ -86,6 +92,13 @@
                             FontSize="12.5" FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"
                             ToolTip="{Binding LocalizedStrings[RateLimitHint]}"
                             AutomationProperties.Name="{Binding LocalizedStrings[RateLimitLabel]}"/>
+                <TextBlock Text="{Binding LocalizedStrings[MaxConcurrentLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="18,0,7,0"
+                           ToolTip="{Binding LocalizedStrings[MaxConcurrentHint]}"
+                           AutomationProperties.Name="{Binding LocalizedStrings[MaxConcurrentLabel]}"/>
+                <ui:NumberBox Value="{Binding MaxConcurrentDownloads, UpdateSourceTrigger=PropertyChanged}" Width="72" Height="32"
+                              Minimum="1" Maximum="3" SmallChange="1" ClearButtonEnabled="False"
+                              ToolTip="{Binding LocalizedStrings[MaxConcurrentHint]}"
+                              AutomationProperties.Name="{Binding LocalizedStrings[MaxConcurrentLabel]}"/>
             </StackPanel>
         </DockPanel>
 

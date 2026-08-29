@@ -113,6 +113,9 @@ namespace VidDownload.WPF.ViewModels
         private bool _minimizeToTray;
 
         [ObservableProperty]
+        private int _maxConcurrentDownloads = 1;
+
+        [ObservableProperty]
         private bool _isClipboardMonitorEnabled;
 
         [ObservableProperty]
@@ -345,6 +348,20 @@ namespace VidDownload.WPF.ViewModels
             RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
         }
 
+        partial void OnMaxConcurrentDownloadsChanged(int value)
+        {
+            if (_isLoading)
+                return;
+            var clamped = Math.Clamp(value <= 0 ? 1 : value, 1, 3);
+            if (clamped != value)
+            {
+                MaxConcurrentDownloads = clamped;
+                return;
+            }
+            _queue.MaxConcurrent = clamped;
+            RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
+        }
+
         // ==== Очередь загрузок ====
 
         [RelayCommand]
@@ -415,6 +432,57 @@ namespace VidDownload.WPF.ViewModels
                     return false;
             }
             return true;
+        }
+
+        // ==== Пакетный импорт ссылок ====
+
+        [RelayCommand]
+        private void ImportList()
+        {
+            var dialog = new OpenFileDialog
+            {
+                Title = _loc["ImportListDialogTitle"],
+                Filter = _loc["ImportListFilter"]
+            };
+
+            if (dialog.ShowDialog() == true)
+                ImportUrlsFromFile(dialog.FileName);
+        }
+
+        /// <summary>Ставит в очередь распознанные ссылки из текстового файла (по одной в строке).</summary>
+        public void ImportUrlsFromFile(string path)
+        {
+            try
+            {
+                ImportUrlsFromLines(File.ReadAllLines(path));
+            }
+            catch (Exception ex)
+            {
+                _messageService.Error(string.Format(_loc["ErrorWithMessage"], ex.Message), _loc["ErrorTitle"]);
+            }
+        }
+
+        /// <summary>Ставит в очередь распознанные ссылки из текста (drag&drop, несколько строк).</summary>
+        public void ImportUrlsFromText(string text)
+        {
+            ImportUrlsFromLines((text ?? string.Empty).Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries));
+        }
+
+        private void ImportUrlsFromLines(string[] lines)
+        {
+            var trimmed = lines.Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
+            var urls = trimmed.Where(UrlHelper.LooksLikeVideoReference).Distinct().ToList();
+
+            if (urls.Count == 0)
+            {
+                _notifications.Info(_loc["NoValidLinksInList"]);
+                return;
+            }
+
+            foreach (var url in urls)
+                Enqueue(url);
+
+            _notifications.Info(string.Format(_loc["ImportedCountNotify"], urls.Count, trimmed.Count));
         }
 
         [RelayCommand]
@@ -639,7 +707,8 @@ namespace VidDownload.WPF.ViewModels
             IsClipboardMonitorEnabled = userSettings.ClipboardMonitorEnabled;
             AppTheme = UiThemeService.TryParse(userSettings.Appearance);
             UiThemeService.SetPreference(AppTheme);
-            _queue.MaxConcurrent = Math.Clamp(userSettings.MaxConcurrentDownloads <= 0 ? 1 : userSettings.MaxConcurrentDownloads, 1, 3);
+            MaxConcurrentDownloads = Math.Clamp(userSettings.MaxConcurrentDownloads <= 0 ? 1 : userSettings.MaxConcurrentDownloads, 1, 3);
+            _queue.MaxConcurrent = MaxConcurrentDownloads;
 
             try
             {
