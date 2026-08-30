@@ -46,7 +46,7 @@
          максимальный возможный (CornerRadius не превышает полвысоты полосы),
          цвет полосы берётся из Foreground (у очереди — цвет статуса) -->
     <Style x:Key="RoundedProgressBar" TargetType="ProgressBar">
-        <Setter Property="Height" Value="16"/>
+        <Setter Property="Height" Value="8"/>
         <Setter Property="Maximum" Value="100"/>
         <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
         <Setter Property="Template">
@@ -55,10 +55,10 @@
                     <Grid>
                         <Border x:Name="PART_Track"
                                 Background="{DynamicResource SurfaceBgrElevatedBrush}"
-                                CornerRadius="{StaticResource PillRadius}"/>
+                                CornerRadius="{StaticResource SmallRadius}"/>
                         <Border x:Name="PART_Indicator"
                                 Background="{TemplateBinding Foreground}"
-                                CornerRadius="{StaticResource PillRadius}"
+                                CornerRadius="{StaticResource SmallRadius}"
                                 HorizontalAlignment="Left"/>
                     </Grid>
                     <ControlTemplate.Triggers>

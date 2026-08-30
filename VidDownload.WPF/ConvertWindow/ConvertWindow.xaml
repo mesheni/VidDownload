@@ -6,27 +6,30 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="780" Height="800" MinWidth="780" MinHeight="800" MaxWidth="780" MaxHeight="800"
+        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="820" Height="800" MinWidth="820" MinHeight="800" MaxWidth="820" MaxHeight="800"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         ExtendsContentIntoTitleBar="True"
         AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop">
     <Window.Resources>
         <converters:BooleanInvertConverter x:Key="InvertBool"/>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <converters:StringToVisibilityConverter x:Key="TextToVis"/>
     </Window.Resources>
 
     <!-- TitleBar вне сетки с полями: системные кнопки прижаты к правому краю окна;
-         контент в ScrollViewer — в пакетном режиме не вылезает за границы -->
+         карточки в ScrollViewer (в пакетном режиме прокручиваются),
+         прогресс и кнопки — в отдельной строке, всегда прижаты к низу окна -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[ConvertWindowTitle]}"/>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="16,4,16,10">
+            <StackPanel Margin="16,4,16,10" Height="auto">
 
                 <!-- Режим -->
                 <Border Style="{StaticResource CardBorder}" Padding="12,7">
@@ -137,14 +140,14 @@
                         <StackPanel Orientation="Horizontal" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
                             <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
                                 <TextBlock Text="{Binding LocalizedStrings[CrfLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                                <ui:NumberBox Value="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" Width="84" MinHeight="29"
+                                <ui:NumberBox Value="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" Width="auto" MaxWidth="130" MinHeight="29"
                                               Minimum="0" Maximum="51" SmallChange="1" ClearButtonEnabled="False"
                                               IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
                                               ToolTip="{Binding LocalizedStrings[CrfHint]}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
                                 <TextBlock Text="{Binding LocalizedStrings[VideoBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                                <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Width="102" MinHeight="29"
+                                <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Width="auto" MaxWidth="150" MinHeight="29"
                                               Minimum="0" SmallChange="100" ClearButtonEnabled="False"
                                               IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
                                               ToolTip="{Binding LocalizedStrings[VideoBitrateHint]}"/>
@@ -152,7 +155,7 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding LocalizedStrings[AudioBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Width="102" MinHeight="29"
+                            <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Width="auto" MaxWidth="150" MinHeight="29"
                                           Minimum="0" SmallChange="32" ClearButtonEnabled="False"
                                           IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
                                           ToolTip="{Binding LocalizedStrings[AudioBitrateHint]}"/>
@@ -169,30 +172,30 @@
                                  VerticalScrollBarVisibility="Auto" AcceptsReturn="False"/>
                     </StackPanel>
                 </Border>
-
-                <!-- Прогресс -->
-                <StackPanel Margin="2,10,2,0">
-                    <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center" FontFamily="{StaticResource MonoLightFont}"
-                               FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,7"/>
-                    <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" Style="{StaticResource RoundedProgressBar}"/>
-                </StackPanel>
-
-                <!-- Кнопки -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,4">
-                    <Button Content="{Binding LocalizedStrings[CancelConvertButton]}" Command="{Binding CancelConvertCommand}"
-                            IsEnabled="{Binding IsCancellable}" Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}"
-                            MinWidth="132" Height="38" Margin="0,0,10,0" FontSize="13" FontWeight="SemiBold"/>
-                    <ui:Button Command="{Binding ConvertCommand}" MinWidth="216" Height="40" FontSize="14" FontWeight="SemiBold"
-                               Appearance="Primary" CornerRadius="20">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="ArrowRepeatAll24" FontSize="15"/>
-                        </ui:Button.Icon>
-                        <TextBlock Text="{Binding LocalizedStrings[ConvertButton]}" Margin="6,0,0,0"/>
-                    </ui:Button>
-                </StackPanel>
             </StackPanel>
         </ScrollViewer>
 
-        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="2" Panel.ZIndex="50"/>
+        <!-- Низ окна: прогресс + кнопки (вне прокрутки, всегда снизу) -->
+        <StackPanel Grid.Row="2" Margin="16,8,16,10">
+            <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center" FontFamily="{StaticResource MonoLightFont}"
+                       FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="2,0,2,7"
+                       Visibility="{Binding StatusMessage, Converter={StaticResource TextToVis}}"/>
+            <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" Style="{StaticResource RoundedProgressBar}"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,4">
+                <Button Content="{Binding LocalizedStrings[CancelConvertButton]}" Command="{Binding CancelConvertCommand}"
+                        IsEnabled="{Binding IsCancellable}" Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}"
+                        MinWidth="132" Height="38" Margin="0,0,10,0" FontSize="13" FontWeight="SemiBold"/>
+                <ui:Button Command="{Binding ConvertCommand}" MinWidth="216" Height="40" FontSize="14" FontWeight="SemiBold"
+                           Appearance="Primary" CornerRadius="20">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="ArrowRepeatAll24" FontSize="15"/>
+                    </ui:Button.Icon>
+                    <TextBlock Text="{Binding LocalizedStrings[ConvertButton]}" Margin="6,0,0,0"/>
+                </ui:Button>
+            </StackPanel>
+        </StackPanel>
+
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="3" Panel.ZIndex="50"/>
     </Grid>
 </ui:FluentWindow>
