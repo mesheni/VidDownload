@@ -16,129 +16,138 @@
         <converters:StringToVisibilityConverter x:Key="TextToVis"/>
     </Window.Resources>
 
-    <Grid Margin="16,4,16,10">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[PreviewWindowTitle]}"/>
 
-        <!-- Шапка: обложка + данные -->
-        <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,4,0,8">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1" Margin="16,4,16,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                <Border Grid.Column="0" CornerRadius="{StaticResource MediumRadius}" ClipToBounds="True"
-                        Background="{DynamicResource SurfaceBgrElevatedBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
-                        BorderThickness="1" Margin="0,0,12,0">
-                    <Grid>
-                        <ui:SymbolIcon Symbol="VideoClip24" FontSize="30" Foreground="{DynamicResource TextMutedBrush}"/>
-                        <Image Source="{Binding Thumbnail}" Stretch="Uniform"/>
-                    </Grid>
-                </Border>
+            <!-- Шапка: обложка + данные -->
+            <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,4,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Title}" FontFamily="{StaticResource TextFont}" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,7"/>
-                    <TextBlock Text="{Binding Uploader}" FontSize="12.5" Foreground="{DynamicResource TextSecondaryBrush}"
-                               TextTrimming="CharacterEllipsis" Margin="0,0,0,4"/>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding DurationText}" FontFamily="{StaticResource MonoFont}" FontSize="12"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,14,0"
-                                   Visibility="{Binding DurationText, Converter={StaticResource TextToVis}}"/>
-                        <TextBlock Text="{Binding WebpageUrl}" FontFamily="{StaticResource MonoFont}" FontSize="10.5"
-                                   Foreground="{DynamicResource TextMutedBrush}" TextTrimming="CharacterEllipsis" MaxWidth="280" ToolTip="{Binding WebpageUrl}"/>
+                    <Border Grid.Column="0" CornerRadius="{StaticResource MediumRadius}" ClipToBounds="True"
+                            Background="{DynamicResource SurfaceBgrElevatedBrush}" BorderBrush="{DynamicResource AppBorderBrush}"
+                            BorderThickness="1" Margin="0,0,12,0">
+                        <Grid>
+                            <ui:SymbolIcon Symbol="VideoClip24" FontSize="30" Foreground="{DynamicResource TextMutedBrush}"/>
+                            <Image Source="{Binding Thumbnail}" Stretch="Uniform"/>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Title}" FontFamily="{StaticResource TextFont}" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,7"/>
+                        <TextBlock Text="{Binding Uploader}" FontSize="12.5" Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,0,4"/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding DurationText}" FontFamily="{StaticResource MonoFont}" FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,14,0"
+                                       Visibility="{Binding DurationText, Converter={StaticResource TextToVis}}"/>
+                            <TextBlock Text="{Binding WebpageUrl}" FontFamily="{StaticResource MonoFont}" FontSize="10.5"
+                                       Foreground="{DynamicResource TextMutedBrush}" TextTrimming="CharacterEllipsis" MaxWidth="280" ToolTip="{Binding WebpageUrl}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </Grid>
-        </Border>
+                </Grid>
+            </Border>
 
-        <!-- Элементы плейлиста -->
-        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="12,10" Visibility="{Binding IsPlaylist, Converter={StaticResource BoolToVis}}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- Элементы плейлиста -->
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8"
+                    Visibility="{Binding IsPlaylist, Converter={StaticResource BoolToVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <DockPanel Grid.Row="0" Margin="2,0,0,7">
-                    <TextBlock Text="{Binding LocalizedStrings[PreviewPlaylistSection]}" Style="{StaticResource SectionLabel}" VerticalAlignment="Center"/>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="{Binding LocalizedStrings[PreviewSelectAll]}" Command="{Binding SelectAllCommand}"
-                                MinHeight="26" Padding="10,0" FontSize="11.5" Margin="0,0,6,0"/>
-                        <Button Content="{Binding LocalizedStrings[PreviewSelectNone]}" Command="{Binding SelectNoneCommand}"
-                                MinHeight="26" Padding="10,0" FontSize="11.5"/>
+                    <DockPanel Grid.Row="0" Margin="2,0,0,7">
+                        <TextBlock Text="{Binding LocalizedStrings[PreviewPlaylistSection]}" Style="{StaticResource SectionLabel}" VerticalAlignment="Center"/>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="{Binding LocalizedStrings[PreviewSelectAll]}" Command="{Binding SelectAllCommand}"
+                                    MinHeight="26" Padding="10,0" FontSize="11.5" Margin="0,0,6,0"/>
+                            <Button Content="{Binding LocalizedStrings[PreviewSelectNone]}" Command="{Binding SelectNoneCommand}"
+                                    MinHeight="26" Padding="10,0" FontSize="11.5"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Entries}" Background="Transparent" BorderThickness="0" MaxHeight="260"
+                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,3">
+                                    <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" MinWidth="18"/>
+                                    <TextBlock Text="{Binding IndexAndTitle}" FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="4,0,10,0" ToolTip="{Binding IndexAndTitle}"/>
+                                    <TextBlock Text="{Binding DurationText}" FontFamily="{StaticResource MonoFont}" FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Форматы одиночного видео -->
+            <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="12,10"
+                    Visibility="{Binding IsPlaylist, Converter={StaticResource InvertBoolToVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="2,0,0,7">
+                        <TextBlock Text="{Binding LocalizedStrings[PreviewFormatsSection]}" Style="{StaticResource SectionLabel}" VerticalAlignment="Center"/>
+                        <CheckBox IsChecked="{Binding UseAutoFormat}" Content="{Binding LocalizedStrings[PreviewAutoFormat]}" FontSize="12.5"
+                                  Margin="16,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
-                </DockPanel>
 
-                <ListBox Grid.Row="1" ItemsSource="{Binding Entries}" Background="Transparent" BorderThickness="0"
-                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0,3">
-                                <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center" MinWidth="18"/>
-                                <TextBlock Text="{Binding IndexAndTitle}" FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}"
-                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="4,0,10,0" ToolTip="{Binding IndexAndTitle}"/>
-                                <TextBlock Text="{Binding DurationText}" FontFamily="{StaticResource MonoFont}" FontSize="11"
-                                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </Border>
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+                             Background="Transparent" BorderThickness="0" MaxHeight="240"
+                             IsEnabled="{Binding UseAutoFormat, Converter={StaticResource InvertBool}}"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DisplayText}" FontFamily="{StaticResource MonoFont}" FontSize="12"
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="2,4"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
 
-        <!-- Форматы одиночного видео -->
-        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="12,10" Visibility="{Binding IsPlaylist, Converter={StaticResource InvertBoolToVis}}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+            <!-- Кнопки -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,2">
+                <ui:Button Appearance="Primary" Click="OnDownloadClick" MinWidth="180" Height="40" FontSize="14" FontWeight="SemiBold" CornerRadius="20">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="16"/>
+                    </ui:Button.Icon>
+                    <TextBlock Text="{Binding LocalizedStrings[DownloadButton]}" Margin="6,0,0,0"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Click="OnCancelClick" MinWidth="120" Height="40" FontSize="13" Margin="10,0,0,0">
+                    <TextBlock Text="{Binding LocalizedStrings[CancelButton]}"/>
+                </ui:Button>
+                <TextBlock Text="{Binding SelectionSummary}" VerticalAlignment="Center" Margin="16,0,0,0"
+                           FontFamily="{StaticResource MonoLightFont}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            </StackPanel>
+        </Grid>
 
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="2,0,0,7">
-                    <TextBlock Text="{Binding LocalizedStrings[PreviewFormatsSection]}" Style="{StaticResource SectionLabel}" VerticalAlignment="Center"/>
-                    <CheckBox IsChecked="{Binding UseAutoFormat}" Content="{Binding LocalizedStrings[PreviewAutoFormat]}" FontSize="12.5"
-                              Margin="16,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-
-                <ListBox Grid.Row="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
-                         Background="Transparent" BorderThickness="0"
-                         IsEnabled="{Binding UseAutoFormat, Converter={StaticResource InvertBool}}"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding DisplayText}" FontFamily="{StaticResource MonoFont}" FontSize="12"
-                                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="2,4"/>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </Border>
-
-        <!-- Кнопки -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,2">
-            <ui:Button Appearance="Primary" Click="OnDownloadClick" MinWidth="180" Height="40" FontSize="14" FontWeight="SemiBold" CornerRadius="20">
-                <ui:Button.Icon>
-                    <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="16"/>
-                </ui:Button.Icon>
-                <TextBlock Text="{Binding LocalizedStrings[DownloadButton]}" Margin="6,0,0,0"/>
-            </ui:Button>
-            <ui:Button Appearance="Secondary" Click="OnCancelClick" MinWidth="120" Height="40" FontSize="13" Margin="10,0,0,0">
-                <TextBlock Text="{Binding LocalizedStrings[CancelButton]}"/>
-            </ui:Button>
-            <TextBlock Text="{Binding SelectionSummary}" VerticalAlignment="Center" Margin="16,0,0,0"
-                       FontFamily="{StaticResource MonoLightFont}" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"/>
-        </StackPanel>
-
-        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="4" Panel.ZIndex="50"/>
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="2" Panel.ZIndex="50"/>
     </Grid>
 </ui:FluentWindow>

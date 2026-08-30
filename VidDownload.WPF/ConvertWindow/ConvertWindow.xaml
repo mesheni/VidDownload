@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="780" Height="740" MinWidth="780" MinHeight="680"
+        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="780" Height="720" MinWidth="780" MinHeight="560"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         ExtendsContentIntoTitleBar="True"
         AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop">
@@ -15,7 +15,9 @@
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
 
-    <Grid Margin="16,4,16,10">
+    <!-- TitleBar вне сетки с полями: системные кнопки прижаты к правому краю окна;
+         контент в ScrollViewer — в пакетном режиме не вылезает за границы -->
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -23,171 +25,173 @@
 
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[ConvertWindowTitle]}"/>
 
-        <StackPanel Grid.Row="1" Margin="0,4,0,0">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="16,4,16,10">
 
-            <!-- Режим -->
-            <Border Style="{StaticResource CardBorder}" Padding="12,7">
-                <StackPanel Orientation="Horizontal">
-                    <ui:ToggleSwitch IsChecked="{Binding IsAudioOnlyMode}" Content="{Binding LocalizedStrings[AudioOnlyModeLabel]}" FontSize="13" Margin="0,0,26,0"/>
-                    <ui:ToggleSwitch IsChecked="{Binding IsBatchMode}" Content="{Binding LocalizedStrings[BatchModeLabel]}" FontSize="13"
-                                     IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Источник: один файл -->
-            <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0" Visibility="{Binding ShowSingleInput, Converter={StaticResource BoolToVis}}">
-                <DockPanel LastChildFill="True">
-                    <TextBlock DockPanel.Dock="Top" Text="{Binding LocalizedStrings[InputSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
-                    <Button DockPanel.Dock="Right" Content="{Binding LocalizedStrings[BrowseButton]}"
-                            Command="{Binding BrowseFileCommand}" MinWidth="100" MinHeight="30" Margin="8,0,0,0" FontSize="12.5"
-                            IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
-                    <TextBox Text="{Binding FilePath}" MinHeight="30" VerticalContentAlignment="Center"
-                             FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
-                </DockPanel>
-            </Border>
-
-            <!-- Источник: пакет -->
-            <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0" Visibility="{Binding ShowBatchInput, Converter={StaticResource BoolToVis}}">
-                <StackPanel>
-                    <DockPanel LastChildFill="False" Margin="2,0,0,6">
-                        <TextBlock Text="{Binding LocalizedStrings[InputSectionLabel]}" Style="{StaticResource SectionLabel}" VerticalAlignment="Center"/>
-                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Content="{Binding LocalizedStrings[BatchAddButton]}" Command="{Binding AddBatchFilesCommand}"
-                                    MinHeight="28" Padding="10,0" Margin="0,0,6,0" FontSize="12"
-                                    IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
-                            <Button Content="{Binding LocalizedStrings[BatchRemoveButton]}" Command="{Binding RemoveBatchFileCommand}"
-                                    MinHeight="28" Padding="10,0" Margin="0,0,6,0" FontSize="12"
-                                    IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
-                            <Button Content="{Binding LocalizedStrings[BatchClearButton]}" Command="{Binding ClearBatchFilesCommand}"
-                                    MinHeight="28" Padding="10,0" FontSize="12"
-                                    IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <ListBox ItemsSource="{Binding BatchFiles}" SelectedItem="{Binding SelectedBatchFile}" Height="128"
-                             Background="Transparent" BorderThickness="1" BorderBrush="{DynamicResource AppBorderBrush}"
-                             FontFamily="{StaticResource MonoFont}" FontSize="11.5"
-                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Назначение -->
-            <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
-                <StackPanel>
-                    <TextBlock Text="{Binding LocalizedStrings[OutputSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
-                    <DockPanel LastChildFill="True">
-                        <Button DockPanel.Dock="Right" Content="{Binding LocalizedStrings[OutputBrowseButton]}"
-                                Command="{Binding BrowseOutputDirCommand}" MinWidth="120" MinHeight="30" Margin="8,0,0,0" FontSize="12.5"
-                                IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
-                        <TextBox Text="{Binding OutputDirectory}" MinHeight="30" VerticalContentAlignment="Center"
-                                 FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
-                    </DockPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,7,0,0"
-                                Visibility="{Binding ShowOutputFileName, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="{Binding LocalizedStrings[OutputFileNameLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Width="128"/>
-                        <TextBox Text="{Binding OutputFileName}" Width="222" MinHeight="29" VerticalContentAlignment="Center"
-                                 FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
+                <!-- Режим -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,7">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:ToggleSwitch IsChecked="{Binding IsAudioOnlyMode}" Content="{Binding LocalizedStrings[AudioOnlyModeLabel]}" FontSize="13" Margin="0,0,26,0"/>
+                        <ui:ToggleSwitch IsChecked="{Binding IsBatchMode}" Content="{Binding LocalizedStrings[BatchModeLabel]}" FontSize="13"
+                                         IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
                     </StackPanel>
-                </StackPanel>
-            </Border>
+                </Border>
 
-            <!-- Кодирование -->
-            <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
-                <StackPanel>
-                    <TextBlock Text="{Binding LocalizedStrings[EncodingSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
+                <!-- Источник: один файл -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0" Visibility="{Binding ShowSingleInput, Converter={StaticResource BoolToVis}}">
+                    <DockPanel LastChildFill="True">
+                        <TextBlock DockPanel.Dock="Top" Text="{Binding LocalizedStrings[InputSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
+                        <Button DockPanel.Dock="Right" Content="{Binding LocalizedStrings[BrowseButton]}"
+                                Command="{Binding BrowseFileCommand}" MinWidth="100" MinHeight="30" Margin="8,0,0,0" FontSize="12.5"
+                                IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
+                        <TextBox Text="{Binding FilePath}" MinHeight="30" VerticalContentAlignment="Center"
+                                 FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
+                    </DockPanel>
+                </Border>
 
-                    <UniformGrid Columns="3">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,12,7">
-                            <TextBlock Text="{Binding LocalizedStrings[ExtensionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
-                                      IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" FontSize="12.5"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,12,7" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="{Binding LocalizedStrings[HardwareEncoderLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ComboBox ItemsSource="{Binding HardwareEncoders}" SelectedItem="{Binding SelectedHardwareEncoder}"
-                                      IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="104" FontSize="12.5"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,7" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="{Binding LocalizedStrings[PresetLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
-                                      IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="122" FontSize="12.5"/>
-                        </StackPanel>
-                    </UniformGrid>
+                <!-- Источник: пакет -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0" Visibility="{Binding ShowBatchInput, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <DockPanel LastChildFill="False" Margin="2,0,0,6">
+                            <TextBlock Text="{Binding LocalizedStrings[InputSectionLabel]}" Style="{StaticResource SectionLabel}" VerticalAlignment="Center"/>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Content="{Binding LocalizedStrings[BatchAddButton]}" Command="{Binding AddBatchFilesCommand}"
+                                        MinHeight="28" Padding="10,0" Margin="0,0,6,0" FontSize="12"
+                                        IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
+                                <Button Content="{Binding LocalizedStrings[BatchRemoveButton]}" Command="{Binding RemoveBatchFileCommand}"
+                                        MinHeight="28" Padding="10,0" Margin="0,0,6,0" FontSize="12"
+                                        IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
+                                <Button Content="{Binding LocalizedStrings[BatchClearButton]}" Command="{Binding ClearBatchFilesCommand}"
+                                        MinHeight="28" Padding="10,0" FontSize="12"
+                                        IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
+                            </StackPanel>
+                        </DockPanel>
+                        <ListBox ItemsSource="{Binding BatchFiles}" SelectedItem="{Binding SelectedBatchFile}" Height="128"
+                                 Background="Transparent" BorderThickness="1" BorderBrush="{DynamicResource AppBorderBrush}"
+                                 FontFamily="{StaticResource MonoFont}" FontSize="11.5"
+                                 VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"/>
+                    </StackPanel>
+                </Border>
 
-                    <StackPanel Orientation="Horizontal" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
-                            <TextBlock Text="{Binding LocalizedStrings[VideoCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding SelectedVideoCodec}"
-                                      IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="172" FontSize="12.5"/>
+                <!-- Назначение -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[OutputSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
+                        <DockPanel LastChildFill="True">
+                            <Button DockPanel.Dock="Right" Content="{Binding LocalizedStrings[OutputBrowseButton]}"
+                                    Command="{Binding BrowseOutputDirCommand}" MinWidth="120" MinHeight="30" Margin="8,0,0,0" FontSize="12.5"
+                                    IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
+                            <TextBox Text="{Binding OutputDirectory}" MinHeight="30" VerticalContentAlignment="Center"
+                                     FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
+                        </DockPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,7,0,0"
+                                    Visibility="{Binding ShowOutputFileName, Converter={StaticResource BoolToVis}}">
+                            <TextBlock Text="{Binding LocalizedStrings[OutputFileNameLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Width="128"/>
+                            <TextBox Text="{Binding OutputFileName}" Width="222" MinHeight="29" VerticalContentAlignment="Center"
+                                     FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Кодирование -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[EncodingSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
+
+                        <UniformGrid Columns="3">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,7">
+                                <TextBlock Text="{Binding LocalizedStrings[ExtensionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                                <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+                                          IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" FontSize="12.5"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,12,7" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{Binding LocalizedStrings[HardwareEncoderLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                                <ComboBox ItemsSource="{Binding HardwareEncoders}" SelectedItem="{Binding SelectedHardwareEncoder}"
+                                          IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="104" FontSize="12.5"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,7" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{Binding LocalizedStrings[PresetLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                                <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
+                                          IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="122" FontSize="12.5"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
+                                <TextBlock Text="{Binding LocalizedStrings[VideoCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                                <ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding SelectedVideoCodec}"
+                                          IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="172" FontSize="12.5"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding LocalizedStrings[AudioCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                                <ComboBox ItemsSource="{Binding AudioCodecs}" SelectedItem="{Binding SelectedAudioCodec}"
+                                          IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="124" FontSize="12.5"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Качество -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
+                                <TextBlock Text="{Binding LocalizedStrings[CrfLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                                <ui:NumberBox Value="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" Width="84" MinHeight="29"
+                                              Minimum="0" Maximum="51" SmallChange="1" ClearButtonEnabled="False"
+                                              IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
+                                              ToolTip="{Binding LocalizedStrings[CrfHint]}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
+                                <TextBlock Text="{Binding LocalizedStrings[VideoBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                                <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Width="102" MinHeight="29"
+                                              Minimum="0" SmallChange="100" ClearButtonEnabled="False"
+                                              IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
+                                              ToolTip="{Binding LocalizedStrings[VideoBitrateHint]}"/>
+                            </StackPanel>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding LocalizedStrings[AudioCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ComboBox ItemsSource="{Binding AudioCodecs}" SelectedItem="{Binding SelectedAudioCodec}"
-                                      IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="124" FontSize="12.5"/>
-                        </StackPanel>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Качество -->
-            <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel Orientation="Horizontal" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
-                            <TextBlock Text="{Binding LocalizedStrings[CrfLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ui:NumberBox Value="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" Width="84" MinHeight="29"
-                                          Minimum="0" Maximum="51" SmallChange="1" ClearButtonEnabled="False"
+                            <TextBlock Text="{Binding LocalizedStrings[AudioBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
+                            <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Width="102" MinHeight="29"
+                                          Minimum="0" SmallChange="32" ClearButtonEnabled="False"
                                           IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
-                                          ToolTip="{Binding LocalizedStrings[CrfHint]}"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
-                            <TextBlock Text="{Binding LocalizedStrings[VideoBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                            <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Width="102" MinHeight="29"
-                                          Minimum="0" SmallChange="100" ClearButtonEnabled="False"
-                                          IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
-                                          ToolTip="{Binding LocalizedStrings[VideoBitrateHint]}"/>
+                                          ToolTip="{Binding LocalizedStrings[AudioBitrateHint]}"/>
                         </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding LocalizedStrings[AudioBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5"/>
-                        <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Width="102" MinHeight="29"
-                                      Minimum="0" SmallChange="32" ClearButtonEnabled="False"
-                                      IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
-                                      ToolTip="{Binding LocalizedStrings[AudioBitrateHint]}"/>
+                </Border>
+
+                <!-- Команда -->
+                <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[FfmpegCommandPreviewLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
+                        <TextBox Text="{Binding FfmpegCommandPreview}" Height="44" FontFamily="{StaticResource MonoFont}" FontSize="11"
+                                 IsReadOnly="True" TextWrapping="Wrap" VerticalContentAlignment="Top" Padding="9,7"
+                                 VerticalScrollBarVisibility="Auto" AcceptsReturn="False"/>
                     </StackPanel>
+                </Border>
+
+                <!-- Прогресс -->
+                <StackPanel Margin="2,10,2,0">
+                    <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center" FontFamily="{StaticResource MonoLightFont}"
+                               FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,7"/>
+                    <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" Style="{StaticResource RoundedProgressBar}"/>
                 </StackPanel>
-            </Border>
 
-            <!-- Команда -->
-            <Border Style="{StaticResource CardBorder}" Padding="12,9" Margin="0,8,0,0">
-                <StackPanel>
-                    <TextBlock Text="{Binding LocalizedStrings[FfmpegCommandPreviewLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
-                    <TextBox Text="{Binding FfmpegCommandPreview}" Height="44" FontFamily="{StaticResource MonoFont}" FontSize="11"
-                             IsReadOnly="True" TextWrapping="Wrap" VerticalContentAlignment="Top" Padding="9,7"
-                             VerticalScrollBarVisibility="Auto" AcceptsReturn="False"/>
+                <!-- Кнопки -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,4">
+                    <Button Content="{Binding LocalizedStrings[CancelConvertButton]}" Command="{Binding CancelConvertCommand}"
+                            IsEnabled="{Binding IsCancellable}" Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}"
+                            MinWidth="132" Height="38" Margin="0,0,10,0" FontSize="13" FontWeight="SemiBold"/>
+                    <ui:Button Command="{Binding ConvertCommand}" MinWidth="216" Height="40" FontSize="14" FontWeight="SemiBold"
+                               Appearance="Primary" CornerRadius="20">
+                        <ui:Button.Icon>
+                            <ui:SymbolIcon Symbol="ArrowRepeatAll24" FontSize="15"/>
+                        </ui:Button.Icon>
+                        <TextBlock Text="{Binding LocalizedStrings[ConvertButton]}" Margin="6,0,0,0"/>
+                    </ui:Button>
                 </StackPanel>
-            </Border>
-
-            <!-- Прогресс -->
-            <StackPanel Margin="2,10,2,0">
-                <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center" FontFamily="{StaticResource MonoLightFont}"
-                           FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,7"/>
-                <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" Style="{StaticResource RoundedProgressBar}" Height="8"/>
             </StackPanel>
-
-            <!-- Кнопки -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,4">
-                <Button Content="{Binding LocalizedStrings[CancelConvertButton]}" Command="{Binding CancelConvertCommand}"
-                        IsEnabled="{Binding IsCancellable}" Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}"
-                        MinWidth="132" Height="38" Margin="0,0,10,0" FontSize="13" FontWeight="SemiBold"/>
-                <ui:Button Command="{Binding ConvertCommand}" MinWidth="216" Height="40" FontSize="14" FontWeight="SemiBold"
-                           Appearance="Primary" CornerRadius="20">
-                    <ui:Button.Icon>
-                        <ui:SymbolIcon Symbol="ArrowRepeatAll24" FontSize="15"/>
-                    </ui:Button.Icon>
-                    <TextBlock Text="{Binding LocalizedStrings[ConvertButton]}" Margin="6,0,0,0"/>
-                </ui:Button>
-            </StackPanel>
-        </StackPanel>
+        </ScrollViewer>
 
         <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="2" Panel.ZIndex="50"/>
     </Grid>

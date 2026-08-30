@@ -42,7 +42,7 @@
                 <Image Source="/icon.png" Width="16" Height="16" VerticalAlignment="Center"/>
             </ui:TitleBar.Header>
             <ui:TitleBar.TrailingContent>
-                <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
+                <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
                     <ui:Button Appearance="Transparent"
                                Command="{Binding OpenSettingsCommand}"
                                ToolTip="{Binding LocalizedStrings[SettingsWindowTitle]}"
@@ -51,7 +51,7 @@
                             <ui:SymbolIcon Symbol="Settings24"/>
                         </ui:Button.Icon>
                     </ui:Button>
-                    <ui:Button Appearance="Transparent"
+                    <ui:Button Appearance="Transparent" Margin="8,0,0,0"
                                Command="{Binding CycleAppThemeCommand}"
                                ToolTip="{Binding ThemeTooltip}"
                                AutomationProperties.Name="{Binding ThemeTooltip}">
@@ -212,16 +212,17 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding LocalizedStrings[QueueSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="0" VerticalAlignment="Center"/>
-            <TextBlock Grid.Column="2" Text="{Binding QueueSummaryText}" Style="{StaticResource MetaText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="{Binding LocalizedStrings[PostQueueActionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12" Margin="0,0,6,0"
-                           ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
-                           AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
-                <ComboBox ItemsSource="{Binding PostQueueActionItems}" SelectedIndex="{Binding SelectedPostQueueIndex}"
-                          Width="112" MinHeight="26" FontSize="12"
-                          ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
-                          AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
-            </StackPanel>
+            <!-- Сводка в «звёздной» колонке: длинный текст не распирает Auto-колонки и не сжимает комбобокс -->
+            <TextBlock Grid.Column="1" Text="{Binding QueueSummaryText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"
+                       HorizontalAlignment="Right" Margin="0,0,12,0" TextTrimming="CharacterEllipsis"/>
+            <TextBlock Grid.Column="2" Text="{Binding LocalizedStrings[PostQueueActionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12" Margin="0,0,6,0"
+                       VerticalAlignment="Center"
+                       ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
+                       AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
+            <ComboBox Grid.Column="3" ItemsSource="{Binding PostQueueActionItems}" SelectedIndex="{Binding SelectedPostQueueIndex}"
+                      MinWidth="112" MinHeight="26" FontSize="12" VerticalAlignment="Center"
+                      ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
+                      AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
         </Grid>
 
         <!-- ═══ Очередь + футер ═══ -->

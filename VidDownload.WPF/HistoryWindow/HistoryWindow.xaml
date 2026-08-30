@@ -12,6 +12,7 @@
         ExtendsContentIntoTitleBar="True">
     <Window.Resources>
         <converters:DownloadStatusToColorConverter x:Key="StatusColor"/>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
         <!-- Заголовок колонки без стандартной сортировочной панели.
              Неявный стиль распространяет его и на filler после последней колонки,
@@ -43,22 +44,27 @@
         <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource ColumnHeader}"/>
     </Window.Resources>
 
-    <Grid Margin="14,4,14,10">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[HistoryWindowTitle]}"/>
 
-        <ui:TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                    PlaceholderText="{Binding LocalizedStrings[HistorySearchPlaceholder]}"
-                    MinHeight="32" Margin="0,6,0,0" FontSize="12.5" ClearButtonEnabled="True"
-                    AutomationProperties.Name="{Binding LocalizedStrings[HistorySearchPlaceholder]}"/>
+        <Grid Grid.Row="1" Margin="14,4,14,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="0" Margin="0,8,0,0">
+            <ui:TextBox Grid.Row="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="{Binding LocalizedStrings[HistorySearchPlaceholder]}"
+                        MinHeight="32" Margin="0,6,0,0" FontSize="12.5" ClearButtonEnabled="True"
+                        AutomationProperties.Name="{Binding LocalizedStrings[HistorySearchPlaceholder]}"/>
+
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="0" Margin="0,8,0,0">
             <ListView ItemsSource="{Binding EntriesView}" SelectedItem="{Binding SelectedEntry}"
                       BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
                       FontSize="13"
@@ -124,25 +130,26 @@
             </ListView>
         </Border>
 
-        <Grid Grid.Row="3" Margin="0,12,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <ui:Button Content="{Binding LocalizedStrings[ClearHistoryButton]}" Command="{Binding ClearHistoryCommand}"
-                       Appearance="Danger" MinWidth="150" Height="34" FontSize="13"/>
-            <ui:Button Grid.Column="2" Content="{Binding LocalizedStrings[ShowMoreButton]}" Command="{Binding LoadMoreCommand}"
-                       Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"
-                       Visibility="{Binding CanLoadMore, Converter={StaticResource BoolToVis}}"/>
-            <ui:Button Grid.Column="3" Content="{Binding LocalizedStrings[ExportCsvButton]}" Command="{Binding ExportCsvCommand}"
-                       Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"/>
-            <ui:Button Grid.Column="4" Content="{Binding LocalizedStrings[CloseButton]}" Click="CloseButton_Click"
-                       Appearance="Secondary" MinWidth="110" Height="34" FontSize="13"/>
+            <Grid Grid.Row="2" Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ui:Button Content="{Binding LocalizedStrings[ClearHistoryButton]}" Command="{Binding ClearHistoryCommand}"
+                           Appearance="Danger" MinWidth="150" Height="34" FontSize="13"/>
+                <ui:Button Grid.Column="2" Content="{Binding LocalizedStrings[ShowMoreButton]}" Command="{Binding LoadMoreCommand}"
+                           Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"
+                           Visibility="{Binding CanLoadMore, Converter={StaticResource BoolToVis}}"/>
+                <ui:Button Grid.Column="3" Content="{Binding LocalizedStrings[ExportCsvButton]}" Command="{Binding ExportCsvCommand}"
+                           Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"/>
+                <ui:Button Grid.Column="4" Content="{Binding LocalizedStrings[CloseButton]}" Click="CloseButton_Click"
+                           Appearance="Secondary" MinWidth="110" Height="34" FontSize="13"/>
+            </Grid>
         </Grid>
 
-        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="4" Panel.ZIndex="50"/>
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="2" Panel.ZIndex="50"/>
     </Grid>
 </ui:FluentWindow>

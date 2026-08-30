@@ -11,16 +11,22 @@
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis" xmlns:converters="clr-namespace:VidDownload.WPF.Converters"/>
     </Window.Resources>
-    <Grid Margin="16,4,16,10">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[SettingsWindowTitle]}"/>
 
-        <StackPanel Grid.Row="1" Margin="0,4,0,0">
+        <Grid Grid.Row="1" Margin="16,4,16,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="0,4,0,0">
 
             <!-- Приложение -->
             <Border Style="{StaticResource CardBorder}" Padding="12,10">
@@ -114,21 +120,23 @@
                     </ui:Button>
                 </StackPanel>
             </Border>
-        </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
 
-        <!-- Кнопки -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,2">
-            <ui:Button Appearance="Primary" Click="OnSaveClick" MinWidth="150" Height="38" FontSize="13" FontWeight="SemiBold" CornerRadius="19">
-                <ui:Button.Icon>
-                    <ui:SymbolIcon Symbol="Save24" FontSize="15"/>
-                </ui:Button.Icon>
-                <TextBlock Text="{Binding LocalizedStrings[SaveButton]}" Margin="6,0,0,0"/>
-            </ui:Button>
-            <ui:Button Appearance="Secondary" Click="CancelButton_Click" MinWidth="130" Height="38" FontSize="13" Margin="10,0,0,0">
-                <TextBlock Text="{Binding LocalizedStrings[CloseButton]}"/>
-            </ui:Button>
-        </StackPanel>
+            <!-- Кнопки -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,2">
+                <ui:Button Appearance="Primary" Click="OnSaveClick" MinWidth="150" Height="38" FontSize="13" FontWeight="SemiBold" CornerRadius="19">
+                    <ui:Button.Icon>
+                        <ui:SymbolIcon Symbol="Save24" FontSize="15"/>
+                    </ui:Button.Icon>
+                    <TextBlock Text="{Binding LocalizedStrings[SaveButton]}" Margin="6,0,0,0"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Click="CancelButton_Click" MinWidth="130" Height="38" FontSize="13" Margin="10,0,0,0">
+                    <TextBlock Text="{Binding LocalizedStrings[CloseButton]}"/>
+                </ui:Button>
+            </StackPanel>
+        </Grid>
 
-        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="3" Panel.ZIndex="50"/>
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="2" Panel.ZIndex="50"/>
     </Grid>
 </ui:FluentWindow>
