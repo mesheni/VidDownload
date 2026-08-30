@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="780" Height="720" MinWidth="780" MinHeight="560"
+        Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="780" Height="800" MinWidth="780" MinHeight="800" MaxWidth="780" MaxHeight="800"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         ExtendsContentIntoTitleBar="True"
         AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop">

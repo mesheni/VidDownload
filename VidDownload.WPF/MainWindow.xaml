@@ -8,7 +8,7 @@
         xmlns:services="clr-namespace:VidDownload.WPF.Services"
         mc:Ignorable="d"
         Title="{Binding LocalizedStrings[MainWindowTitle]}" WindowStartupLocation="CenterScreen" Icon="/icon.png"
-        ResizeMode="CanResize" Width="704" Height="768" MinWidth="620" MinHeight="620"
+        ResizeMode="CanResize" Width="704" Height="780" MinWidth="704" MinHeight="780" MaxWidth="704" MaxHeight="780"
         ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
         AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop">
     <Window.InputBindings>
@@ -32,8 +32,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- ═══ Заголовок: логотип, тема, системные кнопки ═══ -->
@@ -220,7 +220,7 @@
                        ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
                        AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
             <ComboBox Grid.Column="3" ItemsSource="{Binding PostQueueActionItems}" SelectedIndex="{Binding SelectedPostQueueIndex}"
-                      MinWidth="112" MinHeight="26" FontSize="12" VerticalAlignment="Center"
+                      MinWidth="112" MinHeight="32" FontSize="12" VerticalAlignment="Center"
                       ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
                       AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
         </Grid>

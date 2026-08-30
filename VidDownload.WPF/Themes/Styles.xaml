@@ -42,10 +42,10 @@
         <Setter Property="Margin" Value="7,0"/>
     </Style>
 
-    <!-- Прогресс-бар со скруглёнными краями: высота 9 даёт радиус-«пилюлю» 4.5,
+    <!-- Прогресс-бар со скруглёнными краями: высота 12 даёт явную «пилюлю» (радиус 6),
          цвет полосы берётся из Foreground (у очереди — цвет статуса) -->
     <Style x:Key="RoundedProgressBar" TargetType="ProgressBar">
-        <Setter Property="Height" Value="9"/>
+        <Setter Property="Height" Value="12"/>
         <Setter Property="Maximum" Value="100"/>
         <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
         <Setter Property="Template">
