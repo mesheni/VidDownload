@@ -34,31 +34,29 @@
         }
 
         /// <summary>Сбрасывает закэшированный путь (после скачивания новой версии FFmpeg).</summary>
-        public static void ResetExecutablesPath() => _executablesPathConfigured = false;
+        public static void ResetExecutablesPath()
+        {
+            _executablesPathConfigured = false;
+            _hardwareEncoderProbeCache = null;
+        }
 
-        public async Task<string?> ConvertVideoAsync(
+        public async Task<ConversionResult> ConvertVideoAsync(
             ConversionOptions options,
             IProgress<DownloadProgress>? progress = null,
             CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(options.InputPath) || !File.Exists(options.InputPath))
             {
-                progress?.Report(new DownloadProgress
-                {
-                    Percent = 0,
-                    StatusMessage = string.Format(LocalizedStrings.Instance["InputFileNotFound"], options.InputPath)
-                });
-                return null;
+                string message = string.Format(LocalizedStrings.Instance["InputFileNotFound"], options.InputPath);
+                progress?.Report(new DownloadProgress { Percent = 0, StatusMessage = message });
+                return ConversionResult.Failed(message);
             }
 
             if (!EnsureExecutablesPath())
             {
-                progress?.Report(new DownloadProgress
-                {
-                    Percent = 0,
-                    StatusMessage = LocalizedStrings.Instance["FfmpegMissingConvert"]
-                });
-                return null;
+                string message = LocalizedStrings.Instance["FfmpegMissingConvert"];
+                progress?.Report(new DownloadProgress { Percent = 0, StatusMessage = message });
+                return ConversionResult.Failed(message);
             }
 
             try
@@ -75,6 +73,11 @@
 
                 conversion.SetOutput(options.OutputPath);
 
+                // ffmpeg не должен ждать ввода: про перезапись приложение спрашивает само,
+                // а вопрос "Overwrite? [y/N]" на stdin намертво вешает конвертацию
+                conversion.SetOverwriteOutput(true);
+                conversion.AddParameter("-nostdin", ParameterPosition.PreInput);
+
                 var parameters = BuildConversionParameters(options);
                 foreach (var param in parameters)
                 {
@@ -85,18 +88,37 @@
 
                 conversion.OnProgress += (sender, args) =>
                 {
-                    int percent = (int)Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds * 100, 0);
-                    Debug.WriteLine($"[{args.Duration} / {args.TotalLength}] {percent}%");
-                    progress?.Report(new DownloadProgress
+                    try
                     {
-                        Percent = percent,
-                        StatusMessage = $"[{args.Duration} / {args.TotalLength}] {percent}%"
-                    });
+                        int percent;
+                        string status;
+                        if (args.TotalLength.TotalSeconds > 0)
+                        {
+                            percent = Math.Clamp(
+                                (int)Math.Round(args.Duration.TotalSeconds / args.TotalLength.TotalSeconds * 100, 0),
+                                0, 100);
+                            status = $"[{args.Duration:hh\\:mm\\:ss} / {args.TotalLength:hh\\:mm\\:ss}] {percent}%";
+                        }
+                        else
+                        {
+                            // длительность неизвестна (некоторые TS/MKV) — показываем только позицию
+                            percent = 0;
+                            status = $"[{args.Duration:hh\\:mm\\:ss}]";
+                        }
+
+                        Debug.WriteLine(status);
+                        progress?.Report(new DownloadProgress { Percent = percent, StatusMessage = status });
+                    }
+                    catch (Exception ex)
+                    {
+                        // ошибка расчёта прогресса не должна ронять конвертацию
+                        Debug.WriteLine($"Progress error: {ex}");
+                    }
                 };
 
                 await conversion.Start(cancellationToken).ConfigureAwait(false);
 
-                return options.OutputPath;
+                return ConversionResult.Ok(options.OutputPath);
             }
             catch (OperationCanceledException)
             {
@@ -105,12 +127,14 @@
                     Percent = 0,
                     StatusMessage = LocalizedStrings.Instance["DownloadCancelled"]
                 });
-                return null;
+                return ConversionResult.CancelledResult();
             }
             catch (Exception ex)
             {
+                // Xabe заворачивает stderr ffmpeg в исключение — это и есть причина отказа
                 Debug.WriteLine($"FFmpeg error: {ex}");
-                return null;
+                AppLog.Error("Converter", ex);
+                return ConversionResult.Failed(ex.Message);
             }
         }
 
@@ -122,32 +146,25 @@
             {
                 parameters.Add("-vn");
                 parameters.Add($"-c:a {options.AudioCodec}");
+                parameters.AddRange(ConversionOptions.GetSubtitleArgs(options.OutputFormat, audioOnly: true));
 
-                if (options.AudioBitrate.HasValue && options.AudioBitrate.Value > 0)
+                if (options.AudioBitrate.HasValue && options.AudioBitrate.Value > 0
+                    && ConversionOptions.SupportsAudioBitrate(options.AudioCodec))
                 {
                     parameters.Add($"-b:a {options.AudioBitrate.Value}k");
                 }
+
                 return parameters;
             }
 
             parameters.Add($"-c:v {options.VideoCodec}");
             parameters.Add($"-c:a {options.AudioCodec}");
+            parameters.AddRange(ConversionOptions.GetPresetArgs(options.VideoCodec, options.Preset));
+            parameters.AddRange(ConversionOptions.GetQualityArgs(options.VideoCodec, options.Crf, options.VideoBitrate));
+            parameters.AddRange(ConversionOptions.GetSubtitleArgs(options.OutputFormat, audioOnly: false));
 
-            if (!string.IsNullOrEmpty(options.Preset) && options.Preset != "medium")
-            {
-                parameters.Add($"-preset {options.Preset}");
-            }
-
-            if (options.Crf.HasValue)
-            {
-                parameters.Add($"-crf {options.Crf.Value}");
-            }
-            else if (options.VideoBitrate.HasValue && options.VideoBitrate.Value > 0)
-            {
-                parameters.Add($"-b:v {options.VideoBitrate.Value}k");
-            }
-
-            if (options.AudioBitrate.HasValue && options.AudioBitrate.Value > 0)
+            if (options.AudioBitrate.HasValue && options.AudioBitrate.Value > 0
+                && ConversionOptions.SupportsAudioBitrate(options.AudioCodec))
             {
                 parameters.Add($"-b:a {options.AudioBitrate.Value}k");
             }
@@ -158,7 +175,7 @@
         public static string BuildCommandPreview(ConversionOptions options)
         {
             var sb = new StringBuilder();
-            sb.Append("ffmpeg -i \"");
+            sb.Append("ffmpeg -nostdin -i \"");
             sb.Append(options.InputPath);
             sb.Append("\" ");
 
@@ -169,7 +186,7 @@
                 sb.Append(' ');
             }
 
-            sb.Append('"');
+            sb.Append("-y \"");
             sb.Append(options.OutputPath);
             sb.Append('"');
 
@@ -220,38 +237,80 @@
             return available;
         }
 
-        public static async Task<List<string>> GetFilteredHardwareEncodersAsync(
-            string hardwareEncoder,
-            string outputFormat)
+        // ==== Проверка доступности аппаратных кодеров ====
+
+        private static Dictionary<string, bool>? _hardwareEncoderProbeCache;
+
+        private static readonly string[] ProbeCodecs =
         {
-            var availableHwEncoders = await GetAvailableEncodersAsync().ConfigureAwait(false);
-            var filtered = new List<string>();
+            "h264_nvenc", "hevc_nvenc", "av1_nvenc",
+            "h264_amf", "hevc_amf",
+            "h264_qsv", "hevc_qsv"
+        };
 
-            var candidates = ConversionOptions.GetVideoCodecsForHardwareEncoder(hardwareEncoder);
-            var formatCodecs = ConversionOptions.GetVideoCodecsForFormat(outputFormat);
-            var formatSet = new HashSet<string>(formatCodecs, StringComparer.OrdinalIgnoreCase);
+        /// <summary>
+        /// Проверяет аппаратные кодеры коротким тестовым кодированием (в null, без файлов).
+        /// Наличие кодека в -encoders не гарантирует работающего GPU: nvenc может быть в сборке
+        /// на машине без NVIDIA, а av1_nvenc — на карте без поддержки AV1.
+        /// </summary>
+        public static async Task<Dictionary<string, bool>> GetOrProbeHardwareEncodersAsync()
+        {
+            Dictionary<string, bool>? cached = _hardwareEncoderProbeCache;
+            if (cached != null)
+                return cached;
 
-            foreach (var codec in candidates)
+            var results = await Task.WhenAll(ProbeCodecs.Select(ProbeEncoderAsync)).ConfigureAwait(false);
+            var map = new Dictionary<string, bool>();
+            for (int i = 0; i < ProbeCodecs.Length; i++)
+                map[ProbeCodecs[i]] = results[i];
+
+            _hardwareEncoderProbeCache = map;
+            return map;
+        }
+
+        private static async Task<bool> ProbeEncoderAsync(string codec)
+        {
+            string? ffmpegPath = FindFfmpegPath();
+            if (string.IsNullOrEmpty(ffmpegPath) || !File.Exists(ffmpegPath))
+                return false;
+
+            try
             {
-                if (!formatSet.Contains(codec))
-                    continue;
+                var psi = new ProcessStartInfo(
+                    ffmpegPath,
+                    $"-hide_banner -v error -f lavfi -i testsrc=duration=0.3:size=256x256:rate=10 -c:v {codec} -f null NUL")
+                {
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
 
-                if (hardwareEncoder == string.Empty)
+                using var proc = Process.Start(psi);
+                if (proc == null)
+                    return false;
+
+                // зависший драйвер не должен блокировать окно конвертера
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+                try
                 {
-                    filtered.Add(codec);
+                    await proc.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
                 }
-                else if (availableHwEncoders.Contains(codec) || availableHwEncoders.Count == 0)
+                catch (OperationCanceledException)
                 {
-                    filtered.Add(codec);
+                    try { proc.Kill(entireProcessTree: true); }
+                    catch { }
+
+                    return false;
                 }
+
+                return proc.ExitCode == 0;
             }
-
-            if (filtered.Count == 0 && candidates.Count > 0)
+            catch (Exception ex)
             {
-                filtered.Add(candidates[0]);
+                Debug.WriteLine($"Probe {codec} error: {ex.Message}");
+                return false;
             }
-
-            return filtered;
         }
 
         public async Task<IMediaInfo?> GetMediaInfoAsync(string filePath)

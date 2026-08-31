@@ -891,6 +891,9 @@ Leave 0 for auto</value>
   <data name="BatchOverwriteAsk" xml:space="preserve">
     <value>Some output files already exist. Overwrite them? (if declined, they will be skipped)</value>
   </data>
+  <data name="HwEncoderUnavailable" xml:space="preserve">
+    <value>Encoder {0} is not available on this system (no matching GPU or driver) — switched to None (CPU).</value>
+  </data>
   <data name="BatchDone" xml:space="preserve">
     <value>Done: {0} succeeded, {1} failed</value>
   </data>

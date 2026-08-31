@@ -891,6 +891,9 @@
   <data name="BatchOverwriteAsk" xml:space="preserve">
     <value>部分输出文件已存在。是否覆盖？（选择“否”将跳过这些文件）</value>
   </data>
+  <data name="HwEncoderUnavailable" xml:space="preserve">
+    <value>编码器 {0} 在此系统上不可用（缺少对应的 GPU 或驱动）——已切换为 None（CPU）。</value>
+  </data>
   <data name="BatchDone" xml:space="preserve">
     <value>完成：成功 {0} 个，失败 {1} 个</value>
   </data>

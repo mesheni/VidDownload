@@ -894,6 +894,9 @@
   <data name="BatchOverwriteAsk" xml:space="preserve">
     <value>Некоторые выходные файлы уже существуют. Перезаписать их? (при отказе они будут пропущены)</value>
   </data>
+  <data name="HwEncoderUnavailable" xml:space="preserve">
+    <value>Кодировщик {0} недоступен на этой системе (нет подходящего GPU или драйвера) — переключено на None (ЦП).</value>
+  </data>
   <data name="BatchDone" xml:space="preserve">
     <value>Готово: успешно {0}, с ошибками {1}</value>
   </data>

@@ -129,17 +129,25 @@ namespace VidDownload.WPF.Services
 
                 info.LatestVersion = latest.TagName;
 
-                foreach (var asset in latest.Assets)
+                var matches = latest.Assets.Where(a =>
                 {
-                    string name = asset.Name;
-                    if (name.Contains("win64", StringComparison.OrdinalIgnoreCase) &&
-                        name.Contains("gpl", StringComparison.OrdinalIgnoreCase) &&
-                        name.Contains("shared", StringComparison.OrdinalIgnoreCase) &&
-                        name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                    {
-                        info.DownloadUrl = asset.BrowserDownloadUrl;
-                        break;
-                    }
+                    string name = a.Name;
+                    return name.Contains("win64", StringComparison.OrdinalIgnoreCase) &&
+                           name.Contains("gpl", StringComparison.OrdinalIgnoreCase) &&
+                           name.Contains("shared", StringComparison.OrdinalIgnoreCase) &&
+                           name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
+                }).ToList();
+
+                // master-сборки — ежедневные nightly и могут требовать более новый API
+                // драйвера GPU (например, NVENC 13.1), чем установлен у пользователя, —
+                // аппаратные кодировщики «сами» перестают работать. Берём стабильную ветку.
+                var chosen = matches.FirstOrDefault(a =>
+                    !a.Name.Contains("master", StringComparison.OrdinalIgnoreCase))
+                    ?? matches.FirstOrDefault();
+
+                if (chosen != null)
+                {
+                    info.DownloadUrl = chosen.BrowserDownloadUrl;
                 }
 
                 if (string.IsNullOrEmpty(storedTag) || storedTag != latest.TagName)

@@ -25,6 +25,12 @@ namespace VidDownload.WPF.ViewModels
         private readonly LocalizedStrings _loc;
         private CancellationTokenSource? _cts;
 
+        /// <summary>Аппаратные кодеки, подтверждённые тестовым кодированием (без GPU они не работают).</summary>
+        private readonly HashSet<string> _workingHardwareCodecs = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Сохранённый в настройках кодек — восстанавливается после пробы аппаратных кодеров.</summary>
+        private string? _pendingSavedVideoCodec;
+
         public LocalizedStrings LocalizedStrings => _loc;
 
         [ObservableProperty]
@@ -149,7 +155,7 @@ namespace VidDownload.WPF.ViewModels
                 SelectedFormat = "MP3";
             SelectedVideoCodec = string.IsNullOrEmpty(settings.ConvertVideoCodec) ? "libx264" : settings.ConvertVideoCodec;
             SelectedAudioCodec = string.IsNullOrEmpty(settings.ConvertAudioCodec) ? "aac" : settings.ConvertAudioCodec;
-            SelectedHardwareEncoder = string.IsNullOrEmpty(settings.ConvertHardwareEncoder) ? string.Empty : settings.ConvertHardwareEncoder;
+            SelectedHardwareEncoder = MapHardwareEncoderKeyToDisplay(settings.ConvertHardwareEncoder);
             Crf = settings.ConvertCrf > 0 ? settings.ConvertCrf : 23;
             VideoBitrate = settings.ConvertVideoBitrate;
             AudioBitrate = settings.ConvertAudioBitrate;
@@ -158,7 +164,74 @@ namespace VidDownload.WPF.ViewModels
 
             RefreshCodecLists();
             RefreshCommandPreview();
+
+            // доступность GPU-кодеров проверяется тестовым кодированием в фоне —
+            // до его завершения список кодеков строится без аппаратных
+            _pendingSavedVideoCodec = settings.ConvertVideoCodec;
+            _ = RefreshHardwareEncoderAvailabilityAsync();
         }
+
+        /// <summary>Пробирует аппаратные кодеры и пересобирает списки кодировщиков/кодеков.</summary>
+        private async Task RefreshHardwareEncoderAvailabilityAsync()
+        {
+            try
+            {
+                var probe = await FFmpegAction.GetOrProbeHardwareEncodersAsync().ConfigureAwait(true);
+
+                _workingHardwareCodecs.Clear();
+                foreach (var (codec, works) in probe)
+                {
+                    if (works)
+                        _workingHardwareCodecs.Add(codec);
+                }
+
+                RebuildHardwareEncoderList();
+                RefreshCodecLists();
+                RefreshCommandPreview();
+
+                // после пробы список мог расшириться — возвращаем сохранённый кодек
+                if (!string.IsNullOrEmpty(_pendingSavedVideoCodec)
+                    && VideoCodecs.Contains(_pendingSavedVideoCodec))
+                {
+                    SelectedVideoCodec = _pendingSavedVideoCodec;
+                    RefreshCommandPreview();
+                }
+
+                _pendingSavedVideoCodec = null;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Hardware encoder probe failed: {ex.Message}");
+            }
+        }
+
+        private void RebuildHardwareEncoderList()
+        {
+            string current = SelectedHardwareEncoder ?? "None";
+
+            HardwareEncoders.Clear();
+            HardwareEncoders.Add("None");
+            if (HasWorkingCodec("nvenc"))
+                HardwareEncoders.Add("NVENC");
+            if (HasWorkingCodec("amf"))
+                HardwareEncoders.Add("AMF");
+            if (HasWorkingCodec("qsv"))
+                HardwareEncoders.Add("QSV");
+
+            if (!HardwareEncoders.Contains(current))
+            {
+                SelectedHardwareEncoder = "None";
+                StatusMessage = string.Format(_loc["HwEncoderUnavailable"], current);
+            }
+            else
+            {
+                // восстановить SelectedItem комбобокса после пересборки списка
+                SelectedHardwareEncoder = current;
+            }
+        }
+
+        private bool HasWorkingCodec(string family) =>
+            _workingHardwareCodecs.Any(c => c.EndsWith("_" + family, StringComparison.OrdinalIgnoreCase));
 
         private bool CanConvert() => !IsConverting &&
             (IsBatchMode
@@ -240,19 +313,18 @@ namespace VidDownload.WPF.ViewModels
                 return;
             }
 
-            var videoList = new List<string>();
-            var candidates = ConversionOptions.GetVideoCodecsForHardwareEncoder(hwEncoder);
-            var formatCodecs = ConversionOptions.GetVideoCodecsForFormat(format);
-            var formatSet = new HashSet<string>(formatCodecs, StringComparer.OrdinalIgnoreCase);
-
-            foreach (var codec in candidates)
-            {
-                if (formatSet.Contains(codec))
-                    videoList.Add(codec);
-            }
+            var videoList = ConversionOptions.ResolveVideoCodecList(format, hwEncoder)
+                .Where(codec => ConversionOptions.DetectHardwareEncoder(codec) == null
+                                || _workingHardwareCodecs.Contains(codec))
+                .ToList();
 
             if (videoList.Count == 0)
-                videoList.Add("libx264");
+            {
+                // запасной вариант — CPU-кодек, совместимый с форматом
+                var formatCodecs = ConversionOptions.GetVideoCodecsForFormat(format);
+                videoList.Add(formatCodecs.FirstOrDefault(c =>
+                    ConversionOptions.DetectHardwareEncoder(c) == null) ?? "libx264");
+            }
 
             VideoCodecs.Clear();
             foreach (var c in videoList)
@@ -280,7 +352,19 @@ namespace VidDownload.WPF.ViewModels
                 "qsv" => "qsv",
                 "none" => string.Empty,
                 "" => string.Empty,
-                _ => "nvenc"
+                // неизвестное значение не должно молча включать аппаратный кодировщик
+                _ => string.Empty
+            };
+        }
+
+        private static string MapHardwareEncoderKeyToDisplay(string? key)
+        {
+            return (key ?? string.Empty).ToLower() switch
+            {
+                "nvenc" => "NVENC",
+                "amf" => "AMF",
+                "qsv" => "QSV",
+                _ => "None"
             };
         }
 
@@ -385,12 +469,24 @@ namespace VidDownload.WPF.ViewModels
                     ProgressPercent = p.Percent;
                 });
 
-                var resultPath = await _ffmpegAction.ConvertVideoAsync(options, progress, _cts.Token);
+                var result = await _ffmpegAction.ConvertVideoAsync(options, progress, _cts.Token);
 
-                if (resultPath != null)
+                if (result.Success)
                 {
-                    _messageService.Info(string.Format(_loc["ConversionSuccess"], resultPath), _loc["SuccessTitle"]);
+                    _messageService.Info(string.Format(_loc["ConversionSuccess"], result.OutputPath), _loc["SuccessTitle"]);
                     await SaveSettingsAsync();
+                }
+                else if (result.Cancelled)
+                {
+                    StatusMessage = _loc["DownloadCancelled"];
+                    ProgressPercent = 0;
+                }
+                else
+                {
+                    // раньше ошибка ffmpeg молча проглатывалась и конвертация «просто не начиналась»
+                    StatusMessage = string.Format(_loc["ConversionError"], result.Error);
+                    _messageService.Error(StatusMessage, _loc["ErrorTitle"]);
+                    ProgressPercent = 0;
                 }
             }
             catch (OperationCanceledException)
@@ -464,27 +560,61 @@ namespace VidDownload.WPF.ViewModels
             _cts = new CancellationTokenSource();
             int done = 0;
             int failed = 0;
+            bool cancelled = false;
+            var failures = new List<string>();
 
             try
             {
                 foreach (var options in optionsList)
                 {
-                    int index = done + 1;
+                    int index = done + failed + 1;
                     var progress = new Progress<DownloadProgress>(p =>
                     {
-                        ProgressPercent = (int)Math.Round((done + p.Percent / 100.0) / optionsList.Count * 100);
+                        ProgressPercent = (int)Math.Round((done + failed + p.Percent / 100.0) / optionsList.Count * 100);
                         StatusMessage = $"[{index}/{optionsList.Count}] {Path.GetFileName(options.InputPath)} — {p.Percent}%";
                     });
 
-                    var resultPath = await _ffmpegAction.ConvertVideoAsync(options, progress, _cts.Token);
-                    if (resultPath == null)
+                    var result = await _ffmpegAction.ConvertVideoAsync(options, progress, _cts.Token);
+                    if (result.Cancelled)
+                    {
+                        cancelled = true;
+                        break;
+                    }
+
+                    if (!result.Success)
+                    {
                         failed++;
+                        failures.Add($"{Path.GetFileName(options.InputPath)}: {result.Error}");
+                    }
+
                     done++;
                 }
 
-                ProgressPercent = 100;
-                StatusMessage = string.Format(_loc["BatchDone"], optionsList.Count - failed, failed);
-                await SaveSettingsAsync();
+                if (cancelled)
+                {
+                    StatusMessage = _loc["DownloadCancelled"];
+                    ProgressPercent = 0;
+                }
+                else
+                {
+                    ProgressPercent = 100;
+                    StatusMessage = string.Format(_loc["BatchDone"], done, failed);
+                    await SaveSettingsAsync();
+
+                    if (failures.Count > 0)
+                    {
+                        AppLog.Error("Converter", $"Batch: {done} ok, {failed} failed{Environment.NewLine}{string.Join(Environment.NewLine, failures)}");
+                        var details = failures.Take(3);
+                        string extra = failures.Count > details.Count()
+                            ? Environment.NewLine + "…"
+                            : string.Empty;
+                        _messageService.Warning(
+                            string.Format(_loc["BatchDone"], done, failed)
+                                + Environment.NewLine + Environment.NewLine
+                                + string.Join(Environment.NewLine, details) + extra,
+                            _loc["WarningTitle"]);
+                    }
+                }
             }
             catch (OperationCanceledException)
             {
