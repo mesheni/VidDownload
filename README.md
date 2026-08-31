@@ -1,5 +1,7 @@
 # VidDownload
 
+<img width="1774" height="887" alt="ChatGPT Image 24 авг  2026 г , 15_27_22" src="https://github.com/user-attachments/assets/46d80811-285d-4991-87c0-623e3b84641a" />
+
 **Графическая оболочка для yt-dlp, позволяющая скачивать видео и аудио с различных платформ по ссылке.**
 
 ---
@@ -124,8 +126,7 @@ powershell -ExecutionPolicy Bypass -File build-installer.ps1
 
 ## Интерфейс
 
-<img width="691" height="671" alt="image" src="https://github.com/user-attachments/assets/bcf7304f-7123-4ec8-b323-1aee94242589" />
-
+<img width="701" height="733" alt="image" src="https://github.com/user-attachments/assets/64ee2db9-a0eb-4ce5-9455-e4a43e04cb36" />
 
 ---
 
