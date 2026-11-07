@@ -6,201 +6,225 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[SettingsWindowTitle]}" Width="500" Height="640"
-        MinWidth="460" MinHeight="420"
+        Title="{Binding LocalizedStrings[SettingsWindowTitle]}" Width="520" Height="720"
+        MinWidth="480" MinHeight="500"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
-        WindowBackdropType="Mica" Icon="/icon.png"
-        ExtendsContentIntoTitleBar="True">
+        Icon="/icon.png" ExtendsContentIntoTitleBar="True">
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <converters:StringToVisibilityConverter x:Key="TextToVis"/>
     </Window.Resources>
-    <Grid>
+
+    <Grid Background="{DynamicResource WindowBgrBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Заголовок окна -->
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[SettingsWindowTitle]}"/>
 
-        <Grid Grid.Row="1" Margin="16,4,16,10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- Содержимое настроек -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="20,12,20,16">
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <StackPanel Margin="0,4,0,0">
+                <!-- 1. ПРИЛОЖЕНИЕ -->
+                <Border Style="{StaticResource CardSectionBorder}" Margin="0,0,0,12" Padding="16,8,16,12">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[SettingsAppSection]}" Style="{StaticResource SectionLabel}"
+                                   FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,6,0,8"/>
 
-                    <!-- Приложение -->
-                    <ui:CardExpander Margin="0,0,0,8" Padding="14,9" ContentPadding="14,0,14,8"
-                                     Background="{DynamicResource SurfaceBgrBrush}"
-                                     BorderBrush="{DynamicResource AppBorderBrush}"
-                                     Foreground="{DynamicResource TextPrimaryBrush}"
-                                     CornerRadius="{StaticResource MediumRadius}" IsExpanded="True">
-                        <ui:CardExpander.Header>
-                            <TextBlock Text="{Binding LocalizedStrings[SettingsAppSection]}"
-                                       FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        </ui:CardExpander.Header>
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6,0,8">
-                                <TextBlock Text="{Binding LocalizedStrings[LanguageLabel]}" Style="{StaticResource FieldLabelText}"
-                                           Width="148" VerticalAlignment="Center"/>
-                                <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}"
-                                          Width="110" MinHeight="30" FontSize="{StaticResource FontSizeBody}"
-                                          AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
+                        <!-- Язык -->
+                        <Grid Margin="0,6,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding LocalizedStrings[LanguageLabel]}" Style="{StaticResource FieldLabelText}"
+                                       VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}"
+                                      Width="120" MinHeight="32" AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
+                        </Grid>
+
+                        <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,8"/>
+
+                        <!-- Сворачивать в трей -->
+                        <Grid Margin="0,4,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding LocalizedStrings[MinimizeToTrayLabel]}" Style="{StaticResource FieldLabelText}"
+                                       VerticalAlignment="Center"/>
+                            <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding MinimizeToTray}"/>
+                        </Grid>
+
+                        <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,8"/>
+
+                        <!-- Буфер обмена -->
+                        <Grid Margin="0,4,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding LocalizedStrings[ClipboardMonitorLabel]}" Style="{StaticResource FieldLabelText}"
+                                       VerticalAlignment="Center"/>
+                            <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding ClipboardMonitorEnabled}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- 2. ЗАГРУЗКИ -->
+                <Border Style="{StaticResource CardSectionBorder}" Margin="0,0,0,12" Padding="16,8,16,12">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[SettingsDownloadsSection]}" Style="{StaticResource SectionLabel}"
+                                   FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,6,0,8"/>
+
+                        <!-- Одновременных загрузок -->
+                        <Grid Margin="0,6,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding LocalizedStrings[MaxConcurrentLabel]}" Style="{StaticResource FieldLabelText}"
+                                       VerticalAlignment="Center"/>
+                            <ui:NumberBox Grid.Column="1" Value="{Binding MaxConcurrentDownloads, UpdateSourceTrigger=PropertyChanged}"
+                                          Width="120" Height="32" Minimum="1" Maximum="3" SmallChange="1" ClearButtonEnabled="False"/>
+                        </Grid>
+
+                        <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,8"/>
+
+                        <!-- Повторов при ошибке -->
+                        <Grid Margin="0,6,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding LocalizedStrings[RetriesLabel]}" Style="{StaticResource FieldLabelText}"
+                                       VerticalAlignment="Center"/>
+                            <ui:NumberBox Grid.Column="1" Value="{Binding Retries, UpdateSourceTrigger=PropertyChanged}"
+                                          Width="120" Height="32" Minimum="0" Maximum="20" SmallChange="1" ClearButtonEnabled="False"/>
+                        </Grid>
+
+                        <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,8"/>
+
+                        <!-- Архив загрузок -->
+                        <Grid Margin="0,4,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Text="{Binding LocalizedStrings[UseArchiveLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                <TextBlock Text="{Binding LocalizedStrings[UseArchiveHint]}" Style="{StaticResource FieldHintText}"
+                                           TextWrapping="Wrap" Margin="0,2,0,0"/>
                             </StackPanel>
+                            <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding UseDownloadArchive}" VerticalAlignment="Center"/>
+                        </Grid>
 
-                            <ui:ToggleSwitch IsChecked="{Binding MinimizeToTray}" Content="{Binding LocalizedStrings[MinimizeToTrayLabel]}"
-                                             FontSize="{StaticResource FontSizeBody}" Margin="2,2"/>
-                            <ui:ToggleSwitch IsChecked="{Binding ClipboardMonitorEnabled}" Content="{Binding LocalizedStrings[ClipboardMonitorLabel]}"
-                                             FontSize="{StaticResource FontSizeBody}" Margin="2,2"/>
-                        </StackPanel>
-                    </ui:CardExpander>
+                        <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,8"/>
 
-                    <!-- Загрузки -->
-                    <ui:CardExpander Margin="0,0,0,8" Padding="14,9" ContentPadding="14,0,14,8"
-                                     Background="{DynamicResource SurfaceBgrBrush}"
-                                     BorderBrush="{DynamicResource AppBorderBrush}"
-                                     Foreground="{DynamicResource TextPrimaryBrush}"
-                                     CornerRadius="{StaticResource MediumRadius}" IsExpanded="True">
-                        <ui:CardExpander.Header>
-                            <TextBlock Text="{Binding LocalizedStrings[SettingsDownloadsSection]}"
-                                       FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        </ui:CardExpander.Header>
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6,0,2">
-                                <TextBlock Text="{Binding LocalizedStrings[MaxConcurrentLabel]}" Style="{StaticResource FieldLabelText}"
-                                           Width="148" VerticalAlignment="Center"/>
-                                <ui:NumberBox Value="{Binding MaxConcurrentDownloads, UpdateSourceTrigger=PropertyChanged}" Width="92" MinHeight="30"
-                                              Minimum="1" Maximum="3" SmallChange="1" ClearButtonEnabled="False" FontSize="{StaticResource FontSizeBody}"
-                                              AutomationProperties.Name="{Binding LocalizedStrings[MaxConcurrentLabel]}"/>
+                        <!-- Окно предпросмотра -->
+                        <Grid Margin="0,4,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                <TextBlock Text="{Binding LocalizedStrings[ShowPreviewLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                <TextBlock Text="{Binding LocalizedStrings[ShowPreviewHint]}" Style="{StaticResource FieldHintText}"
+                                           TextWrapping="Wrap" Margin="0,2,0,0"/>
                             </StackPanel>
-                            <TextBlock Text="{Binding LocalizedStrings[MaxConcurrentHint]}" Style="{StaticResource FieldHintText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,6"/>
+                            <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding ShowMetadataPreview}" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                <TextBlock Text="{Binding LocalizedStrings[RetriesLabel]}" Style="{StaticResource FieldLabelText}"
-                                           Width="148" VerticalAlignment="Center"/>
-                                <ui:NumberBox Value="{Binding Retries, UpdateSourceTrigger=PropertyChanged}" Width="92" MinHeight="30"
-                                              Minimum="0" Maximum="20" SmallChange="1" ClearButtonEnabled="False" FontSize="{StaticResource FontSizeBody}"
-                                              AutomationProperties.Name="{Binding LocalizedStrings[RetriesLabel]}"/>
+                <!-- 3. СЕТЬ И ПРИВАТНОСТЬ -->
+                <Border Style="{StaticResource CardSectionBorder}" Margin="0,0,0,12" Padding="16,8,16,14">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[SettingsNetworkPrivacySection]}" Style="{StaticResource SectionLabel}"
+                                   FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,6,0,8"/>
+
+                        <!-- Прокси -->
+                        <DockPanel LastChildFill="True" Margin="0,6,0,10">
+                            <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizedStrings[ProxyLabel]}" Style="{StaticResource FieldLabelText}"
+                                       Width="120" VerticalAlignment="Center"/>
+                            <ui:TextBox x:Name="ProxyBox" Text="{Binding Proxy, UpdateSourceTrigger=PropertyChanged}"
+                                        Height="32" PlaceholderText="{Binding LocalizedStrings[ProxyPlaceholder]}"
+                                        FontFamily="{StaticResource MonoFont}" FontSize="12" VerticalContentAlignment="Center"/>
+                        </DockPanel>
+                        <TextBlock Text="{Binding ProxyError}" Style="{StaticResource ErrorText}" Margin="120,-6,0,8"
+                                   Visibility="{Binding HasProxyError, Converter={StaticResource BoolToVis}}"/>
+
+                        <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,8"/>
+
+                        <!-- Cookies источник -->
+                        <DockPanel LastChildFill="True" Margin="0,6,0,10">
+                            <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizedStrings[CookiesSourceLabel]}" Style="{StaticResource FieldLabelText}"
+                                       Width="120" VerticalAlignment="Center"/>
+                            <ComboBox ItemsSource="{Binding CookiesSources}" SelectedIndex="{Binding SelectedCookiesIndex}"
+                                      Height="32" HorizontalAlignment="Stretch"/>
+                        </DockPanel>
+
+                        <!-- Файл cookies.txt -->
+                        <DockPanel LastChildFill="True" Margin="0,0,0,8" Visibility="{Binding IsCookiesFileRequired, Converter={StaticResource BoolToVis}}">
+                            <TextBlock DockPanel.Dock="Left" Text="cookies.txt" FontFamily="{StaticResource MonoFont}"
+                                       FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Width="120" VerticalAlignment="Center"/>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}"
+                                    Content="{Binding LocalizedStrings[BrowseButton]}" Margin="8,0,0,0"
+                                    Command="{Binding BrowseCookiesFileCommand}" Height="32" Padding="14,0"/>
+                            <ui:TextBox x:Name="CookiesFileBox" Text="{Binding CookiesFilePath, UpdateSourceTrigger=PropertyChanged}"
+                                        Height="32" FontFamily="{StaticResource MonoFont}" FontSize="12" VerticalContentAlignment="Center"/>
+                        </DockPanel>
+                        <TextBlock Text="{Binding CookiesFileError}" Style="{StaticResource ErrorText}" Margin="120,-4,0,8"
+                                   Visibility="{Binding HasCookiesFileError, Converter={StaticResource BoolToVis}}"/>
+
+                        <TextBlock Text="{Binding LocalizedStrings[CookiesHint]}" Style="{StaticResource FieldHintText}"
+                                   TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 4. ДИАГНОСТИКА -->
+                <Border Style="{StaticResource CardSectionBorder}" Padding="16,8,16,14">
+                    <StackPanel>
+                        <TextBlock Text="{Binding LocalizedStrings[SettingsDiagnosticsSection]}" Style="{StaticResource SectionLabel}"
+                                   FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" Margin="0,6,0,10"/>
+                        <Button Style="{StaticResource SecondaryFlatButton}" HorizontalAlignment="Left"
+                                Command="{Binding OpenLogsFolderCommand}" Height="34" Padding="14,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Folder24" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="{Binding LocalizedStrings[OpenLogsFolderButton]}"/>
                             </StackPanel>
-                            <TextBlock Text="{Binding LocalizedStrings[RetriesHint]}" Style="{StaticResource FieldHintText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,6"/>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
 
-                            <ui:ToggleSwitch IsChecked="{Binding UseDownloadArchive}" Content="{Binding LocalizedStrings[UseArchiveLabel]}"
-                                             FontSize="{StaticResource FontSizeBody}" Margin="2,4,2,2"/>
-                            <TextBlock Text="{Binding LocalizedStrings[UseArchiveHint]}" Style="{StaticResource FieldHintText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,8"/>
-
-                            <ui:ToggleSwitch IsChecked="{Binding ShowMetadataPreview}" Content="{Binding LocalizedStrings[ShowPreviewLabel]}"
-                                             FontSize="{StaticResource FontSizeBody}" Margin="2,4,2,2"/>
-                            <TextBlock Text="{Binding LocalizedStrings[ShowPreviewHint]}" Style="{StaticResource FieldHintText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,2"/>
-                        </StackPanel>
-                    </ui:CardExpander>
-
-                    <!-- Сеть и приватность -->
-                    <ui:CardExpander Margin="0,0,0,8" Padding="14,9" ContentPadding="14,0,14,8"
-                                     Background="{DynamicResource SurfaceBgrBrush}"
-                                     BorderBrush="{DynamicResource AppBorderBrush}"
-                                     Foreground="{DynamicResource TextPrimaryBrush}"
-                                     CornerRadius="{StaticResource MediumRadius}" IsExpanded="True">
-                        <ui:CardExpander.Header>
-                            <TextBlock Text="{Binding LocalizedStrings[SettingsNetworkPrivacySection]}"
-                                       FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        </ui:CardExpander.Header>
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,6,0,2">
-                                <TextBlock Text="{Binding LocalizedStrings[ProxyLabel]}" Style="{StaticResource FieldLabelText}"
-                                           Width="148" VerticalAlignment="Center"/>
-                                <ui:TextBox x:Name="ProxyBox" Text="{Binding Proxy, UpdateSourceTrigger=PropertyChanged}" Width="230" MinHeight="30"
-                                            FontSize="{StaticResource FontSizeBody}"
-                                            FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"
-                                            PlaceholderText="socks5://127.0.0.1:1080"
-                                            AutomationProperties.Name="{Binding LocalizedStrings[ProxyLabel]}"/>
-                            </StackPanel>
-                            <TextBlock Text="{Binding LocalizedStrings[ProxyHint]}" Style="{StaticResource FieldHintText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,4"/>
-                            <TextBlock Text="{Binding ProxyError}" Style="{StaticResource ErrorText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,8"
-                                       Visibility="{Binding ProxyError, Converter={StaticResource TextToVis}}"/>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                <TextBlock Text="{Binding LocalizedStrings[CookiesSourceLabel]}" Style="{StaticResource FieldLabelText}"
-                                           Width="148" VerticalAlignment="Center"/>
-                                <ComboBox ItemsSource="{Binding CookiesSources}" SelectedIndex="{Binding SelectedCookiesIndex}"
-                                          Width="160" MinHeight="30" FontSize="{StaticResource FontSizeBody}"
-                                          AutomationProperties.Name="{Binding LocalizedStrings[CookiesSourceLabel]}"/>
-                            </StackPanel>
-                            <TextBlock Text="{Binding LocalizedStrings[CookiesHint]}" Style="{StaticResource FieldHintText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,6"/>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,2"
-                                        Visibility="{Binding IsCookiesFileSelected, Converter={StaticResource BoolToVis}}">
-                                <TextBlock Text="{Binding LocalizedStrings[CookiesFileLabel]}" Style="{StaticResource FieldLabelText}"
-                                           Width="148" VerticalAlignment="Center"/>
-                                <ui:TextBox x:Name="CookiesFileBox" Text="{Binding CookiesFilePath, UpdateSourceTrigger=PropertyChanged}"
-                                            Width="152" MinHeight="30" FontSize="{StaticResource FontSizeCaption}"
-                                            FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"
-                                            AutomationProperties.Name="{Binding LocalizedStrings[CookiesFileLabel]}"/>
-                                <Button Content="{Binding LocalizedStrings[BrowseButton]}" Command="{Binding BrowseCookiesFileCommand}"
-                                        MinHeight="30" Padding="10,0" Margin="6,0,0,0" FontSize="{StaticResource FontSizeCaption}"
-                                        AutomationProperties.Name="{Binding LocalizedStrings[BrowseButton]}"/>
-                            </StackPanel>
-                            <TextBlock Text="{Binding CookiesFileError}" Style="{StaticResource ErrorText}"
-                                       TextWrapping="Wrap" Margin="2,0,0,2"
-                                       Visibility="{Binding CookiesFileError, Converter={StaticResource TextToVis}}"/>
-                        </StackPanel>
-                    </ui:CardExpander>
-
-                    <!-- Диагностика -->
-                    <ui:CardControl Margin="0,0,0,8" Padding="14,10"
-                                    Background="{DynamicResource SurfaceBgrBrush}"
-                                    BorderBrush="{DynamicResource AppBorderBrush}"
-                                    Foreground="{DynamicResource TextPrimaryBrush}"
-                                    CornerRadius="{StaticResource MediumRadius}"
-                                    Icon="{ui:SymbolIcon FolderOpen24}">
-                        <ui:CardControl.Header>
-                            <TextBlock Text="{Binding LocalizedStrings[SettingsDiagnosticsSection]}"
-                                       FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        </ui:CardControl.Header>
-                        <ui:CardControl.Content>
-                            <ui:Button Appearance="Secondary" Command="{Binding OpenLogsFolderCommand}" Height="32"
-                                       FontSize="{StaticResource FontSizeBody}"
-                                       AutomationProperties.Name="{Binding LocalizedStrings[SettingsOpenLogsFolder]}"
-                                       Content="{Binding LocalizedStrings[SettingsOpenLogsFolder]}"/>
-                        </ui:CardControl.Content>
-                    </ui:CardControl>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- Кнопки -->
-            <StackPanel Grid.Row="1" Margin="0,14,0,2">
+        <!-- Нижняя панель действий -->
+        <Border Grid.Row="2" Background="{DynamicResource SidebarBgrBrush}" BorderBrush="{DynamicResource AppBorderSubtleBrush}"
+                BorderThickness="0,1,0,0" Padding="20,12,20,14">
+            <StackPanel>
                 <TextBlock Text="{Binding SaveError}" Style="{StaticResource ErrorText}"
                            TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,8"
                            Visibility="{Binding SaveError, Converter={StaticResource TextToVis}}"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <ui:Button Appearance="Primary" Click="OnSaveClick" IsDefault="True" MinWidth="150" Height="40"
-                               FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="SemiBold"
-                               CornerRadius="{StaticResource PillRadius}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Save24" FontSize="{StaticResource FontSizeBodyLarge}"/>
-                        </ui:Button.Icon>
-                        <TextBlock Text="{Binding LocalizedStrings[SaveButton]}" Margin="6,0,0,0"/>
-                    </ui:Button>
-                    <ui:Button Appearance="Secondary" IsCancel="True" MinWidth="130" Height="32"
-                               FontSize="{StaticResource FontSizeBody}" Margin="10,0,0,0"
-                               Content="{Binding LocalizedStrings[CancelButton]}"/>
+                    <Button Style="{StaticResource AccentPillButton}" Click="OnSaveClick" IsDefault="True"
+                            Height="38" MinWidth="150" Padding="20,0" FontSize="13.5">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Checkmark24" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding LocalizedStrings[SaveButton]}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Style="{StaticResource SecondaryFlatButton}" IsCancel="True"
+                            Height="38" MinWidth="110" Padding="18,0" Margin="10,0,0,0"
+                            Content="{Binding LocalizedStrings[CancelButton]}"/>
                 </StackPanel>
             </StackPanel>
-        </Grid>
+        </Border>
 
-        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="2" Panel.ZIndex="50"/>
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="3" Panel.ZIndex="50"/>
     </Grid>
 </ui:FluentWindow>

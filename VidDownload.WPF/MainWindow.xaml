@@ -8,646 +8,951 @@
         xmlns:services="clr-namespace:VidDownload.WPF.Services"
         mc:Ignorable="d"
         Title="{Binding LocalizedStrings[MainWindowTitle]}" WindowStartupLocation="CenterScreen" Icon="/icon.png"
-        ResizeMode="CanResize" Width="704" Height="760" MinWidth="620" MinHeight="700"
+        ResizeMode="CanResize" Width="1120" Height="720" MinWidth="960" MinHeight="620"
         ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
         AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"
         KeyDown="OnWindowKeyDown"
         FocusManager.FocusedElement="{Binding ElementName=UrlBox}">
+
     <Window.Resources>
         <converters:BooleanInvertConverter x:Key="InvertBool"/>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <converters:InvertedBooleanToVisibilityConverter x:Key="InvertBoolToVis"/>
         <converters:StringToVisibilityConverter x:Key="TextToVis"/>
         <converters:DownloadItemStatusToColorConverter x:Key="StatusToColor"/>
+        <converters:DownloadStatusToColorConverter x:Key="HistoryStatusColor"/>
+        <converters:DownloadStatusToTextConverter x:Key="HistoryStatusText"/>
         <converters:NewlineFlattenerConverter x:Key="FlatNewlines"/>
 
-        <!-- InfoBar обновлений: в шаблоне WPF-UI 4.3 нет слота для кнопки действия,
-             поэтому локальный стиль добавляет ContentPresenter перед кнопкой закрытия. -->
-        <Style x:Key="UpdateInfoBarStyle" TargetType="{x:Type ui:InfoBar}">
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceBgrElevatedBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="14,8"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <!-- Контейнер очереди -->
+        <Style x:Key="QueueItemContainerNamed" TargetType="ListBoxItem" BasedOn="{StaticResource QueueItemContainer}">
+            <Setter Property="AutomationProperties.Name" Value="{Binding DisplayTitle}"/>
+        </Style>
+
+        <!-- Заголовок таблицы истории -->
+        <Style x:Key="HistoryColHeader" TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
+            <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,9"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ui:InfoBar}">
-                        <Border x:Name="ContentBorder"
-                                Padding="{TemplateBinding Padding}"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{StaticResource MediumRadius}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <ui:SymbolIcon x:Name="SymbolIcon" Symbol="Info24" FontSize="16"
-                                               VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <WrapPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock x:Name="TitleText" Text="{TemplateBinding Title}"
-                                               Margin="0,0,12,0" FontWeight="SemiBold"
-                                               FontSize="{StaticResource FontSizeBody}"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"
-                                               TextWrapping="Wrap"/>
-                                    <TextBlock Text="{TemplateBinding Message}"
-                                               FontSize="{StaticResource FontSizeBody}"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                               TextWrapping="Wrap"/>
-                                </WrapPanel>
-                                <ContentPresenter Grid.Column="2" VerticalAlignment="Center" Margin="12,0,0,0"/>
-                                <ui:Button x:Name="CloseButton" Grid.Column="3" Appearance="Transparent" Padding="4"
-                                           Margin="4,0,0,0"
-                                           Command="{Binding Path=TemplateButtonCommand, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                           AutomationProperties.Name="{Binding LocalizedStrings[CloseButton]}">
-                                    <ui:Button.Icon>
-                                        <ui:SymbolIcon Symbol="Dismiss24"/>
-                                    </ui:Button.Icon>
-                                </ui:Button>
-                            </Grid>
+                    <ControlTemplate TargetType="GridViewColumnHeader">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"
+                                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="0,0,0,1">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                         </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsClosable" Value="False">
-                                <Setter TargetName="CloseButton" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                            <Trigger Property="IsOpen" Value="True">
-                                <Setter Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                            <Trigger Property="IsOpen" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                            <Trigger Property="Title" Value="{x:Null}">
-                                <Setter TargetName="TitleText" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                            <Trigger Property="Title" Value="">
-                                <Setter TargetName="TitleText" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                            <Trigger Property="Severity" Value="Informational">
-                                <Setter TargetName="SymbolIcon" Property="Foreground" Value="{DynamicResource AccentBrush}"/>
-                                <Setter TargetName="SymbolIcon" Property="Symbol" Value="Info24"/>
-                            </Trigger>
-                            <Trigger Property="Severity" Value="Success">
-                                <Setter TargetName="SymbolIcon" Property="Foreground" Value="{DynamicResource StatusCompletedBrush}"/>
-                                <Setter TargetName="SymbolIcon" Property="Symbol" Value="CheckmarkCircle24"/>
-                            </Trigger>
-                            <Trigger Property="Severity" Value="Warning">
-                                <Setter TargetName="SymbolIcon" Property="Foreground" Value="{DynamicResource StatusPausedBrush}"/>
-                                <Setter TargetName="SymbolIcon" Property="Symbol" Value="ErrorCircle24"/>
-                            </Trigger>
-                            <Trigger Property="Severity" Value="Error">
-                                <Setter TargetName="SymbolIcon" Property="Foreground" Value="{DynamicResource StatusFailedBrush}"/>
-                                <Setter TargetName="SymbolIcon" Property="Symbol" Value="DismissCircle24"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-
-        <!-- Контейнер очереди: наследует стиль темы и добавляет доступное имя элемента -->
-        <Style x:Key="QueueItemContainerNamed" TargetType="ListBoxItem" BasedOn="{StaticResource QueueItemContainer}">
-            <Setter Property="AutomationProperties.Name" Value="{Binding DisplayTitle}"/>
-        </Style>
+        <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource HistoryColHeader}"/>
     </Window.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <!-- InfoBar обновлений -->
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="40"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- ═══ Заголовок: логотип, тема, системные кнопки ═══ -->
-        <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[MainWindowTitle]}">
+        <!-- ═══ Верхняя панель заголовка (TitleBar) ═══ -->
+        <ui:TitleBar Grid.Row="0" Title="VidDownload" Height="40" Background="{DynamicResource SidebarBgrBrush}">
             <ui:TitleBar.Header>
-                <Image Source="/icon.png" Width="16" Height="16" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Border Width="22" Height="22" CornerRadius="6" Background="{DynamicResource AccentBrush}"
+                            VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="13" Foreground="{DynamicResource AccentForegroundBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="VidDownload" FontSize="13.5" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
             </ui:TitleBar.Header>
             <ui:TitleBar.TrailingContent>
-                <StackPanel Orientation="Horizontal" Margin="0,0,18,0">
-                    <ui:Button Appearance="Transparent"
-                               Command="{Binding OpenSettingsCommand}"
-                               ToolTip="{Binding LocalizedStrings[SettingsWindowTitle]}"
-                               AutomationProperties.Name="{Binding LocalizedStrings[SettingsWindowTitle]}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="Settings24"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button Appearance="Transparent" Margin="8,0,0,0"
+                <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                    <ui:Button Appearance="Transparent" Width="36" Height="32" Padding="0"
                                Command="{Binding CycleAppThemeCommand}"
-                               ToolTip="{Binding ThemeTooltip}"
-                               AutomationProperties.Name="{Binding ThemeTooltip}">
+                               ToolTip="{Binding ThemeTooltip}">
                         <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="{Binding ThemeSymbol}"/>
+                            <ui:SymbolIcon Symbol="{Binding ThemeSymbol}" FontSize="16"/>
                         </ui:Button.Icon>
                     </ui:Button>
                 </StackPanel>
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
 
-        <!-- ═══ InfoBar обновлений: без модальных окон на старте ═══ -->
-        <ui:InfoBar Grid.Row="1" Margin="12,8,12,0"
-                    Style="{StaticResource UpdateInfoBarStyle}"
-                    IsOpen="{Binding IsUpdateBarOpen, Mode=TwoWay}"
-                    Title="{Binding UpdateBarTitle}"
-                    Message="{Binding UpdateBarMessage}"
-                    Severity="{Binding UpdateBarSeverity}"
-                    IsClosable="True">
-            <ui:Button Appearance="Primary" Height="28" Padding="12,0" FontSize="{StaticResource FontSizeBody}"
-                       Content="{Binding LocalizedStrings[UpdateBarAction]}"
-                       Command="{Binding UpdateAppCommand}"
-                       AutomationProperties.Name="{Binding LocalizedStrings[UpdateBarAction]}"/>
-        </ui:InfoBar>
+        <!-- ═══ Основная сетка окна: боковая панель + контентная область ═══ -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <!-- ═══ Ссылка: подпись, поле с подсказкой и кнопкой очистки + импорт/вставка ═══ -->
-        <StackPanel Grid.Row="2" Margin="12,4,12,0">
-            <TextBlock Text="{Binding LinkLabelText}" Style="{StaticResource FieldLabelText}" Margin="0,0,0,4"/>
-            <DockPanel LastChildFill="True">
-                <Button DockPanel.Dock="Right" Width="44" Height="44" Margin="8,0,0,0" VerticalAlignment="Top"
-                        Command="{Binding ImportListCommand}" FontFamily="{StaticResource IconFont}" FontSize="{StaticResource FontSizeBody}"
-                        Content="&#xE8FD;"
-                        ToolTip="{Binding LocalizedStrings[ImportListButton]}"
-                        AutomationProperties.Name="{Binding LocalizedStrings[ImportListButton]}"/>
-                <Button DockPanel.Dock="Right" Width="44" Height="44" Margin="8,0,0,0" VerticalAlignment="Top"
-                        Click="OnPasteFromClipboard" FontFamily="{StaticResource IconFont}" FontSize="{StaticResource FontSizeBody}"
-                        Content="&#xE77F;"
-                        ToolTip="{Binding LocalizedStrings[PasteClipboardTooltip]}"
-                        AutomationProperties.Name="{Binding LocalizedStrings[PasteClipboardTooltip]}"/>
-                <ui:TextBox x:Name="UrlBox" Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}" Height="44"
-                            FontSize="{StaticResource FontSizeBodyLarge}"
-                            VerticalContentAlignment="Center" PlaceholderText="{Binding LocalizedStrings[UrlPlaceholder]}"
-                            ClearButtonEnabled="True" FontFamily="{StaticResource MonoFont}" TextWrapping="NoWrap"
-                            AllowDrop="False"
-                            AutomationProperties.Name="{Binding LinkLabelText}">
-                    <ui:TextBox.InputBindings>
-                        <KeyBinding Key="Enter" Command="{Binding DownloadCommand}"/>
-                    </ui:TextBox.InputBindings>
-                </ui:TextBox>
-            </DockPanel>
-            <!-- Встроенная ошибка поля ссылки: не нужен снекбар в углу окна -->
-            <TextBlock Text="{Binding UrlError}" Style="{StaticResource ErrorText}" Margin="0,4,0,0"
-                       TextTrimming="CharacterEllipsis"
-                       AutomationProperties.LiveSetting="Assertive"
-                       Visibility="{Binding UrlError, Converter={StaticResource TextToVis}}"/>
-        </StackPanel>
+            <!-- ═══ Левая боковая панель (Sidebar, 200px) ═══ -->
+            <Border Grid.Column="0" Background="{DynamicResource SidebarBgrBrush}"
+                    BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,0,1,0">
+                <DockPanel LastChildFill="False" Margin="10,12,10,12">
 
-        <!-- ═══ Папка сохранения + лимит скорости ═══ -->
-        <DockPanel Grid.Row="3" LastChildFill="False" Margin="12,8,12,0">
-            <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizedStrings[SaveFolderLabel]}"
-                       Style="{StaticResource FieldLabelText}" Margin="0,0,7,0"/>
-            <ui:TextBox DockPanel.Dock="Left" Text="{Binding SavePathText, UpdateSourceTrigger=LostFocus}" Width="200" Height="32"
-                        FontSize="{StaticResource FontSizeBody}" FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"
-                        ToolTip="{Binding SavePathText}"
-                        AutomationProperties.Name="{Binding LocalizedStrings[SaveFolderLabel]}"/>
-            <Button DockPanel.Dock="Left" Content="{Binding LocalizedStrings[BrowseButton]}" Command="{Binding BrowseFolderCommand}"
-                    Height="32" Padding="13,0" Margin="7,0,0,0" FontSize="{StaticResource FontSizeBody}"
-                    AutomationProperties.Name="{Binding LocalizedStrings[BrowseButton]}"/>
-            <StackPanel DockPanel.Dock="Right" Orientation="Vertical">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding LocalizedStrings[RateLimitLabel]}" Style="{StaticResource FieldLabelText}" Margin="0,0,7,0"
-                               ToolTip="{Binding LocalizedStrings[RateLimitHint]}"/>
-                    <ui:TextBox Text="{Binding RateLimit, UpdateSourceTrigger=LostFocus}" Width="76" Height="32"
-                                FontSize="{StaticResource FontSizeBody}" FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center"
-                                ToolTip="{Binding LocalizedStrings[RateLimitHint]}"
-                                AutomationProperties.Name="{Binding LocalizedStrings[RateLimitLabel]}"/>
-                </StackPanel>
-                <TextBlock Text="{Binding RateLimitError}" Style="{StaticResource ErrorText}" Margin="0,4,0,0"
-                           TextTrimming="CharacterEllipsis"
-                           AutomationProperties.LiveSetting="Assertive"
-                           Visibility="{Binding RateLimitError, Converter={StaticResource TextToVis}}"/>
-            </StackPanel>
-        </DockPanel>
+                    <!-- Верхняя навигация -->
+                    <StackPanel DockPanel.Dock="Top">
+                        <!-- Загрузки -->
+                        <RadioButton Style="{StaticResource SidebarNavRadio}"
+                                     IsChecked="{Binding IsDownloadsPage, Mode=OneWay}"
+                                     Command="{Binding ShowDownloadsCommand}">
+                            <DockPanel LastChildFill="True">
+                                <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="17" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <Border DockPanel.Dock="Right" Style="{StaticResource CounterBadge}"
+                                        Visibility="{Binding HasActiveBadge, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding ActiveDownloadsBadgeCount}" FontSize="11" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding LocalizedStrings[DownloadsTab]}" VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </RadioButton>
 
-        <!-- ═══ Параметры загрузки: основное + «Дополнительно» ═══ -->
-        <StackPanel Grid.Row="4" Margin="12,8,12,0">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                        <!-- История -->
+                        <RadioButton Style="{StaticResource SidebarNavRadio}"
+                                     IsChecked="{Binding IsHistoryPage, Mode=OneWay}"
+                                     Command="{Binding ShowHistoryCommand}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="History24" FontSize="17" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding LocalizedStrings[HistoryButton]}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
 
-                <!-- Качество: разрешение и аудио -->
-                <Border Style="{StaticResource CardBorder}" Margin="0,0,4,0" Padding="12,10">
-                    <StackPanel>
-                        <TextBlock Text="{Binding LocalizedStrings[ResolutionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="0,0,0,4"
-                                   Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}"/>
-                        <ComboBox ItemsSource="{Binding Resolutions}" SelectedItem="{Binding SelectedResolution}" MinHeight="31" FontSize="13"
-                                  HorizontalAlignment="Stretch" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}"
-                                  AutomationProperties.Name="{Binding LocalizedStrings[ResolutionLabel]}"/>
-
-                        <TextBlock Text="{Binding LocalizedStrings[AudioFormatLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="0,0,0,4"
-                                   Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}"/>
-                        <ComboBox ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding SelectedAudioFormat}" MinHeight="31" FontSize="13"
-                                  HorizontalAlignment="Stretch" Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}"
-                                  AutomationProperties.Name="{Binding LocalizedStrings[AudioFormatLabel]}"/>
-
-                        <TextBlock Text="{Binding LocalizedStrings[AudioQualityLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="0,8,0,4"
-                                   Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}"
-                                   ToolTip="{Binding LocalizedStrings[AudioQualityHint]}"/>
-                        <ComboBox ItemsSource="{Binding AudioQualities}" SelectedValuePath="Value"
-                                  SelectedValue="{Binding SelectedAudioQuality}" DisplayMemberPath="Display"
-                                  MinHeight="31" FontSize="13"
-                                  HorizontalAlignment="Stretch" Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}"
-                                  ToolTip="{Binding LocalizedStrings[AudioQualityHint]}"
-                                  AutomationProperties.Name="{Binding LocalizedStrings[AudioQualityLabel]}"/>
+                        <!-- Конвертер -->
+                        <RadioButton Style="{StaticResource SidebarNavRadio}"
+                                     IsChecked="{Binding IsConverterPage, Mode=OneWay}"
+                                     Command="{Binding ShowConverterCommand}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="ArrowSwap24" FontSize="17" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding LocalizedStrings[ConverterButton]}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </RadioButton>
                     </StackPanel>
-                </Border>
 
-                <!-- Режим: переключатели -->
-                <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="4,0,0,0" Padding="14,10">
-                    <StackPanel>
-                        <ui:ToggleSwitch IsChecked="{Binding IsPlaylist}" Content="{Binding LocalizedStrings[DownloadPlaylist]}" FontSize="13" Margin="0,2"/>
-                        <ui:ToggleSwitch IsChecked="{Binding IsAudioOnly}" Content="{Binding LocalizedStrings[AudioOnly]}" FontSize="13" Margin="0,2"/>
-                        <ui:ToggleSwitch IsChecked="{Binding IsReEncode}" IsEnabled="{Binding IsAudioOnly, Converter={StaticResource InvertBool}}"
-                                         Content="{Binding LocalizedStrings[ReEncodeVideo]}" FontSize="13" Margin="0,2"/>
+                    <!-- Нижняя секция боковой панели -->
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <!-- Карточка доступного обновления -->
+                        <Border CornerRadius="10" Background="{DynamicResource SurfaceBgrBrush}"
+                                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
+                                Padding="12,10" Margin="0,0,0,10"
+                                Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding LocalizedStrings[AppUpdateAvailableTitle]}" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                                <Button Style="{StaticResource AccentPillButton}" Height="28" Padding="12,0" FontSize="11.5"
+                                        Content="{Binding LocalizedStrings[UpdateBarAction]}"
+                                        Command="{Binding UpdateAppCommand}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Настройки -->
+                        <Button Style="{StaticResource SecondaryFlatButton}" HorizontalContentAlignment="Left"
+                                Command="{Binding OpenSettingsCommand}" Height="36" Padding="10,0" Margin="0,2">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Settings24" FontSize="16" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding LocalizedStrings[SettingsWindowTitle]}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Справка -->
+                        <Button Style="{StaticResource SecondaryFlatButton}" HorizontalContentAlignment="Left"
+                                Command="{Binding OpenHelpCommand}" Height="36" Padding="10,0" Margin="0,2">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="QuestionCircle24" FontSize="16" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding LocalizedStrings[HelpWindowTitle]}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Версии (FFmpeg и VidDownload) -->
+                        <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="2,8,2,0" Padding="0,8,0,0">
+                            <StackPanel>
+                                <DockPanel LastChildFill="True">
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}" Height="22" Padding="6,0" FontSize="10.5"
+                                            Content="{Binding LocalizedStrings[CheckShortButton]}"
+                                            Command="{Binding CheckFFmpegUpdateCommand}"/>
+                                    <TextBlock Text="{Binding FfmpegDisplayVersion}" Style="{StaticResource MetaText}"
+                                               FontSize="11" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <TextBlock Text="{Binding AppVersion, StringFormat='VidDownload v{0}'}" Style="{StaticResource MetaText}"
+                                           FontSize="11" Foreground="{DynamicResource TextMutedBrush}" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
-                </Border>
-            </Grid>
+                </DockPanel>
+            </Border>
 
-            <!-- Редко используемые параметры -->
-            <Expander Margin="0,8,0,0"
-                      IsExpanded="{Binding AdvancedOptionsExpanded, Mode=TwoWay}"
-                      AutomationProperties.Name="{Binding LocalizedStrings[AdvancedOptionsHeader]}">
-                <Expander.Header>
-                    <TextBlock Text="{Binding LocalizedStrings[AdvancedOptionsHeader]}"
-                               FontSize="{StaticResource FontSizeBody}" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                </Expander.Header>
-                <Border Style="{StaticResource CardBorder}" Margin="0,4,0,0" Padding="12,10">
-                    <StackPanel>
-                        <!-- Слева — фрагмент по таймкодам, справа — кодек и контейнер -->
-                        <Grid>
+            <!-- ═══ Контентная область (Column 1) ═══ -->
+            <Grid Grid.Column="1" Background="{DynamicResource WindowBgrBrush}">
+
+                <!-- ══════════════════════════════════════════════════════════ -->
+                <!-- 1. Вкладка: ЗАГРУЗКИ (IsDownloadsPage)                    -->
+                <!-- ══════════════════════════════════════════════════════════ -->
+                <Grid Visibility="{Binding IsDownloadsPage, Converter={StaticResource BoolToVis}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="300"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Левая колонка: Ввод ссылки + Сохранение + Очередь -->
+                    <Grid Grid.Column="0" Margin="20,16,16,16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Секция ввода ссылки -->
+                        <Border Grid.Row="0" Style="{StaticResource CardSectionBorder}" Margin="0,0,0,12" Padding="12">
+                            <StackPanel>
+                                <DockPanel LastChildFill="True">
+                                    <!-- Кнопка Скачать -->
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource AccentPillButton}" Margin="8,0,0,0"
+                                            Command="{Binding DownloadCommand}" IsEnabled="{Binding CanDownload}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="0,0,6,0"
+                                                             Visibility="{Binding IsFetchingInfo, Converter={StaticResource BoolToVis}}"/>
+                                            <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="16"
+                                                           Visibility="{Binding IsFetchingInfo, Converter={StaticResource InvertBoolToVis}}"/>
+                                            <TextBlock Text="{Binding DownloadButtonText}" Margin="6,0,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+
+                                    <!-- Кнопка импорта списка -->
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryIconButton}" Margin="8,0,0,0"
+                                            Command="{Binding ImportListCommand}" ToolTip="{Binding LocalizedStrings[ImportListButton]}">
+                                        <ui:SymbolIcon Symbol="DocumentText24" FontSize="18"/>
+                                    </Button>
+
+                                    <!-- Кнопка вставки из буфера -->
+                                    <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryIconButton}" Margin="8,0,0,0"
+                                            Click="OnPasteFromClipboard" ToolTip="{Binding LocalizedStrings[PasteClipboardTooltip]}">
+                                        <ui:SymbolIcon Symbol="ClipboardPaste24" FontSize="18"/>
+                                    </Button>
+
+                                    <!-- Поле ввода ссылки с иконкой и очисткой -->
+                                    <Border Background="{DynamicResource WindowBgrBrush}"
+                                            BorderBrush="{DynamicResource LineBrush}" BorderThickness="1"
+                                            CornerRadius="{StaticResource MediumRadius}" Height="48" Padding="12,0,6,0">
+                                        <DockPanel LastChildFill="True">
+                                            <ui:SymbolIcon Symbol="Link24" FontSize="16" Foreground="{DynamicResource TextMutedBrush}"
+                                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <ui:TextBox x:Name="UrlBox" Text="{Binding Url, UpdateSourceTrigger=PropertyChanged}"
+                                                        Background="Transparent" BorderThickness="0" Height="44"
+                                                        FontSize="13"
+                                                        VerticalContentAlignment="Center"
+                                                        PlaceholderText="{Binding LocalizedStrings[UrlPlaceholder]}"
+                                                        ClearButtonEnabled="False">
+                                                <ui:TextBox.InputBindings>
+                                                    <KeyBinding Key="Enter" Command="{Binding DownloadCommand}"/>
+                                                </ui:TextBox.InputBindings>
+                                            </ui:TextBox>
+                                        </DockPanel>
+                                    </Border>
+                                </DockPanel>
+
+                                <!-- Подсказки под полем -->
+                                <DockPanel Margin="2,8,2,0">
+                                    <TextBlock DockPanel.Dock="Left"
+                                               Style="{StaticResource FieldHintText}" FontSize="12">
+                                        <Run Text="Enter" FontFamily="{StaticResource MonoFont}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <Run Text="— скачать"/>
+                                        <Run Text="·"/>
+                                        <Run Text="Esc" FontFamily="{StaticResource MonoFont}" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                        <Run Text="— отменить"/>
+                                        <Run Text="· Ссылку или .txt со списком можно перетащить в окно"/>
+                                    </TextBlock>
+                                </DockPanel>
+
+                                <!-- Ошибка ссылки -->
+                                <TextBlock Text="{Binding UrlError}" Style="{StaticResource ErrorText}" Margin="2,4,0,0"
+                                           Visibility="{Binding UrlError, Converter={StaticResource TextToVis}}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Папка сохранения -->
+                        <Border Grid.Row="1" Style="{StaticResource CardSectionBorder}" Margin="0,0,0,12" Padding="14,8">
+                            <DockPanel LastChildFill="True">
+                                <ui:SymbolIcon Symbol="Folder24" FontSize="16" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="{Binding LocalizedStrings[SaveToLabel]}" Style="{StaticResource FieldLabelText}"
+                                           Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}"
+                                        Content="{Binding LocalizedStrings[HistoryOpenFolderButton]}"
+                                        Command="{Binding OpenFolderCommand}"/>
+                                <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}"
+                                        Content="Изменить" Margin="0,0,6,0"
+                                        Command="{Binding BrowseFolderCommand}"/>
+                                <TextBlock Text="{Binding SavePathText}" FontFamily="{StaticResource MonoFont}"
+                                           FontSize="12.5" Foreground="{DynamicResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Заголовок очереди и управление -->
+                        <Grid Grid.Row="2" Margin="4,0,4,8">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
+                            <TextBlock Text="Очередь" Style="{StaticResource SectionLabel}"
+                                       FontSize="15" Margin="0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding QueueSummaryText}" Style="{StaticResource MetaText}"
+                                       VerticalAlignment="Center" Margin="4,0,4,0" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
 
-                            <StackPanel Margin="0,0,8,0">
-                                <TextBlock Text="{Binding LocalizedStrings[SectionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="0,0,0,4"
-                                           ToolTip="{Binding LocalizedStrings[SectionHint]}"/>
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:TextBox Text="{Binding SectionStart, UpdateSourceTrigger=PropertyChanged}" Width="76" Height="31"
-                                                FontSize="{StaticResource FontSizeCaption}"
-                                                FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center" ClearButtonEnabled="False"
-                                                PlaceholderText="{Binding LocalizedStrings[SectionStartPlaceholder]}"
-                                                ToolTip="{Binding LocalizedStrings[SectionHint]}"
-                                                AutomationProperties.Name="{Binding LocalizedStrings[SectionStartAutomation]}"/>
-                                    <TextBlock Text="—" Style="{StaticResource MetaText}" Margin="7,0" VerticalAlignment="Center"/>
-                                    <ui:TextBox Text="{Binding SectionEnd, UpdateSourceTrigger=PropertyChanged}" Width="76" Height="31"
-                                                FontSize="{StaticResource FontSizeCaption}"
-                                                FontFamily="{StaticResource MonoFont}" VerticalContentAlignment="Center" ClearButtonEnabled="False"
-                                                PlaceholderText="{Binding LocalizedStrings[SectionEndPlaceholder]}"
-                                                ToolTip="{Binding LocalizedStrings[SectionHint]}"
-                                                AutomationProperties.Name="{Binding LocalizedStrings[SectionEndAutomation]}"/>
-                                </StackPanel>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
+                                <TextBlock Text="{Binding LocalizedStrings[PostQueueActionLabel]}" Style="{StaticResource FieldLabelText}"
+                                           FontSize="11.5" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                <ComboBox ItemsSource="{Binding PostQueueActionItems}" SelectedIndex="{Binding SelectedPostQueueIndex}"
+                                          MinWidth="85" MinHeight="28" FontSize="11.5" VerticalAlignment="Center"/>
                             </StackPanel>
 
-                            <Grid Grid.Column="1" Margin="8,0,0,0" Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Margin="0,0,4,0">
-                                    <TextBlock Text="{Binding LocalizedStrings[CodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="0,0,0,4"/>
-                                    <ComboBox ItemsSource="{Binding Codecs}" SelectedItem="{Binding SelectedCodec}" MinHeight="31" FontSize="13"
-                                              HorizontalAlignment="Stretch"
-                                              AutomationProperties.Name="{Binding LocalizedStrings[CodecLabel]}"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Margin="4,0,0,0">
-                                    <TextBlock Text="{Binding LocalizedStrings[FileExtensionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12.5" Margin="0,0,0,4"/>
-                                    <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}" MinHeight="31" FontSize="13"
-                                              HorizontalAlignment="Stretch"
-                                              AutomationProperties.Name="{Binding LocalizedStrings[FileExtensionLabel]}"/>
-                                </StackPanel>
-                            </Grid>
+                            <Button Grid.Column="3" Style="{StaticResource SecondaryFlatButton}"
+                                    Content="{Binding LocalizedStrings[ClearFinishedButton]}"
+                                    Padding="10,0" Height="28" FontSize="12"
+                                    Command="{Binding ClearFinishedCommand}"/>
                         </Grid>
 
-                        <!-- Субтитры -->
-                        <CheckBox IsChecked="{Binding IsDownloadSubtitles}" Content="{Binding LocalizedStrings[DownloadSubtitles]}" FontSize="13" Margin="0,10,0,0"/>
+                        <!-- Карточки очереди загрузок -->
+                        <Grid Grid.Row="3">
+                            <ListBox ItemsSource="{Binding Queue.Items}" Background="Transparent" BorderThickness="0" Padding="0"
+                                     ItemContainerStyle="{StaticResource QueueItemContainerNamed}"
+                                     VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type services:DownloadItem}">
+                                        <Border Background="{DynamicResource SurfaceBgrBrush}"
+                                                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
+                                                CornerRadius="{StaticResource LargeRadius}" Padding="14,12" Margin="0,0,0,8"
+                                                Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            <Border.ContextMenu>
+                                                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                                                    <MenuItem Header="{Binding PauseResumeTooltip}"
+                                                              Command="{Binding PlacementTarget.Tag.PauseResumeItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              CommandParameter="{Binding}" Visibility="{Binding CanPauseResume, Converter={StaticResource BoolToVis}}"/>
+                                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              Command="{Binding PlacementTarget.Tag.CancelItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              CommandParameter="{Binding}" Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}"/>
+                                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[RetryButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              Command="{Binding PlacementTarget.Tag.RetryItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              CommandParameter="{Binding}" Visibility="{Binding CanRetry, Converter={StaticResource BoolToVis}}"/>
+                                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[OpenLocationButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              Command="{Binding PlacementTarget.Tag.OpenItemLocationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              CommandParameter="{Binding}" Visibility="{Binding CanOpenLocation, Converter={StaticResource BoolToVis}}"/>
+                                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[RemoveItemButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              Command="{Binding PlacementTarget.Tag.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              CommandParameter="{Binding}" Visibility="{Binding IsFinished, Converter={StaticResource BoolToVis}}"/>
+                                                </ContextMenu>
+                                            </Border.ContextMenu>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="4"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsDownloadSubtitles, Converter={StaticResource BoolToVis}}" Margin="22,5,0,0">
-                            <ComboBox ItemsSource="{Binding SubtitleLanguages}" SelectedItem="{Binding SelectedSubtitleLanguage}"
-                                      Width="106" MinHeight="29" FontSize="12"
-                                      AutomationProperties.Name="{Binding LocalizedStrings[LanguageLabel]}"/>
-                            <CheckBox IsChecked="{Binding IsEmbedSubtitles}" Content="{Binding LocalizedStrings[EmbedSubtitles]}" FontSize="13" Margin="10,0,0,0"
-                                      IsEnabled="{Binding IsAudioOnly, Converter={StaticResource InvertBool}}"/>
-                            <CheckBox IsChecked="{Binding IsConvertSubsToSrt}" Content="{Binding LocalizedStrings[ConvertSubsSrtLabel]}" FontSize="13" Margin="10,0,0,0"/>
+                                                <!-- Полоса статуса -->
+                                                <Border Width="4" CornerRadius="2"
+                                                        Background="{Binding Status, Converter={StaticResource StatusToColor}}"/>
+
+                                                <!-- Тело карточки -->
+                                                <Grid Grid.Column="1" Margin="12,0,8,0">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Название + счетчик плейлиста -->
+                                                    <DockPanel Grid.Row="0" LastChildFill="True">
+                                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                                    Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}">
+                                                            <Border BorderBrush="{DynamicResource StatusDownloadingBrush}" BorderThickness="1" CornerRadius="4" Padding="6,1">
+                                                                <TextBlock Text="{Binding DataContext.LocalizedStrings[PlaylistBadge], RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                           Foreground="{DynamicResource StatusDownloadingBrush}" FontFamily="{StaticResource MonoFont}" FontSize="10" FontWeight="SemiBold"/>
+                                                            </Border>
+                                                            <TextBlock Text="{Binding PlaylistCounterText}" Foreground="{DynamicResource StatusDownloadingBrush}" FontFamily="{StaticResource MonoFont}" FontSize="11" FontWeight="SemiBold" Margin="7,0,0,0"/>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding DisplayTitle}" FontFamily="{StaticResource TextFont}" FontSize="13.5" FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}" VerticalAlignment="Center"/>
+                                                    </DockPanel>
+
+                                                    <!-- Текущее видео в плейлисте -->
+                                                    <TextBlock Grid.Row="1" Text="{Binding CurrentVideoLine}" FontFamily="{StaticResource MonoLightFont}" FontSize="11"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"
+                                                               Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}" ToolTip="{Binding Title}"/>
+
+                                                    <!-- Прогресс -->
+                                                    <Grid Grid.Row="2" Margin="0,8,0,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <ProgressBar Value="{Binding TotalPercent, Mode=OneWay}" Maximum="100" Style="{StaticResource RoundedProgressBar}"
+                                                                     Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding TotalPercent, StringFormat={}{0}%}" Style="{StaticResource MetaText}" Margin="9,0,0,0"/>
+                                                    </Grid>
+
+                                                    <!-- Метаданные -->
+                                                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,6,0,0">
+                                                        <TextBlock Text="{Binding StatusText}" FontFamily="{StaticResource MonoFont}" FontSize="{StaticResource FontSizeCaption}"
+                                                                   VerticalAlignment="Center" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
+                                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
+                                                        <TextBlock Text="{Binding Speed}" Style="{StaticResource MetaText}"/>
+                                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
+                                                        <TextBlock Text="{Binding Eta}" Style="{StaticResource MetaText}"/>
+                                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
+                                                        <TextBlock Text="{Binding TotalSize}" Style="{StaticResource MetaText}"/>
+                                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}"/>
+                                                        <TextBlock Text="{Binding VideoPercentText}" FontFamily="{StaticResource MonoFont}" FontSize="11" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource StatusDownloadingBrush}" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}"/>
+                                                    </StackPanel>
+
+                                                    <!-- Ошибка -->
+                                                    <TextBlock Grid.Row="4" Text="{Binding ErrorMessage, Converter={StaticResource FlatNewlines}}"
+                                                               Style="{StaticResource ErrorText}" TextWrapping="Wrap" MaxHeight="34" TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding ErrorMessage}" Margin="0,4,0,0"
+                                                               Visibility="{Binding ErrorMessage, Converter={StaticResource TextToVis}}"/>
+                                                </Grid>
+
+                                                <!-- Кнопки управления карточкой -->
+                                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Button Style="{StaticResource QueueGhostButton}"
+                                                            Content="{Binding PauseResumeIcon}" FontFamily="{StaticResource IconFont}" FontSize="{StaticResource FontSizeBody}"
+                                                            Command="{Binding DataContext.PauseResumeItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}" IsEnabled="{Binding CanPauseResume}" ToolTip="{Binding PauseResumeTooltip}"/>
+                                                    <Button Style="{StaticResource QueueGhostButton}"
+                                                            Content="&#xE711;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                            Command="{Binding DataContext.CancelItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}" Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}"
+                                                            ToolTip="{Binding DataContext.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                    <Button Style="{StaticResource QueueGhostButton}"
+                                                            Content="&#xE72C;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                            Command="{Binding DataContext.RetryItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}" Visibility="{Binding CanRetry, Converter={StaticResource BoolToVis}}"
+                                                            ToolTip="{Binding DataContext.LocalizedStrings[RetryButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                    <Button Style="{StaticResource QueueGhostButton}"
+                                                            Content="&#xE838;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                            Command="{Binding DataContext.OpenItemLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}" Visibility="{Binding CanOpenLocation, Converter={StaticResource BoolToVis}}"
+                                                            ToolTip="{Binding DataContext.LocalizedStrings[OpenLocationButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                    <Button Style="{StaticResource QueueGhostButton}"
+                                                            Content="&#xE74D;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                            Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding}" Visibility="{Binding IsFinished, Converter={StaticResource BoolToVis}}"
+                                                            ToolTip="{Binding DataContext.LocalizedStrings[RemoveItemButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <!-- Сообщение о пустой очереди -->
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Visibility="{Binding HasQueueItems, Converter={StaticResource InvertBoolToVis}}">
+                                <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="36" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding LocalizedStrings[QueueEmptyMessage]}" FontFamily="{StaticResource TextFont}" FontSize="13"
+                                           HorizontalAlignment="Center" Margin="0,8,0,0" Foreground="{DynamicResource TextMutedBrush}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Правая колонка: Панель параметров (300px) -->
+                    <Border Grid.Column="1" Background="{DynamicResource SidebarBgrBrush}"
+                            BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="1,0,0,0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="18,16,18,16">
+                                <TextBlock Text="{Binding LocalizedStrings[ParametersTitle]}" Style="{StaticResource SectionLabel}"
+                                           FontSize="15" Margin="0,0,0,12"/>
+
+                                <!-- Переключатель Видео / Аудио (сегментированный) -->
+                                <Border Background="{DynamicResource WindowBgrBrush}" BorderBrush="{DynamicResource LineBrush}"
+                                        BorderThickness="1" CornerRadius="10" Padding="3" Margin="0,0,0,14">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <RadioButton Content="Видео" IsChecked="{Binding IsVideoTabSelected, Mode=TwoWay}"
+                                                     Style="{StaticResource SegmentedTabRadio}" Margin="0,0,2,0"/>
+                                        <RadioButton Grid.Column="1" Content="Аудио" IsChecked="{Binding IsAudioTabSelected, Mode=TwoWay}"
+                                                     Style="{StaticResource SegmentedTabRadio}" Margin="2,0,0,0"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Опции Видео -->
+                                <StackPanel Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding LocalizedStrings[ResolutionLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                    <ComboBox ItemsSource="{Binding Resolutions}" SelectedItem="{Binding SelectedResolution}"
+                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+
+                                    <TextBlock Text="{Binding LocalizedStrings[CodecLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                    <ComboBox ItemsSource="{Binding Codecs}" SelectedItem="{Binding SelectedCodec}"
+                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+
+                                    <TextBlock Text="{Binding LocalizedStrings[FileExtensionLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                    <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+                                              MinHeight="32" Margin="0,0,0,12" HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+
+                                <!-- Опции Аудио -->
+                                <StackPanel Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="{Binding LocalizedStrings[AudioFormatLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                    <ComboBox ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding SelectedAudioFormat}"
+                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+
+                                    <TextBlock Text="{Binding LocalizedStrings[AudioQualityLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                    <ComboBox ItemsSource="{Binding AudioQualities}" SelectedValuePath="Value"
+                                              SelectedValue="{Binding SelectedAudioQuality}" DisplayMemberPath="Display"
+                                              MinHeight="32" Margin="0,0,0,12" HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+
+                                <!-- Фрагмент по таймкодам -->
+                                <TextBlock Text="{Binding LocalizedStrings[SectionLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                <Grid Margin="0,0,0,14">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ui:TextBox Text="{Binding SectionStart, UpdateSourceTrigger=PropertyChanged}" Height="32"
+                                                FontSize="{StaticResource FontSizeCaption}" FontFamily="{StaticResource MonoFont}"
+                                                VerticalContentAlignment="Center" ClearButtonEnabled="False"
+                                                PlaceholderText="00:00:00"/>
+                                    <TextBlock Grid.Column="1" Text="—" Style="{StaticResource MetaText}" Margin="8,0" VerticalAlignment="Center"/>
+                                    <ui:TextBox Grid.Column="2" Text="{Binding SectionEnd, UpdateSourceTrigger=PropertyChanged}" Height="32"
+                                                FontSize="{StaticResource FontSizeCaption}" FontFamily="{StaticResource MonoFont}"
+                                                VerticalContentAlignment="Center" ClearButtonEnabled="False"
+                                                PlaceholderText="00:05:00"/>
+                                </Grid>
+
+                                <!-- Переключатели режимов (toggles) -->
+                                <StackPanel Margin="0,2,0,0">
+                                    <ui:ToggleSwitch IsChecked="{Binding IsPlaylist}" Content="{Binding LocalizedStrings[DownloadPlaylist]}"
+                                                     FontSize="13" Margin="0,4"/>
+                                    <ui:ToggleSwitch IsChecked="{Binding IsReEncode}" IsEnabled="{Binding IsAudioOnly, Converter={StaticResource InvertBool}}"
+                                                     Content="{Binding LocalizedStrings[ReEncodeVideo]}" FontSize="13" Margin="0,4"/>
+                                    <ui:ToggleSwitch IsChecked="{Binding IsEmbedThumbnail}" Content="{Binding LocalizedStrings[EmbedThumbnailLabel]}"
+                                                     FontSize="13" Margin="0,4"/>
+                                    <ui:ToggleSwitch IsChecked="{Binding IsEmbedMetadata}" Content="{Binding LocalizedStrings[EmbedMetadataLabel]}"
+                                                     FontSize="13" Margin="0,4"/>
+
+                                    <!-- Субтитры -->
+                                    <ui:ToggleSwitch IsChecked="{Binding IsDownloadSubtitles}" Content="{Binding LocalizedStrings[DownloadSubtitles]}"
+                                                     FontSize="13" Margin="0,4"/>
+                                    <StackPanel Visibility="{Binding IsDownloadSubtitles, Converter={StaticResource BoolToVis}}" Margin="16,4,0,4">
+                                        <TextBlock Text="{Binding LocalizedStrings[LanguageLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                        <ComboBox ItemsSource="{Binding SubtitleLanguages}" SelectedItem="{Binding SelectedSubtitleLanguage}"
+                                                  MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+                                        <CheckBox IsChecked="{Binding IsEmbedSubtitles}" Content="{Binding LocalizedStrings[EmbedSubtitles]}"
+                                                  FontSize="12.5" Margin="0,2" IsEnabled="{Binding IsAudioOnly, Converter={StaticResource InvertBool}}"/>
+                                        <CheckBox IsChecked="{Binding IsConvertSubsToSrt}" Content="{Binding LocalizedStrings[ConvertSubsSrtLabel]}"
+                                                  FontSize="12.5" Margin="0,2"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+
+                <!-- ══════════════════════════════════════════════════════════ -->
+                <!-- 2. Вкладка: ИСТОРИЯ (IsHistoryPage)                       -->
+                <!-- ══════════════════════════════════════════════════════════ -->
+                <Grid DataContext="{Binding HistoryVm}"
+                      Visibility="{Binding DataContext.IsHistoryPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
+                      Margin="24,20,24,18">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Заголовок + поиск -->
+                    <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,14">
+                        <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding LocalizedStrings[HistoryButton]}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding LocalizedStrings[HistorySubtitle]}" Style="{StaticResource MetaText}" Margin="0,2,0,0"/>
                         </StackPanel>
 
-                        <!-- Встраивание -->
-                        <StackPanel Orientation="Horizontal" Margin="0,7,0,0">
-                            <CheckBox IsChecked="{Binding IsEmbedThumbnail}" Content="{Binding LocalizedStrings[EmbedThumbnailLabel]}" FontSize="13" Margin="0,0,16,0"
-                                      ToolTip="{Binding LocalizedStrings[EmbedThumbnailHint]}"/>
-                            <CheckBox IsChecked="{Binding IsEmbedMetadata}" Content="{Binding LocalizedStrings[EmbedMetadataLabel]}" FontSize="13"
-                                      ToolTip="{Binding LocalizedStrings[EmbedMetadataHint]}"/>
+                        <!-- Поле поиска -->
+                        <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceBgrBrush}"
+                                BorderBrush="{DynamicResource LineBrush}" BorderThickness="1"
+                                CornerRadius="{StaticResource MediumRadius}" Width="320" Height="36" Padding="8,0">
+                            <DockPanel LastChildFill="True">
+                                <ui:SymbolIcon Symbol="Search24" FontSize="16" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ui:TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                            Background="Transparent" BorderThickness="0" Height="32"
+                                            FontSize="12.5" VerticalContentAlignment="Center"
+                                            PlaceholderText="{Binding LocalizedStrings[HistorySearchPlaceholder]}"
+                                            ClearButtonEnabled="True"/>
+                            </DockPanel>
+                        </Border>
+                    </DockPanel>
+
+                    <!-- Таблица записей истории -->
+                    <Border Grid.Row="1" Style="{StaticResource CardSectionBorder}" Padding="0" Margin="0,0,0,12">
+                        <Grid>
+                            <ListView ItemsSource="{Binding EntriesView}" SelectedItem="{Binding SelectedEntry}"
+                                      BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
+                                      FontSize="{StaticResource FontSizeBody}" ItemContainerStyle="{StaticResource HistoryRow}"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="{Binding LocalizedStrings[DateColumn]}" Width="150">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                                               FontFamily="{StaticResource MonoFont}" FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="{Binding LocalizedStrings[UrlNameColumn]}" Width="340">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel VerticalAlignment="Center" Margin="4,2">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"
+                                                                   Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="{Binding Url}" Style="{StaticResource MetaText}" FontSize="11"
+                                                                   Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="{Binding LocalizedStrings[StatusColumn]}" Width="100">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Ellipse Width="7" Height="7" Fill="{Binding Status, Converter={StaticResource HistoryStatusColor}}" Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{Binding Status, Converter={StaticResource HistoryStatusText}}"
+                                                                   FontFamily="{StaticResource MonoFont}" FontSize="12"
+                                                                   Foreground="{Binding Status, Converter={StaticResource HistoryStatusColor}}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                        <GridViewColumn Header="" Width="220">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,10,0">
+                                                        <Button Style="{StaticResource SecondaryFlatButton}" Content="{Binding DataContext.LocalizedStrings[HistoryDownloadAgain], RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                Command="{Binding DataContext.RedownloadHistoryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" Height="28" Padding="10,0" Margin="0,0,4,0"/>
+                                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE8B7;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                                Command="{Binding DataContext.HistoryVm.OpenEntryFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" ToolTip="{Binding DataContext.LocalizedStrings[HistoryOpenFolderButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE74D;" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                                                Command="{Binding DataContext.HistoryVm.RemoveEntryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" ToolTip="{Binding DataContext.LocalizedStrings[HistoryRemoveEntryButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                            <!-- Пустая история -->
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
+                                <ui:SymbolIcon Symbol="History24" FontSize="36" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
+                                <TextBlock Text="{Binding LocalizedStrings[HistoryEmpty]}" Style="{StaticResource MetaText}"
+                                           FontSize="13" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Футер истории -->
+                    <DockPanel Grid.Row="2" LastChildFill="False">
+                        <Button DockPanel.Dock="Left" Style="{StaticResource SecondaryFlatButton}"
+                                Content="{Binding LocalizedStrings[ClearHistoryButton]}"
+                                Command="{Binding ClearHistoryCommand}"/>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}"
+                                Content="{Binding LocalizedStrings[ExportCsvButton]}"
+                                Command="{Binding ExportCsvCommand}"/>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}" Margin="0,0,8,0"
+                                Content="{Binding LocalizedStrings[ShowMoreButton]}"
+                                Command="{Binding LoadMoreCommand}"
+                                Visibility="{Binding CanLoadMore, Converter={StaticResource BoolToVis}}"/>
+                    </DockPanel>
+                </Grid>
+
+                <!-- ══════════════════════════════════════════════════════════ -->
+                <!-- 3. Вкладка: КОНВЕРТЕР (IsConverterPage)                   -->
+                <Grid DataContext="{Binding ConvertVm}"
+                      Visibility="{Binding DataContext.IsConverterPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"
+                      Margin="24,18,24,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Заголовок конвертера + тумблеры -->
+                    <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,14">
+                        <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding LocalizedStrings[ConverterButton]}" FontSize="20" FontWeight="Bold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding LocalizedStrings[ConvertSubtitle]}" Style="{StaticResource MetaText}" Margin="0,2,0,0"/>
                         </StackPanel>
-                    </StackPanel>
-                </Border>
-            </Expander>
-        </StackPanel>
 
-        <!-- ═══ Кнопки действий ═══ -->
-        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
-            <ui:Button Appearance="Primary" Command="{Binding DownloadCommand}" Height="42" Width="236"
-                       FontSize="{StaticResource FontSizeBodyLarge}" FontWeight="SemiBold" Margin="0,0,9,0" CornerRadius="21"
-                       IsEnabled="{Binding IsFetchingInfo, Converter={StaticResource InvertBool}}"
-                       AutomationProperties.Name="{Binding LocalizedStrings[DownloadButton]}"
-                       ToolTip="{Binding LocalizedStrings[DownloadButtonHint]}">
-                <StackPanel Orientation="Horizontal">
-                    <!-- Индикатор получения метаданных: кнопка заметно «занята» -->
-                    <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="0,0,6,0"
-                                     Visibility="{Binding IsFetchingInfo, Converter={StaticResource BoolToVis}}"/>
-                    <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="16"
-                                   Visibility="{Binding IsFetchingInfo, Converter={StaticResource InvertBoolToVis}}"/>
-                    <TextBlock Text="{Binding DownloadButtonText}" Margin="6,0,0,0"/>
-                </StackPanel>
-            </ui:Button>
-            <ui:Button Appearance="Secondary" Command="{Binding ClearFinishedCommand}" Height="42" Padding="15,0"
-                       FontSize="12.5">
-                <ui:Button.Icon>
-                    <ui:SymbolIcon Symbol="Delete24" FontSize="14"/>
-                </ui:Button.Icon>
-                <TextBlock Text="{Binding LocalizedStrings[ClearFinishedButton]}" Margin="6,0,0,0"/>
-            </ui:Button>
-        </StackPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:ToggleSwitch IsChecked="{Binding IsAudioOnlyMode}" Content="{Binding LocalizedStrings[AudioOnlyModeLabel]}"
+                                             FontSize="13" Margin="0,0,16,0" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
+                            <ui:ToggleSwitch IsChecked="{Binding IsBatchMode}" Content="{Binding LocalizedStrings[BatchModeShort]}"
+                                             FontSize="13" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"/>
+                        </StackPanel>
+                    </DockPanel>
 
-        <!-- ═══ Заголовок очереди ═══ -->
-        <Grid Grid.Row="6" Margin="15,0,15,5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="{Binding LocalizedStrings[QueueSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="0" VerticalAlignment="Center"/>
-            <!-- Сводка в «звёздной» колонке: длинный текст не распирает Auto-колонки и не сжимает комбобокс -->
-            <TextBlock Grid.Column="1" Text="{Binding QueueSummaryText}" Style="{StaticResource MetaText}" VerticalAlignment="Center"
-                       HorizontalAlignment="Right" Margin="0,0,12,0" TextTrimming="CharacterEllipsis"/>
-            <TextBlock Grid.Column="2" Text="{Binding LocalizedStrings[PostQueueActionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="12" Margin="0,0,6,0"
-                       VerticalAlignment="Center"
-                       ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
-                       AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
-            <ComboBox Grid.Column="3" ItemsSource="{Binding PostQueueActionItems}" SelectedIndex="{Binding SelectedPostQueueIndex}"
-                      MinWidth="112" MinHeight="32" FontSize="12" VerticalAlignment="Center"
-                      PreviewMouseWheel="OnPostQueueComboPreviewMouseWheel"
-                      ToolTip="{Binding LocalizedStrings[PostQueueActionHint]}"
-                      AutomationProperties.Name="{Binding LocalizedStrings[PostQueueActionLabel]}"/>
-        </Grid>
+                    <!-- Две колонки: Источник/Назначение (слева) и Кодирование/Качество (справа) -->
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="340"/>
+                        </Grid.ColumnDefinitions>
 
-        <!-- ═══ Очередь + футер ═══ -->
-        <Grid Grid.Row="7" Margin="12,0,12,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <ListBox Grid.Row="0" ItemsSource="{Binding Queue.Items}" Background="Transparent" BorderThickness="0" Padding="2,0,3,6"
-                     ItemContainerStyle="{StaticResource QueueItemContainerNamed}"
-                     AutomationProperties.Name="{Binding LocalizedStrings[QueueListAutomation]}"
-                     VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel/>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type services:DownloadItem}">
-                        <Border Background="{DynamicResource SurfaceBgrBrush}"
-                                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
-                                CornerRadius="{StaticResource MediumRadius}" Padding="12,9" Margin="0,0,0,7"
-                                Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
-                            <!-- Контекстное меню: те же действия доступны без наведения на иконки -->
-                            <Border.ContextMenu>
-                                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="{Binding PauseResumeTooltip}"
-                                              Command="{Binding PlacementTarget.Tag.PauseResumeItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding}"
-                                              Visibility="{Binding CanPauseResume, Converter={StaticResource BoolToVis}}"/>
-                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              Command="{Binding PlacementTarget.Tag.CancelItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding}"
-                                              Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}"/>
-                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[RetryButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              Command="{Binding PlacementTarget.Tag.RetryItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding}"
-                                              Visibility="{Binding CanRetry, Converter={StaticResource BoolToVis}}"/>
-                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[OpenLocationButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              Command="{Binding PlacementTarget.Tag.OpenItemLocationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding}"
-                                              Visibility="{Binding CanOpenLocation, Converter={StaticResource BoolToVis}}"/>
-                                    <MenuItem Header="{Binding PlacementTarget.Tag.LocalizedStrings[RemoveItemButton], RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              Command="{Binding PlacementTarget.Tag.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding}"
-                                              Visibility="{Binding IsFinished, Converter={StaticResource BoolToVis}}"/>
-                                </ContextMenu>
-                            </Border.ContextMenu>
+                        <!-- Левая колонка: Источник + Назначение -->
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Секция Источник -->
+                            <Border Grid.Row="0" Style="{StaticResource CardSectionBorder}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Заголовок секции -->
+                                    <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,10">
+                                        <TextBlock Text="{Binding LocalizedStrings[InputSectionLabel]}" Style="{StaticResource SectionLabel}"
+                                                   FontSize="13.5" Margin="0" VerticalAlignment="Center"/>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                                    Visibility="{Binding ShowBatchInput, Converter={StaticResource BoolToVis}}">
+                                            <Button Style="{StaticResource SecondaryFlatButton}" Content="{Binding LocalizedStrings[BatchAddButton]}"
+                                                    Command="{Binding AddBatchFilesCommand}" Height="28" Padding="8,0" Margin="0,0,4,0"/>
+                                            <Button Style="{StaticResource SecondaryFlatButton}" Content="{Binding LocalizedStrings[BatchRemoveButton]}"
+                                                    Command="{Binding RemoveBatchFileCommand}" Height="28" Padding="8,0" Margin="0,0,4,0"/>
+                                            <Button Style="{StaticResource SecondaryFlatButton}" Content="{Binding LocalizedStrings[BatchClearButton]}"
+                                                    Command="{Binding ClearBatchFilesCommand}" Height="28" Padding="8,0"/>
+                                        </StackPanel>
+                                    </DockPanel>
+
+                                    <!-- Режим одного файла -->
+                                    <Grid Grid.Row="1" Visibility="{Binding ShowSingleInput, Converter={StaticResource BoolToVis}}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- Дроп-зона -->
+                                        <Border Grid.Row="0" Style="{StaticResource DropZoneBorder}" Margin="0,0,0,10">
+                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <ui:SymbolIcon Symbol="ArrowUpload24" FontSize="32" HorizontalAlignment="Center"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                <TextBlock Text="{Binding LocalizedStrings[ConvertDropHintDisk]}" Style="{StaticResource MetaText}"
+                                                           FontSize="12.5" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Строка пути к файлу + кнопка Обзор -->
+                                        <DockPanel Grid.Row="1" LastChildFill="True">
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}"
+                                                    Content="{Binding LocalizedStrings[BrowseButton]}" Margin="8,0,0,0"
+                                                    Command="{Binding BrowseFileCommand}" Height="34" Padding="16,0"/>
+                                            <ui:TextBox Text="{Binding FilePath}" Height="34" VerticalContentAlignment="Center"
+                                                        FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
+                                        </DockPanel>
+                                    </Grid>
+
+                                    <!-- Пакетный режим -->
+                                    <Grid Grid.Row="1" Visibility="{Binding ShowBatchInput, Converter={StaticResource BoolToVis}}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <ListBox Grid.Row="0" ItemsSource="{Binding BatchFiles}" SelectedItem="{Binding SelectedBatchFile}"
+                                                 Background="{DynamicResource WindowBgrBrush}" BorderBrush="{DynamicResource LineBrush}"
+                                                 BorderThickness="1" FontFamily="{StaticResource MonoFont}" FontSize="12"/>
+                                        <TextBlock Grid.Row="1" Text="{Binding LocalizedStrings[ConvertDropHintBatch]}"
+                                                   Style="{StaticResource FieldHintText}" Margin="0,6,0,0"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!-- Секция Назначение -->
+                            <Border Grid.Row="2" Style="{StaticResource CardSectionBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding LocalizedStrings[DestinationSectionTitle]}" Style="{StaticResource SectionLabel}"
+                                               FontSize="13" Margin="0,0,0,6"/>
+                                    <DockPanel LastChildFill="True" Margin="0,0,0,8">
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}"
+                                                Content="{Binding LocalizedStrings[ChooseFolderButton]}" Margin="8,0,0,0"
+                                                Command="{Binding BrowseOutputDirCommand}" Height="34" Padding="16,0"/>
+                                        <ui:TextBox Text="{Binding OutputDirectory}" Height="34" VerticalContentAlignment="Center"
+                                                    FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
+                                    </DockPanel>
+
+                                    <DockPanel LastChildFill="True" Visibility="{Binding ShowOutputFileName, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizedStrings[OutputFileNameLabel]}"
+                                                   Style="{StaticResource FieldLabelText}" Width="110" VerticalAlignment="Center"/>
+                                        <ui:TextBox Text="{Binding OutputFileName}" Height="34" VerticalContentAlignment="Center"
+                                                    FontFamily="{StaticResource MonoFont}" FontSize="12.5"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Правая колонка: Единая секция Кодирование + Качество (без внутреннего скролла!) -->
+                        <Border Grid.Column="2" Style="{StaticResource CardSectionBorder}" Padding="14,10">
+                            <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <!-- Кодирование -->
+                                    <TextBlock Text="{Binding LocalizedStrings[EncodingSectionLabel]}" Style="{StaticResource SectionLabel}"
+                                               FontSize="13" Margin="0,0,0,6"/>
+
+                                    <TextBlock Text="{Binding LocalizedStrings[ExtensionLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                    <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+
+                                    <StackPanel Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{Binding LocalizedStrings[VideoCodecLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                        <ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding SelectedVideoCodec}"
+                                                  Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="10"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding LocalizedStrings[HardwareEncoderLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                                <ComboBox ItemsSource="{Binding HardwareEncoders}" SelectedItem="{Binding SelectedHardwareEncoder}"
+                                                          MinHeight="32" HorizontalAlignment="Stretch"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="{Binding LocalizedStrings[PresetLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                                <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
+                                                          MinHeight="32" HorizontalAlignment="Stretch"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding LocalizedStrings[AudioCodecLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                    <ComboBox ItemsSource="{Binding AudioCodecs}" SelectedItem="{Binding SelectedAudioCodec}"
+                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+
+                                    <!-- Разделитель -->
+                                    <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,6"/>
+
+                                    <!-- Качество -->
+                                    <TextBlock Text="{Binding LocalizedStrings[QualitySectionTitle]}" Style="{StaticResource SectionLabel}"
+                                               FontSize="13" Margin="0,0,0,6"/>
+
+                                    <Grid Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}" Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding LocalizedStrings[CrfLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                            <ui:NumberBox Value="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" Height="30"
+                                                          Minimum="0" Maximum="51" SmallChange="1" ClearButtonEnabled="False"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2">
+                                            <TextBlock Text="{Binding LocalizedStrings[VideoBitrateLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                            <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Height="30"
+                                                          Minimum="0" SmallChange="100" ClearButtonEnabled="False" PlaceholderText="авто"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding LocalizedStrings[AudioBitrateLabel]}" Style="{StaticResource FieldLabelText}"/>
+                                        <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Height="30"
+                                                      Minimum="0" SmallChange="32" ClearButtonEnabled="False"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+
+                    <!-- Единая карточка: Команда ffmpeg + Статус и запуск -->
+                    <Border Grid.Row="2" Style="{StaticResource CardSectionBorder}" Padding="14,12">
+                        <StackPanel>
+                            <!-- Строка команды ffmpeg -->
+                            <DockPanel LastChildFill="True" Margin="0,0,0,10">
+                                <TextBlock DockPanel.Dock="Left" Text="{Binding LocalizedStrings[FfmpegCommandPreviewLabel]}"
+                                           Style="{StaticResource SectionLabel}" FontSize="12" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <Border Background="{DynamicResource WindowBgrBrush}" BorderBrush="{DynamicResource LineBrush}"
+                                        BorderThickness="1" CornerRadius="{StaticResource SmallRadius}" Height="30" Padding="8,0">
+                                    <TextBox Text="{Binding FfmpegCommandPreview}" IsReadOnly="True" Background="Transparent"
+                                             BorderThickness="0" Foreground="{DynamicResource TextSecondaryBrush}"
+                                             FontFamily="{StaticResource MonoFont}" FontSize="11.5" VerticalContentAlignment="Center"/>
+                                </Border>
+                            </DockPanel>
+
+                            <!-- Статус, прогресс и кнопки -->
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Статусный индикатор -->
-                                <Border Width="4" CornerRadius="2" Margin="0,0,11,0"
-                                        Background="{Binding Status, Converter={StaticResource StatusToColor}}"/>
+                                <!-- Статус и прогресс -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="{Binding StatusMessage}" FontFamily="{StaticResource MonoFont}" FontSize="11.5"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,4"
+                                               Visibility="{Binding StatusMessage, Converter={StaticResource TextToVis}}"/>
+                                    <ProgressBar Value="{Binding ProgressPercent}" Maximum="100" Style="{StaticResource RoundedProgressBar}" Height="6"/>
+                                </StackPanel>
 
-                                <!-- Контент карточки -->
-                                <Grid Grid.Column="1" Margin="0,0,8,0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
+                                <!-- Кнопки Отмена и Конвертировать -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource SecondaryFlatButton}" Height="38" Padding="18,0" Margin="0,0,10,0"
+                                            Content="{Binding LocalizedStrings[CancelConvertButton]}"
+                                            Command="{Binding CancelConvertCommand}"
+                                            Visibility="{Binding IsCancellable, Converter={StaticResource BoolToVis}}"/>
 
-                                    <!-- Название + бейдж плейлиста -->
-                                    <DockPanel Grid.Row="0" LastChildFill="True">
-                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center"
-                                                    Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}">
-                                            <Border BorderBrush="{DynamicResource StatusDownloadingBrush}" BorderThickness="1" CornerRadius="4" Padding="6,1">
-                                                <TextBlock Text="{Binding DataContext.LocalizedStrings[PlaylistBadge], RelativeSource={RelativeSource AncestorType=Window}}"
-                                                           Foreground="{DynamicResource StatusDownloadingBrush}" FontFamily="{StaticResource MonoFont}" FontSize="10" FontWeight="SemiBold"/>
-                                            </Border>
-                                            <TextBlock Text="{Binding PlaylistCounterText}" Foreground="{DynamicResource StatusDownloadingBrush}" FontFamily="{StaticResource MonoFont}" FontSize="11" FontWeight="SemiBold" Margin="7,0,0,0"/>
+                                    <Button Style="{StaticResource AccentPillButton}" Height="38" Padding="22,0"
+                                            Command="{Binding ConvertCommand}" IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="ArrowSwap24" FontSize="16" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding LocalizedStrings[ConvertButton]}" VerticalAlignment="Center"/>
                                         </StackPanel>
-                                        <TextBlock Text="{Binding DisplayTitle}" FontFamily="{StaticResource TextFont}" FontSize="13.5" FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}" VerticalAlignment="Center"/>
-                                    </DockPanel>
-
-                                    <!-- Текущее видео плейлиста -->
-                                    <TextBlock Grid.Row="1" Text="{Binding CurrentVideoLine}" FontFamily="{StaticResource MonoLightFont}" FontSize="11"
-                                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"
-                                               Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}" ToolTip="{Binding Title}"/>
-
-                                    <!-- Прогресс + процент -->
-                                    <Grid Grid.Row="2" Margin="0,8,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <ProgressBar Value="{Binding TotalPercent, Mode=OneWay}" Maximum="100" Style="{StaticResource RoundedProgressBar}"
-                                                     Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding TotalPercent, StringFormat={}{0}%}" Style="{StaticResource MetaText}" Margin="9,0,0,0"/>
-                                    </Grid>
-
-                                    <!-- Мета: статус · скорость · ETA · размер · прогресс видео -->
-                                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,6,0,0">
-                                        <TextBlock Text="{Binding StatusText}" FontFamily="{StaticResource MonoFont}" FontSize="{StaticResource FontSizeCaption}"
-                                                   VerticalAlignment="Center" Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"/>
-                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
-                                        <TextBlock Text="{Binding Speed}" Style="{StaticResource MetaText}"/>
-                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
-                                        <TextBlock Text="{Binding Eta}" Style="{StaticResource MetaText}"/>
-                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}"/>
-                                        <TextBlock Text="{Binding TotalSize}" Style="{StaticResource MetaText}"/>
-                                        <TextBlock Text="·" Style="{StaticResource MetaSeparator}" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}"/>
-                                        <TextBlock Text="{Binding VideoPercentText}" FontFamily="{StaticResource MonoFont}" FontSize="11" VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource StatusDownloadingBrush}" Visibility="{Binding HasPlaylistInfo, Converter={StaticResource BoolToVis}}"/>
-                                    </StackPanel>
-
-                                    <!-- Ошибка: до двух строк (полный текст — в подсказке), чтобы не растягивать карточку -->
-                                    <TextBlock Grid.Row="4" Text="{Binding ErrorMessage, Converter={StaticResource FlatNewlines}}"
-                                               Style="{StaticResource ErrorText}"
-                                               TextWrapping="Wrap" MaxHeight="34" TextTrimming="CharacterEllipsis" ToolTip="{Binding ErrorMessage}"
-                                               Margin="0,4,0,0" Visibility="{Binding ErrorMessage, Converter={StaticResource TextToVis}}"/>
-                                </Grid>
-
-                                <!-- Действия -->
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Style="{StaticResource QueueGhostButton}"
-                                            Content="{Binding PauseResumeIcon}" FontFamily="{StaticResource IconFont}" FontSize="{StaticResource FontSizeBody}"
-                                            Command="{Binding DataContext.PauseResumeItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}" IsEnabled="{Binding CanPauseResume}"
-                                            AutomationProperties.Name="{Binding PauseResumeTooltip}"
-                                            ToolTip="{Binding PauseResumeTooltip}"/>
-                                    <Button Style="{StaticResource QueueGhostButton}"
-                                            Content="&#xE711;" FontFamily="{StaticResource IconFont}" FontSize="13"
-                                            Command="{Binding DataContext.CancelItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}" Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}"
-                                            AutomationProperties.Name="{Binding DataContext.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=Window}}"
-                                            ToolTip="{Binding DataContext.LocalizedStrings[CancelButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
-                                    <Button Style="{StaticResource QueueGhostButton}"
-                                            Content="&#xE72C;" FontFamily="{StaticResource IconFont}" FontSize="13"
-                                            Command="{Binding DataContext.RetryItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}" Visibility="{Binding CanRetry, Converter={StaticResource BoolToVis}}"
-                                            AutomationProperties.Name="{Binding DataContext.LocalizedStrings[RetryButton], RelativeSource={RelativeSource AncestorType=Window}}"
-                                            ToolTip="{Binding DataContext.LocalizedStrings[RetryButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
-                                    <Button Style="{StaticResource QueueGhostButton}"
-                                            Content="&#xE838;" FontFamily="{StaticResource IconFont}" FontSize="13"
-                                            Command="{Binding DataContext.OpenItemLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}" Visibility="{Binding CanOpenLocation, Converter={StaticResource BoolToVis}}"
-                                            AutomationProperties.Name="{Binding DataContext.LocalizedStrings[OpenLocationButton], RelativeSource={RelativeSource AncestorType=Window}}"
-                                            ToolTip="{Binding DataContext.LocalizedStrings[OpenLocationButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
-                                    <Button Style="{StaticResource QueueGhostButton}"
-                                            Content="&#xE74D;" FontFamily="{StaticResource IconFont}" FontSize="13"
-                                            Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                            CommandParameter="{Binding}" Visibility="{Binding IsFinished, Converter={StaticResource BoolToVis}}"
-                                            AutomationProperties.Name="{Binding DataContext.LocalizedStrings[RemoveItemButton], RelativeSource={RelativeSource AncestorType=Window}}"
-                                            ToolTip="{Binding DataContext.LocalizedStrings[RemoveItemButton], RelativeSource={RelativeSource AncestorType=Window}}"/>
+                                    </Button>
                                 </StackPanel>
                             </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-
-            <!-- Пустая очередь -->
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding HasQueueItems, Converter={StaticResource InvertBoolToVis}}">
-                <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="34" HorizontalAlignment="Center" Foreground="{DynamicResource TextMutedBrush}"/>
-                <TextBlock Text="{Binding LocalizedStrings[QueueEmptyMessage]}" FontFamily="{StaticResource TextFont}" FontSize="13"
-                           HorizontalAlignment="Center" Margin="0,8,0,0" Foreground="{DynamicResource TextMutedBrush}"/>
-            </StackPanel>
-
-            <!-- ═══ Футер: версии/обновления слева, навигация справа ═══ -->
-            <Grid Grid.Row="1" Margin="0,4,0,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
-                    <Grid VerticalAlignment="Center">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*" MinWidth="40"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="{Binding LocalizedStrings[FFmpegLabel]}" Style="{StaticResource MetaText}"/>
-                        <TextBlock Grid.Column="1" Text="{Binding FfmpegVersion}" Style="{StaticResource MetaText}"
-                                   TextTrimming="CharacterEllipsis" ToolTip="{Binding FfmpegVersion}"/>
-                        <ui:Button Grid.Column="2" Appearance="Transparent" Command="{Binding CheckFFmpegUpdateCommand}" Height="24" Padding="6,0" Margin="7,0,0,0" FontSize="10.5"
-                                   Content="{Binding LocalizedStrings[CheckUpdateButton]}"
-                                   AutomationProperties.Name="{Binding LocalizedStrings[CheckUpdateButton]}"/>
-                        <TextBlock Grid.Column="3" Text="·" Foreground="{DynamicResource TextMutedBrush}" FontFamily="{StaticResource MonoFont}" FontSize="13" Margin="6,0" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="4" Text="{Binding LocalizedStrings[AppNameLabel]}" Style="{StaticResource MetaText}"/>
-                        <TextBlock Grid.Column="5" Text="{Binding AppVersion}" Style="{StaticResource MetaText}"/>
-                        <ui:Button Grid.Column="6" Appearance="Primary" Command="{Binding UpdateAppCommand}" Height="24" Padding="9,0" Margin="7,0,0,0" FontSize="11" CornerRadius="12"
-                                   Content="{Binding LocalizedStrings[CheckAppUpdateButton]}"
-                                   Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource BoolToVis}}"/>
-                    </Grid>
-                    <TextBlock Text="{Binding UpdateStatusText}" Margin="0,2,0,0" FontFamily="{StaticResource MonoLightFont}" FontSize="10.5"
-                               Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"
-                               Visibility="{Binding UpdateStatusText, Converter={StaticResource TextToVis}}"/>
-                </StackPanel>
-
-                <!-- Навигация: компактные иконки с подсказками -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
-                    <ui:Button Appearance="Secondary" Command="{Binding OpenFolderCommand}" Width="32" Height="32" Padding="0"
-                               ToolTip="{Binding LocalizedStrings[OpenVideoFolderButton]}"
-                               AutomationProperties.Name="{Binding LocalizedStrings[OpenVideoFolderButton]}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="FolderOpen24" FontSize="14"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button Appearance="Secondary" Command="{Binding OpenHistoryCommand}" Width="32" Height="32" Padding="0" Margin="4,0,0,0"
-                               ToolTip="{Binding LocalizedStrings[HistoryButton]}"
-                               AutomationProperties.Name="{Binding LocalizedStrings[HistoryButton]}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="History24" FontSize="14"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button Appearance="Secondary" Command="{Binding OpenConverterCommand}" Width="32" Height="32" Padding="0" Margin="4,0,0,0"
-                               ToolTip="{Binding LocalizedStrings[ConverterButton]}"
-                               AutomationProperties.Name="{Binding LocalizedStrings[ConverterButton]}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="ArrowSwap24" FontSize="14"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                    <ui:Button Appearance="Secondary" Command="{Binding OpenHelpCommand}" Width="32" Height="32" Padding="0" Margin="4,0,0,0"
-                               ToolTip="{Binding LocalizedStrings[HelpWindowTitle]}"
-                               AutomationProperties.Name="{Binding LocalizedStrings[HelpWindowTitle]}">
-                        <ui:Button.Icon>
-                            <ui:SymbolIcon Symbol="QuestionCircle24" FontSize="14"/>
-                        </ui:Button.Icon>
-                    </ui:Button>
-                </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
-
         <!-- ═══ Хосты диалогов и уведомлений (поверх всего окна) ═══ -->
-        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="8" Panel.ZIndex="100"/>
-        <ui:SnackbarPresenter x:Name="RootSnackbar" Grid.RowSpan="8" Panel.ZIndex="99"
-                              VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,18,96"/>
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="2" Panel.ZIndex="100"/>
+        <ui:SnackbarPresenter x:Name="RootSnackbar" Grid.RowSpan="2" Panel.ZIndex="99"
+                              VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,24,24"/>
     </Grid>
 </ui:FluentWindow>

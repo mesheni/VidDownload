@@ -109,6 +109,17 @@ namespace VidDownload.WPF
 
         private void OnWindowDragOver(object sender, DragEventArgs e)
         {
+            if (_viewModel.IsConverterPage)
+            {
+                e.Effects = (e.Data.GetDataPresent(DataFormats.FileDrop) &&
+                             e.Data.GetData(DataFormats.FileDrop) is string[] f &&
+                             f.Any(File.Exists))
+                    ? DragDropEffects.Copy
+                    : DragDropEffects.None;
+                e.Handled = true;
+                return;
+            }
+
             e.Effects = HasDroppablePayload(e.Data)
                 ? DragDropEffects.Copy
                 : DragDropEffects.None;
@@ -117,6 +128,22 @@ namespace VidDownload.WPF
 
         private void OnWindowDrop(object sender, DragEventArgs e)
         {
+            if (_viewModel.IsConverterPage)
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
+                    e.Data.GetData(DataFormats.FileDrop) is string[] cFiles)
+                {
+                    var existing = cFiles.Where(File.Exists).ToList();
+                    if (existing.Count > 0)
+                    {
+                        if (_viewModel.ConvertVm.IsBatchMode)
+                            _viewModel.ConvertVm.AddBatchFiles(existing);
+                        else
+                            _viewModel.ConvertVm.FilePath = existing[0];
+                        return;
+                    }
+                }
+            }
             // Файлы со списками ссылок (.txt) — импортируем все, о лишних сообщаем
             if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
                 e.Data.GetData(DataFormats.FileDrop) is string[] files)

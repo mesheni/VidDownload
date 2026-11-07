@@ -5,18 +5,16 @@ namespace VidDownload.WPF.Themes
 {
     /// <summary>
     /// Единая палитра статусов для конвертеров цвета (очередь и история).
-    /// Значения синхронизированы с Themes/Shared.xaml и подобраны универсально
-    /// для светлой и тёмной темы.
+    /// Значения синхронизированы с Themes/Shared.xaml и подобраны по дизайн-макетам.
     /// </summary>
     public static class StatusPalette
     {
-        public static readonly SolidColorBrush Queued = Frozen(Color.FromRgb(0x8A, 0x8A, 0x8A));
-        public static readonly SolidColorBrush Downloading = Frozen(Color.FromRgb(0x35, 0x74, 0xF0));
-        public static readonly SolidColorBrush Paused = Frozen(Color.FromRgb(0xDC, 0x68, 0x03));
-        public static readonly SolidColorBrush Completed = Frozen(Color.FromRgb(0x34, 0xA8, 0x53));
-        // #EF5350: >= 3:1 на тёмной карточке #2A2A2A (синхронизировано с Shared.xaml StatusFailedBrush)
-        public static readonly SolidColorBrush Failed = Frozen(Color.FromRgb(0xEF, 0x53, 0x50));
-        public static readonly SolidColorBrush Cancelled = Frozen(Color.FromRgb(0x75, 0x75, 0x75));
+        public static readonly SolidColorBrush Queued = Frozen(Color.FromRgb(0x8C, 0x93, 0xA0));
+        public static readonly SolidColorBrush Downloading = Frozen(Color.FromRgb(0x5B, 0x9D, 0xFF));
+        public static readonly SolidColorBrush Paused = Frozen(Color.FromRgb(0xE5, 0xB0, 0x4A));
+        public static readonly SolidColorBrush Completed = Frozen(Color.FromRgb(0x4F, 0xC5, 0x8A));
+        public static readonly SolidColorBrush Failed = Frozen(Color.FromRgb(0xF0, 0x71, 0x6B));
+        public static readonly SolidColorBrush Cancelled = Frozen(Color.FromRgb(0x8C, 0x93, 0xA0));
 
         public static SolidColorBrush For(DownloadItemStatus status) => status switch
         {
