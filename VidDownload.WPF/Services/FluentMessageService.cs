@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows;
 using Wpf.Ui;
 using Wpf.Ui.Controls;
@@ -34,6 +35,8 @@ namespace VidDownload.WPF.Services
         {
             try
             {
+                // SimpleContentDialogCreateOptions не поддерживает иконку/severity,
+                // поэтому Fluent-диалог показывает только заголовок и текст.
                 await _dialogs.ShowSimpleDialogAsync(new SimpleContentDialogCreateOptions
                 {
                     Title = title,
@@ -45,7 +48,15 @@ namespace VidDownload.WPF.Services
             catch (Exception ex)
             {
                 AppLog.Error(nameof(FluentMessageService), $"Dialog failed, fallback to classic: {ex.Message}");
-                System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, image);
+                // Владельцем берём активное окно: иначе fallback может оказаться под открытым модальным окном
+                var owner = Application.Current?.Windows
+                                .OfType<Window>()
+                                .FirstOrDefault(w => w.IsActive && w.IsVisible)
+                            ?? Application.Current?.MainWindow;
+                if (owner is not null)
+                    System.Windows.MessageBox.Show(owner, message, title, System.Windows.MessageBoxButton.OK, image);
+                else
+                    System.Windows.MessageBox.Show(message, title, System.Windows.MessageBoxButton.OK, image);
             }
         }
     }

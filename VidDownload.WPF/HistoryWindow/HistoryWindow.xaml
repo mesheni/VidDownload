@@ -7,11 +7,14 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[HistoryWindowTitle]}" Height="520" Width="920" WindowStartupLocation="CenterScreen"
-        Icon="/icon.png" ResizeMode="NoResize" Loaded="OnLoaded"
+        Title="{Binding LocalizedStrings[HistoryWindowTitle]}" Height="520" Width="920"
+        MinWidth="760" MinHeight="420"
+        WindowStartupLocation="CenterOwner" WindowBackdropType="Mica"
+        Icon="/icon.png" ResizeMode="CanResize" Loaded="OnLoaded"
         ExtendsContentIntoTitleBar="True">
     <Window.Resources>
         <converters:DownloadStatusToColorConverter x:Key="StatusColor"/>
+        <converters:DownloadStatusToTextConverter x:Key="StatusText"/>
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
         <!-- Заголовок колонки без стандартной сортировочной панели.
@@ -21,7 +24,7 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
-            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="10,9"/>
@@ -42,6 +45,11 @@
 
         <!-- Неявный стиль для служебных заголовков GridView (filler справа от колонок) -->
         <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource ColumnHeader}"/>
+
+        <!-- Заголовок колонки действий пуст визуально, но должен иметь доступное имя. -->
+        <Style x:Key="ActionsColumnHeader" TargetType="GridViewColumnHeader" BasedOn="{StaticResource ColumnHeader}">
+            <Setter Property="AutomationProperties.Name" Value="{Binding LocalizedStrings[HistoryActionsColumn]}"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -61,74 +69,131 @@
 
             <ui:TextBox Grid.Row="0" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                         PlaceholderText="{Binding LocalizedStrings[HistorySearchPlaceholder]}"
-                        MinHeight="32" Margin="0,6,0,0" FontSize="12.5" ClearButtonEnabled="True"
+                        MinHeight="32" Margin="0,6,0,0" FontSize="{StaticResource FontSizeCaption}" ClearButtonEnabled="True"
                         AutomationProperties.Name="{Binding LocalizedStrings[HistorySearchPlaceholder]}"/>
 
             <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="0" Margin="0,8,0,0">
-            <ListView ItemsSource="{Binding EntriesView}" SelectedItem="{Binding SelectedEntry}"
-                      BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
-                      FontSize="13"
-                      ItemContainerStyle="{StaticResource HistoryRow}"
-                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      VirtualizingPanel.IsVirtualizing="True"
-                      VirtualizingPanel.VirtualizationMode="Recycling"
-                      SizeChanged="OnListViewSizeChanged">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="{Binding LocalizedStrings[DateColumn]}" Width="Auto" HeaderContainerStyle="{StaticResource ColumnHeader}">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
-                                               Style="{StaticResource HistoryCellText}"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="{Binding LocalizedStrings[UrlNameColumn]}" HeaderContainerStyle="{StaticResource ColumnHeader}">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Title}" Style="{StaticResource HistoryCellText}"
-                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="{Binding LocalizedStrings[StatusColumn]}" Width="Auto" HeaderContainerStyle="{StaticResource ColumnHeader}">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Status}" FontFamily="{StaticResource MonoFont}" FontSize="12" FontWeight="SemiBold"
-                                               VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,1"
-                                               Foreground="{Binding Status, Converter={StaticResource StatusColor}}"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Header="" HeaderContainerStyle="{StaticResource ColumnHeader}">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <Button Content="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[DownloadActionColumn]}"
-                                                Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
-                                                CommandParameter="{Binding}"
-                                                MinWidth="96" MinHeight="28" Padding="12,0" Margin="0,2"
-                                                FontSize="12" HorizontalAlignment="Center"/>
-                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE8E5;" FontFamily="{StaticResource IconFont}" FontSize="13"
-                                                Command="{Binding ElementName=HistoryWin, Path=DataContext.OpenEntryFileCommand}" CommandParameter="{Binding}" Margin="2,2"
-                                                AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFileButton]}"
-                                                ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFileButton]}"/>
-                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE8B7;" FontFamily="{StaticResource IconFont}" FontSize="13"
-                                                Command="{Binding ElementName=HistoryWin, Path=DataContext.OpenEntryFolderCommand}" CommandParameter="{Binding}" Margin="2,2"
-                                                AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFolderButton]}"
-                                                ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFolderButton]}"/>
-                                        <Button Style="{StaticResource QueueGhostButton}" Content="&#xE74D;" FontFamily="{StaticResource IconFont}" FontSize="13"
-                                                Command="{Binding ElementName=HistoryWin, Path=DataContext.RemoveEntryCommand}" CommandParameter="{Binding}" Margin="2,2"
-                                                AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryRemoveEntryButton]}"
-                                                ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryRemoveEntryButton]}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </Border>
+                <Grid>
+                    <ListView ItemsSource="{Binding EntriesView}" SelectedItem="{Binding SelectedEntry}"
+                              Tag="{Binding ElementName=HistoryWin}"
+                              BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
+                              FontSize="{StaticResource FontSizeBody}"
+                              ItemContainerStyle="{StaticResource HistoryRow}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              SizeChanged="OnListViewSizeChanged"
+                              MouseDoubleClick="OnRowDoubleClick"
+                              ContextMenuOpening="OnListViewContextMenuOpening">
+                        <ListView.ContextMenu>
+                            <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="{Binding DataContext.LocalizedStrings[HistoryDownloadAgain]}"
+                                          Command="{Binding DownloadAgainCommand}"
+                                          CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                <MenuItem Header="{Binding DataContext.LocalizedStrings[HistoryOpenFileButton]}"
+                                          Command="{Binding DataContext.OpenEntryFileCommand}"
+                                          CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                <MenuItem Header="{Binding DataContext.LocalizedStrings[HistoryOpenFolderButton]}"
+                                          Command="{Binding DataContext.OpenEntryFolderCommand}"
+                                          CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                <Separator/>
+                                <MenuItem Header="{Binding DataContext.LocalizedStrings[HistoryRemoveEntryButton]}"
+                                          Command="{Binding DataContext.RemoveEntryCommand}"
+                                          CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.InputBindings>
+                            <KeyBinding Key="Delete"
+                                        Command="{Binding RemoveEntryCommand}"
+                                        CommandParameter="{Binding SelectedEntry}"/>
+                        </ListView.InputBindings>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="{Binding LocalizedStrings[DateColumn]}" Width="Auto" HeaderContainerStyle="{StaticResource ColumnHeader}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
+                                                       Style="{StaticResource HistoryCellText}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="{Binding LocalizedStrings[UrlNameColumn]}" HeaderContainerStyle="{StaticResource ColumnHeader}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Title}" Style="{StaticResource HistoryCellText}"
+                                                       TextTrimming="CharacterEllipsis" ToolTip="{Binding Url}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="{Binding LocalizedStrings[StatusColumn]}" Width="Auto" HeaderContainerStyle="{StaticResource ColumnHeader}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusText}}"
+                                                       FontFamily="{StaticResource MonoFont}" FontSize="{StaticResource FontSizeCaption}" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4,1"
+                                                       Foreground="{Binding Status, Converter={StaticResource StatusColor}}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="" HeaderContainerStyle="{StaticResource ActionsColumnHeader}">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                <ui:Button Appearance="Secondary"
+                                                           Content="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryDownloadAgain]}"
+                                                           Command="{Binding ElementName=HistoryWin, Path=DownloadAgainCommand}"
+                                                           CommandParameter="{Binding}"
+                                                           MinWidth="120" Height="32" Padding="10,0" Margin="0,2"
+                                                           FontSize="{StaticResource FontSizeCaption}"
+                                                           AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryDownloadAgain]}"
+                                                           HorizontalAlignment="Center"/>
+                                                <Button Style="{StaticResource QueueGhostButton}" Content="&#xE8E5;" FontFamily="{StaticResource IconFont}" FontSize="{StaticResource FontSizeCaption}"
+                                                        Command="{Binding ElementName=HistoryWin, Path=DataContext.OpenEntryFileCommand}" CommandParameter="{Binding}" Margin="2,2"
+                                                        AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFileButton]}"
+                                                        ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFileButton]}"/>
+                                                <Button Style="{StaticResource QueueGhostButton}" Content="&#xE8B7;" FontFamily="{StaticResource IconFont}" FontSize="{StaticResource FontSizeCaption}"
+                                                        Command="{Binding ElementName=HistoryWin, Path=DataContext.OpenEntryFolderCommand}" CommandParameter="{Binding}" Margin="2,2"
+                                                        AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFolderButton]}"
+                                                        ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryOpenFolderButton]}"/>
+                                                <Button Style="{StaticResource QueueGhostButton}" Content="&#xE74D;" FontFamily="{StaticResource IconFont}" FontSize="{StaticResource FontSizeCaption}"
+                                                        Command="{Binding ElementName=HistoryWin, Path=DataContext.RemoveEntryCommand}" CommandParameter="{Binding}" Margin="2,2"
+                                                        AutomationProperties.Name="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryRemoveEntryButton]}"
+                                                        ToolTip="{Binding ElementName=HistoryWin, Path=DataContext.LocalizedStrings[HistoryRemoveEntryButton]}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                    <!-- История пуста -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}">
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="34" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HistoryEmpty]}"
+                                   FontFamily="{StaticResource TextFont}" FontSize="{StaticResource FontSizeBody}"
+                                   HorizontalAlignment="Center" Margin="0,8,0,0"
+                                   Foreground="{DynamicResource TextMutedBrush}"/>
+                    </StackPanel>
+
+                    <!-- Поиск ничего не нашёл -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                Visibility="{Binding HasNoResults, Converter={StaticResource BoolToVis}}">
+                        <ui:SymbolIcon Symbol="Search24" FontSize="34" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextMutedBrush}"/>
+                        <TextBlock TextAlignment="Center" TextWrapping="Wrap"
+                                   FontFamily="{StaticResource TextFont}" FontSize="{StaticResource FontSizeBody}"
+                                   HorizontalAlignment="Center" Margin="0,8,0,0"
+                                   Foreground="{DynamicResource TextMutedBrush}">
+                            <Run Text="{Binding LocalizedStrings[HistoryNoResults]}"/>
+                            <Run Text=" "/>
+                            <Run Text="{Binding SearchText}" FontStyle="Italic"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
             <Grid Grid.Row="2" Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
@@ -139,14 +204,15 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <ui:Button Content="{Binding LocalizedStrings[ClearHistoryButton]}" Command="{Binding ClearHistoryCommand}"
-                           Appearance="Danger" MinWidth="150" Height="34" FontSize="13"/>
+                           Appearance="Danger" MinWidth="150" Height="34" FontSize="{StaticResource FontSizeBody}"/>
                 <ui:Button Grid.Column="2" Content="{Binding LocalizedStrings[ShowMoreButton]}" Command="{Binding LoadMoreCommand}"
-                           Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"
+                           Appearance="Secondary" MinWidth="120" Height="34" FontSize="{StaticResource FontSizeBody}" Margin="0,0,8,0"
                            Visibility="{Binding CanLoadMore, Converter={StaticResource BoolToVis}}"/>
                 <ui:Button Grid.Column="3" Content="{Binding LocalizedStrings[ExportCsvButton]}" Command="{Binding ExportCsvCommand}"
-                           Appearance="Secondary" MinWidth="120" Height="34" FontSize="13" Margin="0,0,8,0"/>
+                           Appearance="Secondary" MinWidth="120" Height="34" FontSize="{StaticResource FontSizeBody}" Margin="0,0,8,0"/>
                 <ui:Button Grid.Column="4" Content="{Binding LocalizedStrings[CloseButton]}" Click="CloseButton_Click"
-                           Appearance="Secondary" MinWidth="110" Height="34" FontSize="13"/>
+                           IsCancel="True"
+                           Appearance="Secondary" MinWidth="110" Height="34" FontSize="{StaticResource FontSizeBody}"/>
             </Grid>
         </Grid>
 

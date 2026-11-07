@@ -130,6 +130,25 @@ namespace VidDownload.WPF.Services
 
         public string PauseResumeIcon => Status == DownloadItemStatus.Paused ? "\uE768" : "\uE769";
 
+        /// <summary>Локализованная подпись действия кнопки «пауза/продолжить» (для ToolTip и UIA).</summary>
+        public string PauseResumeTooltip => LocalizedStrings.Instance[
+            Status == DownloadItemStatus.Paused ? "ResumeButton" : "PauseButton"];
+
+        /// <summary>
+        /// Локализованное название статуса. Свойство (а не конвертер) нужно, чтобы
+        /// смена языка обновляла подписи в очереди без изменения самого статуса.
+        /// </summary>
+        public string StatusText => LocalizedStrings.Instance[Status switch
+        {
+            DownloadItemStatus.Queued => "StatusQueued",
+            DownloadItemStatus.Downloading => "StatusDownloading",
+            DownloadItemStatus.Paused => "StatusPaused",
+            DownloadItemStatus.Completed => "StatusCompleted",
+            DownloadItemStatus.Failed => "StatusFailed",
+            DownloadItemStatus.Cancelled => "StatusCancelled",
+            _ => "StatusQueued"
+        }];
+
         public DownloadItem(string url, Settings options, bool isPlaylist, bool isAudioOnly, bool isReEncode)
         {
             Url = url;
@@ -147,6 +166,17 @@ namespace VidDownload.WPF.Services
             OnPropertyChanged(nameof(CanOpenLocation));
             OnPropertyChanged(nameof(IsFinished));
             OnPropertyChanged(nameof(PauseResumeIcon));
+            OnPropertyChanged(nameof(PauseResumeTooltip));
+            OnPropertyChanged(nameof(StatusText));
+        }
+
+        /// <summary>Обновляет локализованные строки элемента после смены языка интерфейса.</summary>
+        public void NotifyLanguageChanged()
+        {
+            OnPropertyChanged(nameof(StatusText));
+            OnPropertyChanged(nameof(PauseResumeTooltip));
+            OnPropertyChanged(nameof(CurrentVideoLine));
+            OnPropertyChanged(nameof(VideoPercentText));
         }
 
         partial void OnTitleChanged(string value)

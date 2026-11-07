@@ -68,7 +68,6 @@ namespace VidDownload.WPF.Resources
         public static string DateColumn => GetString(nameof(DateColumn));
         public static string UrlNameColumn => GetString(nameof(UrlNameColumn));
         public static string StatusColumn => GetString(nameof(StatusColumn));
-        public static string DownloadActionColumn => GetString(nameof(DownloadActionColumn));
         public static string ClearHistoryButton => GetString(nameof(ClearHistoryButton));
         public static string CloseButton => GetString(nameof(CloseButton));
         public static string LinkLabelVideo => GetString(nameof(LinkLabelVideo));

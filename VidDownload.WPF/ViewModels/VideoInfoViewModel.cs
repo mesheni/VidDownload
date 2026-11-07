@@ -73,6 +73,14 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private bool _isPlaylist;
 
+        /// <summary>Скачивается только аудио — карточка форматов не нужна.</summary>
+        [ObservableProperty]
+        private bool _isAudioOnly;
+
+        /// <summary>Показывать карточку выбора формата (одиночное видео с доступными форматами).</summary>
+        [ObservableProperty]
+        private bool _isFormatsVisible;
+
         /// <summary>«Авто» — не выбирать конкретный формат, использовать сортировку -S.</summary>
         [ObservableProperty]
         private bool _useAutoFormat = true;
@@ -82,6 +90,13 @@ namespace VidDownload.WPF.ViewModels
 
         [ObservableProperty]
         private string _selectionSummary = string.Empty;
+
+        /// <summary>В плейлисте ничего не выбрано (подсказка под списком).</summary>
+        [ObservableProperty]
+        private bool _hasNoPlaylistSelection;
+
+        /// <summary>Можно ли подтвердить загрузку (в плейлисте нужен хотя бы один элемент).</summary>
+        public bool CanConfirm => !IsPlaylist || Entries.Any(e => e.IsSelected);
 
         public ObservableCollection<PlaylistEntryViewModel> Entries { get; } = new();
 
@@ -110,6 +125,7 @@ namespace VidDownload.WPF.ViewModels
             DurationText = VideoInfoFormatting.Duration(info.Duration);
             WebpageUrl = info.WebpageUrl;
             IsPlaylist = info.IsPlaylistResult;
+            IsAudioOnly = isAudioOnly;
 
             Entries.Clear();
             foreach (var entry in info.Entries)
@@ -122,8 +138,13 @@ namespace VidDownload.WPF.ViewModels
             {
                 foreach (var format in MetadataParser.GetSelectableVideoFormats(info))
                     Formats.Add(new FormatOptionViewModel(format));
-                SelectedFormat = Formats.FirstOrDefault();
             }
+
+            // «Авто» включено по умолчанию: список форматов ничего не выделяет,
+            // первое же ручное нажатие снимет «Авто» (OnSelectedFormatChanged).
+            SelectedFormat = null;
+            UseAutoFormat = true;
+            IsFormatsVisible = !info.IsPlaylistResult && !isAudioOnly && Formats.Count > 0;
             OnPropertyChanged(nameof(HasFormats));
 
             RefreshSelectionSummary();
@@ -145,7 +166,7 @@ namespace VidDownload.WPF.ViewModels
         }
 
         /// <summary>Кнопка «Скачать»: валидирует выбор и фиксирует результат.</summary>
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanConfirm))]
         private void Confirm()
         {
             if (IsPlaylist && Entries.All(e => !e.IsSelected))
@@ -153,21 +174,42 @@ namespace VidDownload.WPF.ViewModels
 
             if (IsPlaylist)
                 PlaylistItems = BuildPlaylistItems(Entries.Where(e => e.IsSelected).Select(e => e.Entry.Index));
-
-            if (!IsPlaylist && !UseAutoFormat && SelectedFormat != null)
-            {
-                // Видео без ауда дополняется лучшим аудио-потоком
-                FormatSelector = SelectedFormat.Format.IsVideoOnly
-                    ? $"{SelectedFormat.Format.FormatId}+ba"
-                    : SelectedFormat.Format.FormatId;
-            }
+            else
+                FormatSelector = BuildFormatSelector(UseAutoFormat, SelectedFormat?.Format);
 
             Confirmed = true;
         }
 
-        partial void OnUseAutoFormatChanged(bool value) => RefreshSelectionSummary();
+        partial void OnUseAutoFormatChanged(bool value)
+        {
+            // При включении «Авто» снимаем ручной выбор, чтобы список не выглядел выбранным.
+            if (value)
+                SelectedFormat = null;
 
-        partial void OnSelectedFormatChanged(FormatOptionViewModel? value) => RefreshSelectionSummary();
+            RefreshSelectionSummary();
+        }
+
+        partial void OnSelectedFormatChanged(FormatOptionViewModel? value)
+        {
+            // Ручной выбор формата автоматически выключает «Авто».
+            if (ShouldSwitchToManual(UseAutoFormat, value != null))
+                UseAutoFormat = false;
+
+            RefreshSelectionSummary();
+        }
+
+        /// <summary>Нужно ли снять «Авто» при ручном выборе формата (чистая логика для тестов).</summary>
+        internal static bool ShouldSwitchToManual(bool useAutoFormat, bool hasSelection) =>
+            useAutoFormat && hasSelection;
+
+        /// <summary>Селектор -f: пустая строка для «Авто», иначе id (+ba для video-only).</summary>
+        internal static string BuildFormatSelector(bool useAutoFormat, FormatInfo? format)
+        {
+            if (useAutoFormat || format == null)
+                return string.Empty;
+
+            return format.IsVideoOnly ? $"{format.FormatId}+ba" : format.FormatId;
+        }
 
         private void RefreshSelectionSummary()
         {
@@ -175,15 +217,20 @@ namespace VidDownload.WPF.ViewModels
             {
                 int selected = Entries.Count(e => e.IsSelected);
                 SelectionSummary = string.Format(_loc["PreviewSelectedCount"], selected, Entries.Count);
-            }
-            else if (!UseAutoFormat && SelectedFormat != null)
-            {
-                SelectionSummary = SelectedFormat.DisplayText;
+                HasNoPlaylistSelection = selected == 0;
             }
             else
             {
-                SelectionSummary = _loc["PreviewAutoFormat"];
+                HasNoPlaylistSelection = false;
+
+                if (!UseAutoFormat && SelectedFormat != null)
+                    SelectionSummary = SelectedFormat.DisplayText;
+                else
+                    SelectionSummary = _loc["PreviewAutoFormat"];
             }
+
+            OnPropertyChanged(nameof(CanConfirm));
+            ConfirmCommand.NotifyCanExecuteChanged();
         }
 
         /// <summary>Сжимает выбранные индексы в «1-3,7,10-12».</summary>

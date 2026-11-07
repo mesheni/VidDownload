@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.Resources;
 using VidDownload.WPF.Services;
@@ -15,6 +17,7 @@ namespace VidDownload.WPF
     public partial class MainWindow : FluentWindow
     {
         private readonly MainViewModel _viewModel;
+        private readonly INotificationService _notifications;
         private bool _forceClose;
         private bool _closeConfirmed;
 
@@ -22,7 +25,14 @@ namespace VidDownload.WPF
         {
             InitializeComponent();
             _viewModel = AppServices.ServiceProvider.GetRequiredService<MainViewModel>();
+            _notifications = AppServices.ServiceProvider.GetRequiredService<INotificationService>();
             DataContext = _viewModel;
+
+            // Фокус: стартовое поле — ссылка; после вставки и после постановки в очередь
+            // возвращаем фокус туда же, чтобы следующее нажатие клавиши не терялось
+            Loaded += (_, _) => UrlBox.Focus();
+            _viewModel.DownloadEnqueued += (_, _) => UrlBox.Focus();
+            _viewModel.FocusUrlRequested += (_, _) => UrlBox.Focus();
 
             // Свои Fluent-диалоги и снекбар отображаются в презентерах этого окна
             var dialogService = AppServices.ServiceProvider.GetRequiredService<IContentDialogService>();
@@ -37,6 +47,29 @@ namespace VidDownload.WPF
         /// <summary>Хост Fluent-диалогов — используется дочерними окнами для возврата хоста.</summary>
         public Wpf.Ui.Controls.ContentDialogHost DialogHost => RootContentDialog;
 
+        /// <summary>
+        /// Esc отменяет активную загрузку, но не перехватывается у открытого диалога
+        /// или раскрытого выпадающего списка — они должны закрыться сами.
+        /// </summary>
+        private void OnWindowKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Escape)
+                return;
+
+            // Открытый Fluent ContentDialog (ContentDialogHost — ContentControl) забирает Esc себе
+            if (RootContentDialog.Content is not null)
+                return;
+
+            if (Keyboard.FocusedElement is ComboBox { IsDropDownOpen: true })
+                return;
+
+            if (_viewModel.CancelActiveCommand.CanExecute(null))
+            {
+                _viewModel.CancelActiveCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
         private void OnPasteFromClipboard(object sender, RoutedEventArgs e)
         {
             try
@@ -44,8 +77,17 @@ namespace VidDownload.WPF
                 var text = System.Windows.Clipboard.ContainsText()
                     ? System.Windows.Clipboard.GetText().Trim()
                     : string.Empty;
-                if (!string.IsNullOrEmpty(text))
+
+                if (string.IsNullOrEmpty(text))
+                {
+                    // Пустой буфер — это не «сломанная кнопка», а понятное сообщение
+                    _notifications.Info(LocalizedStrings.Instance["ClipboardEmpty"]);
+                    return;
+                }
+
                 _viewModel.Url = text;
+                UrlBox.Focus();
+                UrlBox.SelectAll();
             }
             catch (Exception ex)
             {
@@ -53,9 +95,21 @@ namespace VidDownload.WPF
             }
         }
 
+        /// <summary>Перетаскивание принимаем только для текста или .txt-списков.</summary>
+        private static bool HasDroppablePayload(IDataObject data)
+        {
+            if (data.GetDataPresent(DataFormats.UnicodeText))
+                return true;
+
+            if (!data.GetDataPresent(DataFormats.FileDrop) || data.GetData(DataFormats.FileDrop) is not string[] files)
+                return false;
+
+            return files.Any(f => string.Equals(Path.GetExtension(f), ".txt", StringComparison.OrdinalIgnoreCase));
+        }
+
         private void OnWindowDragOver(object sender, DragEventArgs e)
         {
-            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) || e.Data.GetDataPresent(DataFormats.UnicodeText)
+            e.Effects = HasDroppablePayload(e.Data)
                 ? DragDropEffects.Copy
                 : DragDropEffects.None;
             e.Handled = true;
@@ -63,17 +117,23 @@ namespace VidDownload.WPF
 
         private void OnWindowDrop(object sender, DragEventArgs e)
         {
-            // Файл со списком ссылок (.txt)
+            // Файлы со списками ссылок (.txt) — импортируем все, о лишних сообщаем
             if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
                 e.Data.GetData(DataFormats.FileDrop) is string[] files)
             {
-                var list = files.FirstOrDefault(f =>
-                    string.Equals(Path.GetExtension(f), ".txt", StringComparison.OrdinalIgnoreCase));
-                if (list != null)
-                {
-                    _viewModel.ImportUrlsFromFile(list);
+                var textFiles = files
+                    .Where(f => string.Equals(Path.GetExtension(f), ".txt", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (string file in textFiles)
+                    _viewModel.ImportUrlsFromFile(file);
+
+                int ignored = files.Length - textFiles.Count;
+                if (ignored > 0)
+                    _notifications.Info(string.Format(LocalizedStrings.Instance["DropIgnoredFiles"], ignored));
+
+                if (textFiles.Count > 0)
                     return;
-                }
             }
 
             // Перетащенный текст со ссылками (одной или несколькими строками)
@@ -82,6 +142,13 @@ namespace VidDownload.WPF
             {
                 _viewModel.ImportUrlsFromText(text);
             }
+        }
+
+        /// <summary>Колесо мыши не должно менять действие «после очереди» без фокуса на списке.</summary>
+        private void OnPostQueueComboPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (sender is System.Windows.Controls.ComboBox combo && !combo.IsKeyboardFocusWithin)
+                e.Handled = true;
         }
 
         /// <summary>Закрывает окно и завершает приложение без вопросов (из трея/обновления).</summary>

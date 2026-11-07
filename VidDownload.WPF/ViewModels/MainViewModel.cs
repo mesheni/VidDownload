@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -41,8 +42,18 @@ namespace VidDownload.WPF.ViewModels
         /// <summary>Собранный --download-sections (валидируется в ValidateOptionsAsync).</summary>
         private string _sectionValue = string.Empty;
 
+        /// <summary>Событие: элемент успешно добавлен в очередь (окно возвращает фокус в поле ссылки).</summary>
+        public event EventHandler? DownloadEnqueued;
+
+        /// <summary>Событие: нужно перевести фокус на поле ссылки (ошибка валидации).</summary>
+        public event EventHandler? FocusUrlRequested;
+
         [ObservableProperty]
         private string _url = string.Empty;
+
+        /// <summary>Встроенная ошибка поля ссылки (показывается под полем, не снекбаром).</summary>
+        [ObservableProperty]
+        private string _urlError = string.Empty;
 
         [ObservableProperty]
         private string _selectedResolution = string.Empty;
@@ -128,11 +139,32 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private string _appUpdateStatusMessage = string.Empty;
 
+        /// <summary>Раскрыт ли блок редко используемых параметров загрузки (только в памяти).</summary>
+        [ObservableProperty]
+        private bool _advancedOptionsExpanded;
+
+        /// <summary>Видимость InfoBar со стартовыми уведомлениями об обновлениях.</summary>
+        [ObservableProperty]
+        private bool _isUpdateBarOpen;
+
+        [ObservableProperty]
+        private string _updateBarTitle = string.Empty;
+
+        [ObservableProperty]
+        private string _updateBarMessage = string.Empty;
+
+        [ObservableProperty]
+        private Wpf.Ui.Controls.InfoBarSeverity _updateBarSeverity = Wpf.Ui.Controls.InfoBarSeverity.Informational;
+
         [ObservableProperty]
         private string _savePathText = string.Empty;
 
         [ObservableProperty]
         private string _rateLimit = string.Empty;
+
+        /// <summary>Встроенная ошибка лимита скорости (под полем).</summary>
+        [ObservableProperty]
+        private string _rateLimitError = string.Empty;
 
         [ObservableProperty]
         private bool _minimizeToTray;
@@ -194,6 +226,12 @@ namespace VidDownload.WPF.ViewModels
 
         private AppUpdateInfo? _appUpdateInfo;
 
+        /// <summary>Счётчик стартовых проверок обновлений: InfoBar закрывается, когда все закончились.</summary>
+        private int _startupChecksPending;
+
+        /// <summary>true, если стартовая проверка уже нашла важное сообщение — его не перекрываем.</summary>
+        private bool _startupBarActionable;
+
         /// <summary>Первая непустая строка статуса обновлений — показывается в футере.</summary>
         public string UpdateStatusText
         {
@@ -210,6 +248,13 @@ namespace VidDownload.WPF.ViewModels
         public LocalizedStrings LocalizedStrings => _loc;
 
         public IDownloadQueueService Queue => _queue;
+
+        /// <summary>Подпись кнопки «Скачать»: во время получения метаданных — «Получаем информацию…».</summary>
+        public string DownloadButtonText => IsFetchingInfo ? _loc["FetchingInfo"] : _loc["DownloadButton"];
+
+        /// <summary>Кнопка «Скачать» доступна, когда нет активного запроса метаданных.
+        /// Проверка пустой ссылки — внутри DownloadAsync (показывает встроенную ошибку).</summary>
+        public bool CanDownload => !IsFetchingInfo;
 
         public ObservableCollection<string> Resolutions { get; } = new()
         {
@@ -236,11 +281,11 @@ namespace VidDownload.WPF.ViewModels
             "", "all", "en", "ru", "de", "fr", "es", "ja", "zh-Hans", "ar", "pt"
         };
 
-        /// <summary>Качество аудио при извлечении (--audio-quality, 0 — лучшее; пусто — по умолчанию).</summary>
-        public ObservableCollection<string> AudioQualities { get; } = new()
-        {
-            "", "0", "3", "5", "7", "9"
-        };
+        /// <summary>
+        /// Качество аудио при извлечении (--audio-quality). Отображается человекочитаемой
+        /// подписью, но в настройки уходит исходное значение (SelectedValuePath="Value").
+        /// </summary>
+        public ObservableCollection<AudioQualityOption> AudioQualities { get; } = new();
 
         /// <summary>Ключи действий «после очереди» — индекс синхронен с PostQueueActionItems.</summary>
         private static readonly string[] PostQueueActionKeys = { "", "Shutdown", "Sleep", "Hibernate" };
@@ -277,6 +322,8 @@ namespace VidDownload.WPF.ViewModels
             _clipboardMonitor = clipboardMonitor;
             _ytDlpService = ytDlpService;
 
+            BuildAudioQualityItems();
+
             _queue.ItemStarted += OnItemStarted;
             _queue.ItemCompleted += OnItemCompleted;
             _queue.ItemFailed += OnItemFailed;
@@ -291,9 +338,10 @@ namespace VidDownload.WPF.ViewModels
             _loc.PropertyChanged += OnLocalizedStringsChanged;
             BuildPostQueueActionItems();
 
-            RunSafe(CheckUpdateAsync, nameof(CheckUpdateAsync));
-            RunSafe(CheckFFmpegUpdateAsync, nameof(CheckFFmpegUpdateAsync));
-            RunSafe(CheckAppUpdateAsync, nameof(CheckAppUpdateAsync));
+            // Стартовые проверки не открывают модальные диалоги — результат уходит в InfoBar
+            RunSafe(() => CheckUpdateCoreAsync(interactive: false), nameof(CheckUpdateAsync));
+            RunSafe(() => CheckFFmpegUpdateCoreAsync(interactive: false), nameof(CheckFFmpegUpdateAsync));
+            RunSafe(() => CheckAppUpdateCoreAsync(interactive: false), nameof(CheckAppUpdateAsync));
             RunSafe(LoadSettingsAsync, nameof(LoadSettingsAsync));
             RunSafe(RestorePendingQueueAsync, nameof(RestorePendingQueueAsync));
             AppVersion = GetAppVersion();
@@ -322,6 +370,41 @@ namespace VidDownload.WPF.ViewModels
             }
         }
 
+        // ==== InfoBar стартовых проверок обновлений ====
+
+        /// <summary>Стартовые проверки показывают только первое сообщение; важное не перекрывается.</summary>
+        internal static bool ShouldPublishStartupUpdate(bool hasActionableMessage)
+            => !hasActionableMessage;
+
+        /// <summary>Отмечает начало стартовой проверки и показывает «проверяем», пока нет важного сообщения.</summary>
+        private void BeginStartupCheck()
+        {
+            _startupChecksPending++;
+            if (ShouldPublishStartupUpdate(_startupBarActionable))
+                PublishUpdateBar(_loc["UpdateBarChecking"], Wpf.Ui.Controls.InfoBarSeverity.Informational);
+        }
+
+        /// <summary>Закрывает InfoBar, когда все стартовые проверки закончились без важных сообщений.</summary>
+        private void EndStartupCheck()
+        {
+            _startupChecksPending = Math.Max(0, _startupChecksPending - 1);
+            if (_startupChecksPending == 0 && !_startupBarActionable)
+                IsUpdateBarOpen = false;
+        }
+
+        /// <summary>Публикует стартовое уведомление в InfoBar (первое важное сообщение выигрывает).</summary>
+        private void PublishUpdateBar(string message, Wpf.Ui.Controls.InfoBarSeverity severity)
+        {
+            if (!ShouldPublishStartupUpdate(_startupBarActionable))
+                return;
+
+            _startupBarActionable = severity == Wpf.Ui.Controls.InfoBarSeverity.Warning;
+            UpdateBarTitle = _loc["UpdateBarTitle"];
+            UpdateBarMessage = message;
+            UpdateBarSeverity = severity;
+            IsUpdateBarOpen = true;
+        }
+
         partial void OnYtDlpStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
 
         partial void OnAppUpdateStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
@@ -339,10 +422,36 @@ namespace VidDownload.WPF.ViewModels
             LinkLabelText = value ? _loc["LinkLabelPlaylist"] : _loc["LinkLabelVideo"];
         }
 
+        partial void OnUrlChanged(string value)
+        {
+            // Ошибка поля живёт только до первого изменения ссылки
+            if (!string.IsNullOrEmpty(UrlError))
+                UrlError = string.Empty;
+            DownloadCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnIsFetchingInfoChanged(bool value)
+        {
+            OnPropertyChanged(nameof(DownloadButtonText));
+            DownloadCommand.NotifyCanExecuteChanged();
+        }
+
         private void OnLocalizedStringsChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (string.IsNullOrEmpty(e.PropertyName))
-                BuildPostQueueActionItems();
+            if (!string.IsNullOrEmpty(e.PropertyName))
+                return;
+
+            BuildPostQueueActionItems();
+            BuildAudioQualityItems();
+            LinkLabelText = IsPlaylist ? _loc["LinkLabelPlaylist"] : _loc["LinkLabelVideo"];
+            OnPropertyChanged(nameof(UpdateStatusText));
+            OnPropertyChanged(nameof(DownloadButtonText));
+            OnPropertyChanged(nameof(ThemeTooltip));
+            RefreshActivity();
+
+            // Конвертеры/строки, вычисленные внутри элемента, тоже должны перечитаться
+            foreach (var item in _queue.Items)
+                item.NotifyLanguageChanged();
         }
 
         private void BuildPostQueueActionItems()
@@ -354,6 +463,70 @@ namespace VidDownload.WPF.ViewModels
             PostQueueActionItems.Add(_loc["PostQueueSleep"]);
             PostQueueActionItems.Add(_loc["PostQueueHibernate"]);
             SelectedPostQueueIndex = selected;
+        }
+
+        /// <summary>Пересобирает список качества аудио с локализованными подписями.</summary>
+        private void BuildAudioQualityItems()
+        {
+            string selected = SelectedAudioQuality;
+            AudioQualities.Clear();
+            AudioQualities.Add(new AudioQualityOption(string.Empty, string.Empty));
+            foreach (var value in new[] { "0", "3", "5", "7", "9" })
+                AudioQualities.Add(new AudioQualityOption(GetAudioQualityDisplay(value, _loc.GetString), value));
+            SelectedAudioQuality = selected;
+        }
+
+        /// <summary>Человекочитаемая подпись качества аудио; незнакомые значения показываются как есть.</summary>
+        internal static string GetAudioQualityDisplay(string? value, Func<string, string> getString)
+            => value switch
+            {
+                "0" => getString("AudioQualityBest"),
+                "9" => getString("AudioQualityWorst"),
+                _ => value ?? string.Empty
+            };
+
+        /// <summary>Берёт сохранённое значение, если оно есть в списке, иначе — значение по умолчанию.</summary>
+        internal static string ResolveSelection(string? saved, IList<string> items, string fallback)
+        {
+            if (!string.IsNullOrEmpty(saved) && items.Contains(saved))
+                return saved;
+            return items.Contains(fallback) ? fallback : string.Empty;
+        }
+
+        /// <summary>Допустимый --limit-rate: число с необязательной десятичной частью и суффиксом K/M/G.</summary>
+        internal static bool IsValidRateLimit(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return true;
+            return Regex.IsMatch(value.Trim(), @"^\d+(\.\d+)?[KkMmGg]?$");
+        }
+
+        /// <summary>Первая строка ошибки, не длиннее 100 символов — короткая причина для снекбара.</summary>
+        internal static string ShortenFailureReason(string? error)
+        {
+            if (string.IsNullOrWhiteSpace(error))
+                return string.Empty;
+
+            string firstLine = (error ?? string.Empty)
+                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Trim())
+                .FirstOrDefault(line => line.Length > 0) ?? string.Empty;
+
+            const int maxLength = 100;
+            return firstLine.Length > maxLength ? firstLine[..maxLength] + "…" : firstLine;
+        }
+
+        /// <summary>Сводка очереди в заголовке секции, включая приостановленные загрузки.</summary>
+        internal static string BuildQueueSummary(int downloading, int queued, int paused, Func<string, string> getString)
+        {
+            var parts = new List<string>(3);
+            if (downloading > 0)
+                parts.Add(string.Format(getString("QueueActiveCount"), downloading));
+            if (queued > 0)
+                parts.Add(string.Format(getString("QueueQueuedCount"), queued));
+            if (paused > 0)
+                parts.Add(string.Format(getString("QueueSummaryPaused"), paused));
+            return string.Join("  ·  ", parts);
         }
 
         partial void OnSelectedPostQueueIndexChanged(int value)
@@ -372,11 +545,14 @@ namespace VidDownload.WPF.ViewModels
             {
                 if (!Formats.Contains("mov"))
                     Formats.Add("mov");
+                return;
             }
-            else
-            {
-                Formats.Remove("mov");
-            }
+
+            // Сначала уводим выбор с удаляемого элемента, потом убираем его из списка,
+            // иначе WPF выставит SelectedFormat = null и следующий ApplySelections упадёт
+            if (string.Equals(SelectedFormat, "mov", StringComparison.Ordinal))
+                SelectedFormat = ResolveSelection(null, Formats, "mp4");
+            Formats.Remove("mov");
         }
 
         partial void OnSavePathTextChanged(string value)
@@ -391,6 +567,15 @@ namespace VidDownload.WPF.ViewModels
         {
             if (_isLoading)
                 return;
+
+            if (!IsValidRateLimit(value))
+            {
+                // Некорректное значение не сохраняем и не передаём в yt-dlp
+                RateLimitError = _loc["RateLimitInvalid"];
+                return;
+            }
+
+            RateLimitError = string.Empty;
             _settings.RateLimit = value?.Trim() ?? string.Empty;
             RunSafe(SaveSettingsAsync, nameof(SaveSettingsAsync));
         }
@@ -404,14 +589,22 @@ namespace VidDownload.WPF.ViewModels
 
         // ==== Очередь загрузок ====
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanDownload))]
         private async Task DownloadAsync()
         {
+            // Повторный Enter во время запроса метаданных не должен запускать вторую загрузку
+            if (IsFetchingInfo)
+                return;
+
             if (string.IsNullOrWhiteSpace(Url))
             {
-                _notifications.Info(_loc["EmptyLink"]);
+                // Встроенная валидация под полем + фокус на поле вместо снекбара
+                UrlError = _loc["EmptyLink"];
+                FocusUrlRequested?.Invoke(this, EventArgs.Empty);
                 return;
             }
+
+            UrlError = string.Empty;
 
             if (!UrlHelper.LooksLikeVideoReference(Url) &&
                 !await _dialogService.AskAsync(_loc["InvalidUrlWarning"], _loc["WarningTitle"]))
@@ -423,7 +616,10 @@ namespace VidDownload.WPF.ViewModels
                 return;
 
             if (await EnqueueWithPreviewAsync())
+            {
                 Url = string.Empty;
+                DownloadEnqueued?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>
@@ -432,37 +628,41 @@ namespace VidDownload.WPF.ViewModels
         /// </summary>
         private async Task<bool> EnqueueWithPreviewAsync()
         {
-            VideoInfo? info = null;
-            IsFetchingInfo = true;
-            try
-            {
-                info = await _ytDlpService.FetchInfoAsync(Url, IsPlaylist);
-            }
-            catch (Exception ex)
-            {
-                AppLog.Error(nameof(MainViewModel), $"FetchInfo failed: {ex.Message}");
-                if (!await _dialogService.AskAsync(string.Format(_loc["PreviewFailedAsk"], ex.Message), _loc["WarningTitle"]))
-                    return false;
-            }
-            finally
-            {
-                IsFetchingInfo = false;
-            }
-
             ApplySelectionsToSettings();
             _settings.FormatSelector = string.Empty;
             _settings.PlaylistItems = string.Empty;
 
-            if (info != null)
+            // Настройка «не показывать предпросмотр»: сразу в очередь, без запроса метаданных
+            if (_persisted is not { ShowMetadataPreview: false })
             {
-                var window = AppServices.ServiceProvider.GetRequiredService<VideoInfoWindow.VideoInfoWindow>();
-                window.Owner = System.Windows.Application.Current.MainWindow;
-                window.ViewModel.Initialize(info, IsAudioOnly);
-                window.ShowDialog();
-                if (!window.ViewModel.Confirmed)
-                    return false;
-                _settings.FormatSelector = window.ViewModel.FormatSelector;
-                _settings.PlaylistItems = window.ViewModel.PlaylistItems;
+                VideoInfo? info = null;
+                IsFetchingInfo = true;
+                try
+                {
+                    info = await _ytDlpService.FetchInfoAsync(Url, IsPlaylist);
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Error(nameof(MainViewModel), $"FetchInfo failed: {ex.Message}");
+                    if (!await _dialogService.AskAsync(string.Format(_loc["PreviewFailedAsk"], ex.Message), _loc["WarningTitle"]))
+                        return false;
+                }
+                finally
+                {
+                    IsFetchingInfo = false;
+                }
+
+                if (info != null)
+                {
+                    var window = AppServices.ServiceProvider.GetRequiredService<VideoInfoWindow.VideoInfoWindow>();
+                    window.Owner = System.Windows.Application.Current.MainWindow;
+                    window.ViewModel.Initialize(info, IsAudioOnly);
+                    window.ShowDialog();
+                    if (!window.ViewModel.Confirmed)
+                        return false;
+                    _settings.FormatSelector = window.ViewModel.FormatSelector;
+                    _settings.PlaylistItems = window.ViewModel.PlaylistItems;
+                }
             }
 
             _queue.Enqueue(new DownloadItem(Url, _settings.Clone(), IsPlaylist, IsAudioOnly, IsReEncode));
@@ -487,25 +687,28 @@ namespace VidDownload.WPF.ViewModels
         /// <summary>Переносит текущие выбранные параметры интерфейса в настройки загрузки.</summary>
         private void ApplySelectionsToSettings()
         {
-            if (SelectedResolution.Length != 0)
+            // Null/пустые значения возможны, когда элемент исчез из списка (например, mov)
+            if (!string.IsNullOrEmpty(SelectedResolution))
                 _settings.Resolution = SelectedResolution;
-            if (SelectedAudioFormat.Length != 0)
+            if (!string.IsNullOrEmpty(SelectedAudioFormat))
                 _settings.AudioCodec = SelectedAudioFormat;
-            if (SelectedFormat.Length != 0)
+            if (!string.IsNullOrEmpty(SelectedFormat))
                 _settings.Format = SelectedFormat;
-            if (SelectedCodec.Length != 0 && Codecs.Contains(SelectedCodec))
+            if (!string.IsNullOrEmpty(SelectedCodec) && Codecs.Contains(SelectedCodec))
                 _settings.VideoCodec = SelectedCodec;
 
             _settings.DownloadSubtitles = IsDownloadSubtitles;
-            _settings.SubtitleLanguage = SelectedSubtitleLanguage;
-            _settings.EmbedSubtitles = IsEmbedSubtitles;
+            _settings.SubtitleLanguage = string.IsNullOrEmpty(SelectedSubtitleLanguage) ? "all" : SelectedSubtitleLanguage;
+            // Для аудио субтитры не встраиваются: опцию игнорируем, не меняя состояние чекбокса
+            _settings.EmbedSubtitles = !IsAudioOnly && IsEmbedSubtitles;
             _settings.ConvertSubsToSrt = IsConvertSubsToSrt;
             _settings.EmbedThumbnail = IsEmbedThumbnail;
             _settings.EmbedMetadata = IsEmbedMetadata;
             _settings.AudioQuality = SelectedAudioQuality ?? string.Empty;
             _settings.DownloadSections = _sectionValue;
             _settings.SavePath = _savePath;
-            _settings.RateLimit = RateLimit?.Trim() ?? string.Empty;
+            // Некорректный лимит скорости не передаём в yt-dlp
+            _settings.RateLimit = IsValidRateLimit(RateLimit) ? RateLimit?.Trim() ?? string.Empty : string.Empty;
 
             // Сетевые параметры принадлежат окну настроек — берём последний снимок оттуда
             _settings.CookiesFromBrowser = _persisted?.CookiesFromBrowser ?? string.Empty;
@@ -517,12 +720,9 @@ namespace VidDownload.WPF.ViewModels
 
         private async Task<bool> ValidateOptionsAsync()
         {
-            if (IsEmbedSubtitles && IsAudioOnly)
-            {
-                _messageService.Warning(_loc["SubtitleEmbedNotForAudio"], _loc["WarningTitle"]);
-                IsEmbedSubtitles = false;
-            }
-            else if (IsEmbedSubtitles && SelectedFormat == "avi")
+            // Аудио-режим просто игнорирует встраивание субтитров (чекбокс не трогаем),
+            // поэтому предупреждение нужно только для видео с контейнером AVI
+            if (!IsAudioOnly && IsEmbedSubtitles && string.Equals(SelectedFormat, "avi", StringComparison.OrdinalIgnoreCase))
             {
                 if (!await _dialogService.AskAsync(_loc["AviSubtitleWarning"], _loc["WarningTitle"]))
                     return false;
@@ -627,7 +827,10 @@ namespace VidDownload.WPF.ViewModels
                 _queue.Remove(item);
         }
 
-        [RelayCommand]
+        /// <summary>«Очистить завершённые» доступна, только когда есть что очищать.</summary>
+        private bool CanClearFinished() => _queue.Items.Any(i => i.IsFinished);
+
+        [RelayCommand(CanExecute = nameof(CanClearFinished))]
         private void ClearFinished()
         {
             _queue.ClearFinished();
@@ -725,7 +928,10 @@ namespace VidDownload.WPF.ViewModels
         private void OnItemFailed(object? sender, DownloadItem item)
         {
             RefreshActivity();
-            _notifications.Error(string.Format(_loc["DownloadFailedNotify"], item.DisplayTitle));
+            string reason = ShortenFailureReason(item.ErrorMessage);
+            _notifications.Error(string.IsNullOrEmpty(reason)
+                ? string.Format(_loc["DownloadFailedNotify"], item.DisplayTitle)
+                : string.Format(_loc["DownloadFailedWithReason"], item.DisplayTitle, reason));
             RunSafe(() => AddHistoryAsync(item, DownloadStatus.Failed), nameof(AddHistoryAsync));
         }
 
@@ -756,12 +962,10 @@ namespace VidDownload.WPF.ViewModels
 
             int downloading = _queue.Items.Count(i => i.Status == DownloadItemStatus.Downloading);
             int queued = _queue.Items.Count(i => i.Status == DownloadItemStatus.Queued);
-            var parts = new List<string>(2);
-            if (downloading > 0)
-                parts.Add(string.Format(_loc["QueueActiveCount"], downloading));
-            if (queued > 0)
-                parts.Add(string.Format(_loc["QueueQueuedCount"], queued));
-            QueueSummaryText = string.Join("  ·  ", parts);
+            int paused = _queue.Items.Count(i => i.Status == DownloadItemStatus.Paused);
+            QueueSummaryText = BuildQueueSummary(downloading, queued, paused, _loc.GetString);
+
+            ClearFinishedCommand.NotifyCanExecuteChanged();
         }
 
         // ==== Папка сохранения и прочие команды ====
@@ -786,17 +990,24 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private void OpenFolder()
         {
-            if (!Directory.Exists(_savePath))
+            try
             {
-                Directory.CreateDirectory(_savePath);
+                if (!Directory.Exists(_savePath))
+                    Directory.CreateDirectory(_savePath);
+                Process.Start("explorer.exe", $"\"{_savePath}\"");
             }
-            Process.Start("explorer.exe", $"\"{_savePath}\"");
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(MainViewModel), $"OpenFolder failed: {ex.Message}");
+                _notifications.Error(string.Format(_loc["OpenFolderFailed"], ex.Message));
+            }
         }
 
         [RelayCommand]
         private void OpenConverter()
         {
             var convert = AppServices.ServiceProvider.GetRequiredService<ConvertWindow.ConvertWindow>();
+            convert.Owner = System.Windows.Application.Current.MainWindow;
             convert.ShowDialog();
         }
 
@@ -813,6 +1024,7 @@ namespace VidDownload.WPF.ViewModels
         private void OpenHelp()
         {
             var help = AppServices.ServiceProvider.GetRequiredService<HelpWindow>();
+            help.Owner = System.Windows.Application.Current.MainWindow;
             help.ShowDialog();
         }
 
@@ -820,6 +1032,7 @@ namespace VidDownload.WPF.ViewModels
         private void OpenHistory()
         {
             var history = AppServices.ServiceProvider.GetRequiredService<HistoryWindow.HistoryWindow>();
+            history.Owner = System.Windows.Application.Current.MainWindow;
             if (history.ShowDialog() == true && !string.IsNullOrEmpty(history.SelectedUrl))
             {
                 Url = history.SelectedUrl;
@@ -846,14 +1059,12 @@ namespace VidDownload.WPF.ViewModels
             _isLoading = true;
             var userSettings = await _settingsService.LoadAsync();
             _persisted = userSettings;
-            if (!string.IsNullOrEmpty(userSettings.Resolution))
-                SelectedResolution = userSettings.Resolution;
-            if (!string.IsNullOrEmpty(userSettings.VideoCodec))
-                SelectedCodec = userSettings.VideoCodec;
-            if (!string.IsNullOrEmpty(userSettings.AudioCodec))
-                SelectedAudioFormat = userSettings.AudioCodec;
-            if (!string.IsNullOrEmpty(userSettings.Format))
-                SelectedFormat = userSettings.Format;
+            // Пустые сохранённые значения не должны оставлять комбобоксы «пустыми»:
+            // подставляем те же значения по умолчанию, что использует Settings
+            SelectedResolution = ResolveSelection(userSettings.Resolution, Resolutions, "1080");
+            SelectedCodec = ResolveSelection(userSettings.VideoCodec, Codecs, "av01");
+            SelectedAudioFormat = ResolveSelection(userSettings.AudioCodec, AudioFormats, "aac");
+            SelectedFormat = ResolveSelection(userSettings.Format, Formats, "mp4");
             IsDownloadSubtitles = userSettings.DownloadSubtitles;
             if (!string.IsNullOrEmpty(userSettings.SubtitleLanguage))
                 SelectedSubtitleLanguage = userSettings.SubtitleLanguage;
@@ -892,6 +1103,8 @@ namespace VidDownload.WPF.ViewModels
                 SavePathText = _savePath;
                 _messageService.Warning(_loc["NoVideoFolderAccess"], _loc["WarningTitle"]);
             }
+
+            RateLimitError = IsValidRateLimit(RateLimit) ? string.Empty : _loc["RateLimitInvalid"];
             _isLoading = false;
         }
 
@@ -917,7 +1130,7 @@ namespace VidDownload.WPF.ViewModels
             settings.EmbedMetadata = _settings.EmbedMetadata;
             settings.AudioQuality = SelectedAudioQuality ?? string.Empty;
             settings.SavePath = _savePath;
-            settings.RateLimit = RateLimit ?? string.Empty;
+            settings.RateLimit = IsValidRateLimit(RateLimit) ? RateLimit?.Trim() ?? string.Empty : string.Empty;
             settings.Appearance = AppTheme.ToString();
             settings.MinimizeToTray = MinimizeToTray;
             settings.PostQueueAction = PostQueueAction;
@@ -927,10 +1140,19 @@ namespace VidDownload.WPF.ViewModels
         // ==== Обновление FFmpeg ====
 
         [RelayCommand]
-        private async Task CheckFFmpegUpdateAsync()
+        private Task CheckFFmpegUpdateAsync() => CheckFFmpegUpdateCoreAsync(interactive: true);
+
+        /// <summary>
+        /// Проверка FFmpeg. Ручной запуск (кнопка в футере) спрашивает и скачивает обновление,
+        /// стартовая проверка только показывает InfoBar и ничего не скачивает.
+        /// </summary>
+        private async Task CheckFFmpegUpdateCoreAsync(bool interactive)
         {
             if (IsFfmpegChecking)
                 return;
+
+            if (!interactive)
+                BeginStartupCheck();
 
             IsFfmpegChecking = true;
             IsFfmpegUpdateAvailable = false;
@@ -946,16 +1168,25 @@ namespace VidDownload.WPF.ViewModels
                 if (!info.IsUpdateAvailable)
                 {
                     if (!string.IsNullOrEmpty(localVer))
+                    {
                         FfmpegStatusMessage = _loc["FFmpegUpToDate"];
+                    }
                     else
+                    {
                         FfmpegStatusMessage = _loc["FFmpegNotFound"];
+                        if (!interactive)
+                            PublishUpdateBar(_loc["FFmpegNotFound"], Wpf.Ui.Controls.InfoBarSeverity.Warning);
+                    }
                     return;
                 }
 
                 if (string.IsNullOrEmpty(info.DownloadUrl))
                 {
-                    _messageService.Error(_loc["FFmpegDownloadLinkError"], _loc["UpdateErrorTitle"]);
+                    if (interactive)
+                        _messageService.Error(_loc["FFmpegDownloadLinkError"], _loc["UpdateErrorTitle"]);
                     FfmpegStatusMessage = _loc["FFmpegLinkNotFound"];
+                    if (!interactive)
+                        PublishUpdateBar(_loc["FFmpegLinkNotFound"], Wpf.Ui.Controls.InfoBarSeverity.Warning);
                     return;
                 }
 
@@ -964,6 +1195,15 @@ namespace VidDownload.WPF.ViewModels
                     ? info.LatestVersion[..27] + "..."
                     : info.LatestVersion;
                 FfmpegStatusMessage = string.Format(_loc["FFmpegVersionAvailable"], displayLatest);
+
+                // Стартовая проверка: только уведомление, без диалога и загрузки
+                if (!interactive)
+                {
+                    PublishUpdateBar(
+                        string.Format(_loc["UpdateBarFFmpegMessage"], displayLatest),
+                        Wpf.Ui.Controls.InfoBarSeverity.Warning);
+                    return;
+                }
 
                 string displayCurrent = string.IsNullOrEmpty(localVer) ? _loc["VersionNotFound"] : localVer;
                 if (!await _dialogService.AskAsync(
@@ -993,73 +1233,110 @@ namespace VidDownload.WPF.ViewModels
             catch (Exception ex)
             {
                 FfmpegStatusMessage = string.Format(_loc["ErrorWithMessage"], ex.Message);
-                _messageService.Error(string.Format(_loc["FFmpegUpdateFailed"], ex.Message), _loc["UpdateErrorTitle"]);
+                if (interactive)
+                    _messageService.Error(string.Format(_loc["FFmpegUpdateFailed"], ex.Message), _loc["UpdateErrorTitle"]);
             }
             finally
             {
                 IsFfmpegChecking = false;
+                if (!interactive)
+                    EndStartupCheck();
             }
         }
 
         // ==== Обновление yt-dlp ====
 
-        public async Task CheckUpdateAsync()
+        public Task CheckUpdateAsync() => CheckUpdateCoreAsync(interactive: true);
+
+        /// <summary>
+        /// Проверка обновления yt-dlp. Ручной запуск после подтверждения скачивает обновление,
+        /// стартовая проверка только показывает InfoBar.
+        /// </summary>
+        private async Task CheckUpdateCoreAsync(bool interactive)
         {
-            UpdateInfo info;
+            if (!interactive)
+                BeginStartupCheck();
 
             try
             {
-                info = await _updateService.CheckForUpdateAsync();
-            }
-            catch (Exception ex)
-            {
-                AppLog.Error(nameof(MainViewModel), $"yt-dlp update check failed: {ex.Message}");
-                return;
-            }
+                UpdateInfo info;
 
-            if (!info.IsUpdateAvailable)
-                return;
-
-            string currentVer = await _updateService.GetCurrentVersionAsync();
-            bool fileNotFound = string.IsNullOrEmpty(currentVer);
-            string displayCurrent = fileNotFound ? _loc["VersionNotFound"] : currentVer;
-
-            if (!fileNotFound &&
-                !await _dialogService.AskAsync(
-                    string.Format(_loc["YtDlpUpdateDialog"], displayCurrent, info.Version),
-                    _loc["YtDlpUpdateAvailableTitle"]))
-            {
-                return;
-            }
-
-            try
-            {
-                var progress = new Progress<DownloadProgress>(p =>
+                try
                 {
-                    if (!string.IsNullOrEmpty(p.StatusMessage))
-                        YtDlpStatusMessage = p.StatusMessage;
-                });
+                    info = await _updateService.CheckForUpdateAsync();
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Error(nameof(MainViewModel), $"yt-dlp update check failed: {ex.Message}");
+                    return;
+                }
 
-                await _updateService.DownloadUpdateAsync(info, progress);
+                if (!info.IsUpdateAvailable)
+                    return;
 
-                _notifications.Success(string.Format(_loc["YtDlpUpdated"], info.Version), _loc["UpdateCompletedTitle"]);
-            }
-            catch (Exception ex)
-            {
-                _notifications.Error(string.Format(_loc["ErrorWithMessage"], ex.Message), _loc["UpdateErrorTitle"]);
+                string currentVer = await _updateService.GetCurrentVersionAsync();
+                bool fileNotFound = string.IsNullOrEmpty(currentVer);
+                string displayCurrent = fileNotFound ? _loc["VersionNotFound"] : currentVer;
+
+                if (!interactive)
+                {
+                    PublishUpdateBar(
+                        string.Format(_loc["UpdateBarYtDlpMessage"], info.Version),
+                        Wpf.Ui.Controls.InfoBarSeverity.Warning);
+                    return;
+                }
+
+                if (!fileNotFound &&
+                    !await _dialogService.AskAsync(
+                        string.Format(_loc["YtDlpUpdateDialog"], displayCurrent, info.Version),
+                        _loc["YtDlpUpdateAvailableTitle"]))
+                {
+                    return;
+                }
+
+                try
+                {
+                    var progress = new Progress<DownloadProgress>(p =>
+                    {
+                        if (!string.IsNullOrEmpty(p.StatusMessage))
+                            YtDlpStatusMessage = p.StatusMessage;
+                    });
+
+                    await _updateService.DownloadUpdateAsync(info, progress);
+
+                    _notifications.Success(string.Format(_loc["YtDlpUpdated"], info.Version), _loc["UpdateCompletedTitle"]);
+                }
+                catch (Exception ex)
+                {
+                    _notifications.Error(string.Format(_loc["ErrorWithMessage"], ex.Message), _loc["UpdateErrorTitle"]);
+                }
+                finally
+                {
+                    YtDlpStatusMessage = string.Empty;
+                }
             }
             finally
             {
-                YtDlpStatusMessage = string.Empty;
+                if (!interactive)
+                    EndStartupCheck();
             }
         }
 
         // ==== Обновление приложения ====
 
-        public async Task CheckAppUpdateAsync()
+        public Task CheckAppUpdateAsync() => CheckAppUpdateCoreAsync(interactive: true);
+
+        /// <summary>
+        /// Проверка обновления приложения. Стартовая проверка только заполняет InfoBar,
+        /// диалог скачивания живёт в <see cref="UpdateAppAsync"/>.
+        /// </summary>
+        private async Task CheckAppUpdateCoreAsync(bool interactive)
         {
             if (IsAppUpdateChecking)
                 return;
+
+            if (!interactive)
+                BeginStartupCheck();
 
             IsAppUpdateChecking = true;
             AppUpdateStatusMessage = _loc["AppCheckingUpdate"];
@@ -1080,6 +1357,11 @@ namespace VidDownload.WPF.ViewModels
                     ? info.Version[..17] + "..."
                     : info.Version;
                 AppUpdateStatusMessage = string.Format(_loc["AppUpdateAvailable"], displayLatest);
+
+                if (!interactive)
+                    PublishUpdateBar(
+                        string.Format(_loc["UpdateBarAppMessage"], displayLatest),
+                        Wpf.Ui.Controls.InfoBarSeverity.Warning);
             }
             catch
             {
@@ -1088,6 +1370,8 @@ namespace VidDownload.WPF.ViewModels
             finally
             {
                 IsAppUpdateChecking = false;
+                if (!interactive)
+                    EndStartupCheck();
             }
         }
 
@@ -1180,5 +1464,23 @@ namespace VidDownload.WPF.ViewModels
             var version = System.Reflection.Assembly.GetEntryAssembly()?.GetName()?.Version;
             return version?.ToString() ?? "0.0.0";
         }
+    }
+
+    /// <summary>
+    /// Пункт списка качества аудио: отображаемая подпись и исходное значение для --audio-quality.
+    /// </summary>
+    public sealed class AudioQualityOption
+    {
+        public string Display { get; }
+
+        public string Value { get; }
+
+        public AudioQualityOption(string display, string value)
+        {
+            Display = display;
+            Value = value;
+        }
+
+        public override string ToString() => Display;
     }
 }

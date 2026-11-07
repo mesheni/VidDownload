@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -22,6 +23,9 @@ namespace VidDownload.WPF.ViewModels
         private const int CookiesFileIndex = 5;
 
         private static readonly string[] CookiesKeys = { "", "chrome", "edge", "firefox", "opera", "FILE" };
+
+        /// <summary>Схемы прокси, которые принимает yt-dlp (--proxy).</summary>
+        private static readonly string[] ProxySchemes = { "http", "https", "socks4", "socks5", "socks5h" };
 
         private readonly ISettingsService _settingsService;
         private readonly IClipboardMonitorService _clipboardMonitor;
@@ -65,7 +69,27 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private bool _useDownloadArchive;
 
+        /// <summary>Показывать окно предпросмотра метаданных перед добавлением в очередь.</summary>
+        [ObservableProperty]
+        private bool _showMetadataPreview = true;
+
+        /// <summary>Текст ошибки формата прокси; пусто — поле валидно.</summary>
+        [ObservableProperty]
+        private string _proxyError = string.Empty;
+
+        /// <summary>Текст ошибки пути к cookies.txt; пусто — поле валидно.</summary>
+        [ObservableProperty]
+        private string _cookiesFileError = string.Empty;
+
+        /// <summary>Ошибка сохранения настроек (IO/сериализация); пусто — ошибок нет.</summary>
+        [ObservableProperty]
+        private string _saveError = string.Empty;
+
         public bool IsCookiesFileSelected => SelectedCookiesIndex == CookiesFileIndex;
+
+        public bool HasProxyError => !string.IsNullOrEmpty(ProxyError);
+
+        public bool HasCookiesFileError => !string.IsNullOrEmpty(CookiesFileError);
 
         public SettingsViewModel(
             ISettingsService settingsService,
@@ -101,7 +125,77 @@ namespace VidDownload.WPF.ViewModels
             SelectedCookiesIndex = selected;
         }
 
-        partial void OnSelectedCookiesIndexChanged(int value) => OnPropertyChanged(nameof(IsCookiesFileSelected));
+        partial void OnSelectedCookiesIndexChanged(int value)
+        {
+            OnPropertyChanged(nameof(IsCookiesFileSelected));
+            ValidateCookiesFile();
+        }
+
+        partial void OnProxyChanged(string value) => ValidateProxy();
+
+        partial void OnCookiesFilePathChanged(string value) => ValidateCookiesFile();
+
+        partial void OnProxyErrorChanged(string value) => OnPropertyChanged(nameof(HasProxyError));
+
+        partial void OnCookiesFileErrorChanged(string value) => OnPropertyChanged(nameof(HasCookiesFileError));
+
+        /// <summary>
+        /// Проверяет все вводимые поля перед сохранением. Ошибки выставляются в
+        /// <see cref="ProxyError"/> и <see cref="CookiesFileError"/> для показа под полями.
+        /// </summary>
+        public bool ValidateSettings()
+        {
+            ValidateProxy();
+            ValidateCookiesFile();
+            SaveError = string.Empty;
+            return !HasProxyError && !HasCookiesFileError;
+        }
+
+        private void ValidateProxy()
+        {
+            ProxyError = IsValidProxy(Proxy) ? string.Empty : _loc["ProxyInvalid"];
+        }
+
+        private void ValidateCookiesFile()
+        {
+            CookiesFileError = IsCookiesFileSelected && !IsValidCookiesFile(CookiesFilePath)
+                ? _loc["CookiesFileNotFound"]
+                : string.Empty;
+        }
+
+        /// <summary>
+        /// Пустая строка допустима (прокси не используется). Иначе ожидается
+        /// scheme://host[:port] с одной из поддерживаемых yt-dlp схем.
+        /// </summary>
+        internal static bool IsValidProxy(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return true;
+
+            if (!Uri.TryCreate(value.Trim(), UriKind.Absolute, out var uri))
+                return false;
+
+            return !string.IsNullOrWhiteSpace(uri.Host)
+                && ProxySchemes.Contains(uri.Scheme, StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Пустой путь допустим (файл cookies не выбран). Непустой обязан существовать.
+        /// </summary>
+        internal static bool IsValidCookiesFile(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return true;
+
+            try
+            {
+                return File.Exists(path.Trim());
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         public async Task LoadAsync()
         {
@@ -117,6 +211,7 @@ namespace VidDownload.WPF.ViewModels
             CookiesFilePath = settings.CookiesFile ?? string.Empty;
             Retries = Math.Clamp(settings.Retries < 0 ? 0 : settings.Retries, 0, 20);
             UseDownloadArchive = settings.UseDownloadArchive;
+            ShowMetadataPreview = settings.ShowMetadataPreview;
 
             if (!string.IsNullOrEmpty(settings.CookiesFile))
                 SelectedCookiesIndex = CookiesFileIndex;
@@ -127,6 +222,9 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private async Task SaveAsync()
         {
+            if (!ValidateSettings())
+                return;
+
             int clamped = Math.Clamp(MaxConcurrentDownloads <= 0 ? 1 : MaxConcurrentDownloads, 1, 3);
 
             var settings = await _settingsService.LoadAsync().ConfigureAwait(true);
@@ -137,6 +235,7 @@ namespace VidDownload.WPF.ViewModels
             settings.Proxy = Proxy?.Trim() ?? string.Empty;
             settings.Retries = Math.Clamp(Retries < 0 ? 0 : Retries, 0, 20);
             settings.UseDownloadArchive = UseDownloadArchive;
+            settings.ShowMetadataPreview = ShowMetadataPreview;
 
             if (SelectedCookiesIndex == CookiesFileIndex)
             {

@@ -1,19 +1,42 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Светлая палитра приложения (Fluent-совместимая).
-         Ключи синхронизированы с Dark.Colors.xaml. -->
+         Ключи синхронизированы с Dark.Colors.xaml.
+         Контраст WCAG (relative luminance), вычислено скриптом:
+           TextMuted #6A6A6A / Window #F4F4F4         4.92
+           TextMuted #6A6A6A / Surface #FFFFFF        5.41
+           TextMuted #6A6A6A / Elevated #F0F0F0       4.75
+           Elevated #F0F0F0 / Surface #FFFFFF         1.14
+           StatusFailedText #C62828 / Surface         5.62
+           StatusDownloadingText #1A5FCC / Surface    5.91
+           StatusPausedText #A65300 / Surface         5.44
+           StatusCompletedText #157A3E / Surface      5.41
+           AccentText #BB2127 / Surface               6.25
+           FocusRing #BB2127 / Surface                6.25
+           FocusRing #BB2127 / Elevated               5.48
+           SubtleFill (blend) / Surface               1.26
+           StatusFailed #EF5350 / Surface             3.49 (полоса >= 3:1) -->
 
     <SolidColorBrush x:Key="WindowBgrBrush" Color="#F4F4F4"/>
     <SolidColorBrush x:Key="SurfaceBgrBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="SurfaceBgrAltBrush" Color="#F9F9F9"/>
-    <SolidColorBrush x:Key="SurfaceBgrElevatedBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="SubtleFillBrush" Color="#14000000"/>
+    <!-- Отличается от SurfaceBgrBrush, иначе выбранная строка истории и трек прогресса не видны -->
+    <SolidColorBrush x:Key="SurfaceBgrElevatedBrush" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="SubtleFillBrush" Color="#1A000000"/>
     <SolidColorBrush x:Key="AppBorderBrush" Color="#DEDEDE"/>
     <SolidColorBrush x:Key="LineBrush" Color="#C8C8C8"/>
 
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#161616"/>
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#585858"/>
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#868686"/>
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#6A6A6A"/>
+
+    <SolidColorBrush x:Key="AccentTextBrush" Color="#BB2127"/>
+    <SolidColorBrush x:Key="FocusRingBrush" Color="#BB2127"/>
+
+    <SolidColorBrush x:Key="StatusFailedTextBrush" Color="#C62828"/>
+    <SolidColorBrush x:Key="StatusDownloadingTextBrush" Color="#1A5FCC"/>
+    <SolidColorBrush x:Key="StatusPausedTextBrush" Color="#A65300"/>
+    <SolidColorBrush x:Key="StatusCompletedTextBrush" Color="#157A3E"/>
 
     <SolidColorBrush x:Key="ButtonGrayBrush" Color="#E9E9E9"/>
     <SolidColorBrush x:Key="OverlayBackdropBrush" Color="#50000000"/>

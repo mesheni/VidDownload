@@ -94,6 +94,10 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private bool _isBatchMode;
 
+        /// <summary>Развёрнута ли секция «Дополнительные параметры кодирования» (хранится только в памяти).</summary>
+        [ObservableProperty]
+        private bool _convertAdvancedExpanded;
+
         [ObservableProperty]
         private string? _selectedBatchFile;
 

@@ -225,9 +225,6 @@
   <data name="StatusColumn" xml:space="preserve">
     <value>Status</value>
   </data>
-  <data name="DownloadActionColumn" xml:space="preserve">
-    <value>Download</value>
-  </data>
   <data name="ClearHistoryButton" xml:space="preserve">
     <value>Clear history</value>
   </data>
@@ -568,7 +565,9 @@ Leave 0 for auto</value>
     <value>Updater.exe not found: {0}</value>
   </data>
   <data name="ClipboardLinkDetected" xml:space="preserve">
-    <value>Link found in clipboard:&#10;{0}&#10;Add to queue?</value>
+    <value>Link found in clipboard:
+{0}
+Add to queue?</value>
   </data>
   <data name="ClipboardLinkTitle" xml:space="preserve">
     <value>Link in clipboard</value>
@@ -769,13 +768,13 @@ Leave 0 for auto</value>
     <value>Keyboard shortcuts</value>
   </data>
   <data name="HelpHotkeysText" xml:space="preserve">
-    <value>Enter — add the link to the queue. Esc — cancel the active download (with confirmation). Theme switching — the button in the window title bar.</value>
+    <value>Enter - add the link to the queue. Esc - cancel the active download (with confirmation). Ctrl+V - paste a link from the clipboard. Drag links or a .txt file onto the window to add them to the queue. Theme switching - the button in the window title bar.</value>
   </data>
   <data name="HelpTroubleshootingTitle" xml:space="preserve">
     <value>Troubleshooting</value>
   </data>
   <data name="HelpTroubleshootingText" xml:space="preserve">
-    <value>If a video fails to download, update yt-dlp (the update check button in the window footer). FFmpeg is required for stream merging and the converter and is downloaded there too. Per-download logs live in %LocalAppData%\VidDownload\logs (button in Settings). Private videos are not supported yet.</value>
+    <value>If a video fails to download, update yt-dlp (the update check button in the window footer). FFmpeg is required for stream merging and the converter and is downloaded there too. Per-download logs live in %LocalAppData%\VidDownload\logs (button in Settings). Private and age-restricted videos can be downloaded after providing cookies: Settings → Cookies (from a browser or a cookies.txt file).</value>
   </data>
   <data name="HelpAboutSection" xml:space="preserve">
     <value>About</value>
@@ -787,10 +786,10 @@ Leave 0 for auto</value>
     <value>Playlist items</value>
   </data>
   <data name="PreviewSelectAll" xml:space="preserve">
-    <value>All</value>
+    <value>Select all</value>
   </data>
   <data name="PreviewSelectNone" xml:space="preserve">
-    <value>None</value>
+    <value>Deselect all</value>
   </data>
   <data name="PreviewSelectedCount" xml:space="preserve">
     <value>Selected {0} of {1}</value>
@@ -899,5 +898,143 @@ Leave 0 for auto</value>
   </data>
   <data name="UseArchiveHint" xml:space="preserve">
     <value>Keep a download archive (downloaded.txt in the output folder) and never re-download</value>
+  </data>
+  <data name="SettingsSaveFailed" xml:space="preserve">
+    <value>Could not save settings</value>
+  </data>
+  <data name="PreviewFormatsAutomation" xml:space="preserve">
+    <value>Available formats</value>
+  </data>
+  <data name="ProxyHint" xml:space="preserve">
+    <value>Empty means no proxy. Supported schemes: http, https, socks4, socks5 and socks5h</value>
+  </data>
+  <data name="ConvertDropIgnored" xml:space="preserve">
+    <value>Dropped items were ignored: video files are required</value>
+  </data>
+  <data name="ShowPreviewLabel" xml:space="preserve">
+    <value>Show preview</value>
+  </data>
+  <data name="VkProfileAutomation" xml:space="preserve">
+    <value>Open the VK profile</value>
+  </data>
+  <data name="DownloadFailedWithReason" xml:space="preserve">
+    <value>Download failed: {0} — {1}</value>
+  </data>
+  <data name="HistoryNoResults" xml:space="preserve">
+    <value>No results for</value>
+  </data>
+  <data name="PreviewPlaylistAutomation" xml:space="preserve">
+    <value>Playlist items</value>
+  </data>
+  <data name="SectionStartAutomation" xml:space="preserve">
+    <value>Section start (mm:ss)</value>
+  </data>
+  <data name="ConvertDropHintBatch" xml:space="preserve">
+    <value>Drag multiple files here</value>
+  </data>
+  <data name="FetchingInfo" xml:space="preserve">
+    <value>Fetching info…</value>
+  </data>
+  <data name="CookiesFileLabel" xml:space="preserve">
+    <value>Cookies file</value>
+  </data>
+  <data name="ClipboardEmpty" xml:space="preserve">
+    <value>Clipboard is empty</value>
+  </data>
+  <data name="HistoryClearConfirm" xml:space="preserve">
+    <value>Clear the entire download history? This cannot be undone.</value>
+  </data>
+  <data name="PreviewSelectAtLeastOne" xml:space="preserve">
+    <value>Select at least one playlist item</value>
+  </data>
+  <data name="CookiesFileNotFound" xml:space="preserve">
+    <value>Cookies file was not found at the specified path</value>
+  </data>
+  <data name="ShowPreviewHint" xml:space="preserve">
+    <value>Open the preview window with thumbnail, title and format selection before adding to the queue</value>
+  </data>
+  <data name="RateLimitInvalid" xml:space="preserve">
+    <value>Invalid rate limit. Examples: 5M, 500K, 1.5M</value>
+  </data>
+  <data name="AudioQualityBest" xml:space="preserve">
+    <value>0 — best</value>
+  </data>
+  <data name="HistoryEmpty" xml:space="preserve">
+    <value>No download history yet</value>
+  </data>
+  <data name="QueueListAutomation" xml:space="preserve">
+    <value>Download queue</value>
+  </data>
+  <data name="SectionEndAutomation" xml:space="preserve">
+    <value>Section end (mm:ss)</value>
+  </data>
+  <data name="ConvertDropHint" xml:space="preserve">
+    <value>Drag a file here or click “Browse”</value>
+  </data>
+  <data name="EmbedMetadataHint" xml:space="preserve">
+    <value>Embed metadata (title, artist) into the file</value>
+  </data>
+  <data name="SettingsNetworkPrivacySection" xml:space="preserve">
+    <value>Network &amp; privacy</value>
+  </data>
+  <data name="ResumeButton" xml:space="preserve">
+    <value>Resume</value>
+  </data>
+  <data name="PreviewAudioOnlyHint" xml:space="preserve">
+    <value>Audio will be extracted in the quality selected in the main window</value>
+  </data>
+  <data name="DropIgnoredFiles" xml:space="preserve">
+    <value>Ignored files: {0} (only .txt is supported)</value>
+  </data>
+  <data name="OpenFolderFailed" xml:space="preserve">
+    <value>Could not open the folder: {0}</value>
+  </data>
+  <data name="HistoryDownloadAgain" xml:space="preserve">
+    <value>Download again</value>
+  </data>
+  <data name="AudioQualityWorst" xml:space="preserve">
+    <value>9 — lowest</value>
+  </data>
+  <data name="EmbedThumbnailHint" xml:space="preserve">
+    <value>Embed the cover image into the file — works for MP3, M4A and MP4</value>
+  </data>
+  <data name="ConvertAdvancedHeader" xml:space="preserve">
+    <value>Advanced encoding settings</value>
+  </data>
+  <data name="HistoryActionsColumn" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="ProxyInvalid" xml:space="preserve">
+    <value>Invalid proxy format. Example: socks5://127.0.0.1:1080</value>
+  </data>
+  <data name="QueueSummaryPaused" xml:space="preserve">
+    <value>{0} paused</value>
+  </data>
+  <data name="DownloadButtonHint" xml:space="preserve">
+    <value>Enter</value>
+  </data>
+  <data name="YtDlpMissing" xml:space="preserve">
+    <value>yt-dlp.exe was not found. Wait for the automatic download on startup or check your internet connection.</value>
+  </data>
+  <data name="AdvancedOptionsHeader" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="UpdateBarFFmpegMessage" xml:space="preserve">
+    <value>FFmpeg update available: {0}</value>
+  </data>
+  <data name="UpdateBarAppMessage" xml:space="preserve">
+    <value>New VidDownload version available: {0}</value>
+  </data>
+  <data name="UpdateBarYtDlpMessage" xml:space="preserve">
+    <value>yt-dlp update available: {0}</value>
+  </data>
+  <data name="UpdateBarAction" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="UpdateBarTitle" xml:space="preserve">
+    <value>Updates available</value>
+  </data>
+  <data name="UpdateBarChecking" xml:space="preserve">
+    <value>Checking for updates…</value>
   </data>
 </root>

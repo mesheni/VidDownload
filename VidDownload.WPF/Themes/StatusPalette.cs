@@ -14,7 +14,8 @@ namespace VidDownload.WPF.Themes
         public static readonly SolidColorBrush Downloading = Frozen(Color.FromRgb(0x35, 0x74, 0xF0));
         public static readonly SolidColorBrush Paused = Frozen(Color.FromRgb(0xDC, 0x68, 0x03));
         public static readonly SolidColorBrush Completed = Frozen(Color.FromRgb(0x34, 0xA8, 0x53));
-        public static readonly SolidColorBrush Failed = Frozen(Color.FromRgb(0xD3, 0x2F, 0x2F));
+        // #EF5350: >= 3:1 на тёмной карточке #2A2A2A (синхронизировано с Shared.xaml StatusFailedBrush)
+        public static readonly SolidColorBrush Failed = Frozen(Color.FromRgb(0xEF, 0x53, 0x50));
         public static readonly SolidColorBrush Cancelled = Frozen(Color.FromRgb(0x75, 0x75, 0x75));
 
         public static SolidColorBrush For(DownloadItemStatus status) => status switch

@@ -56,6 +56,9 @@ namespace VidDownload.WPF.Services
         /// <summary>Сворачивать приложение в трей при закрытии окна вместо выхода.</summary>
         public bool MinimizeToTray { get; set; }
 
+        /// <summary>Показывать окно предпросмотра метаданных перед добавлением в очередь.</summary>
+        public bool ShowMetadataPreview { get; set; } = true;
+
         /// <summary>Следить за буфером обмена и предлагать добавить ссылки в очередь.</summary>
         public bool ClipboardMonitorEnabled { get; set; }
 

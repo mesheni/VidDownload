@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Navigation;
 using VidDownload.WPF.Resources;
 using VidDownload.WPF.Services;
 
@@ -27,18 +26,6 @@ namespace VidDownload.WPF.Help
         private void OpenUri(string url)
         {
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-        }
-
-        private void Hyperlink_Vk(object sender, RequestNavigateEventArgs e)
-        {
-            OpenUri(e.Uri.AbsoluteUri);
-            e.Handled = true;
-        }
-
-        private void Hyperlink_Gh(object sender, RequestNavigateEventArgs e)
-        {
-            OpenUri(e.Uri.AbsoluteUri);
-            e.Handled = true;
         }
 
         private void Hyperlink_Vk_Click(object sender, RoutedEventArgs e) => OpenUri("https://t.me/mesheni_channel");

@@ -225,9 +225,6 @@
   <data name="StatusColumn" xml:space="preserve">
     <value>状态</value>
   </data>
-  <data name="DownloadActionColumn" xml:space="preserve">
-    <value>下载</value>
-  </data>
   <data name="ClearHistoryButton" xml:space="preserve">
     <value>清除历史</value>
   </data>
@@ -568,7 +565,9 @@
     <value>未找到 Updater.exe：{0}</value>
   </data>
   <data name="ClipboardLinkDetected" xml:space="preserve">
-    <value>剪贴板中发现链接：&#10;{0}&#10;加入队列？</value>
+    <value>剪贴板中发现链接：
+{0}
+加入队列？</value>
   </data>
   <data name="ClipboardLinkTitle" xml:space="preserve">
     <value>剪贴板中的链接</value>
@@ -769,13 +768,13 @@
     <value>快捷键</value>
   </data>
   <data name="HelpHotkeysText" xml:space="preserve">
-    <value>Enter — 将链接加入队列。Esc — 取消当前下载（需确认）。切换主题 — 窗口标题栏按钮。</value>
+    <value>Enter — 将链接加入队列。Esc — 取消当前下载（需确认）。Ctrl+V — 从剪贴板粘贴链接。将链接或 .txt 文件拖到窗口中即可加入队列。切换主题 — 窗口标题栏按钮。</value>
   </data>
   <data name="HelpTroubleshootingTitle" xml:space="preserve">
     <value>故障排除</value>
   </data>
   <data name="HelpTroubleshootingText" xml:space="preserve">
-    <value>如果视频无法下载，请更新 yt-dlp（窗口底部的更新检查按钮）。FFmpeg 用于合并流和转换器，也可在那里下载。每次下载的日志位于 %LocalAppData%\VidDownload\logs（设置中有打开按钮）。暂不支持私密视频。</value>
+    <value>如果视频无法下载，请更新 yt-dlp（窗口底部的更新检查按钮）。FFmpeg 用于合并流和转换器，也可在那里下载。每次下载的日志位于 %LocalAppData%\VidDownload\logs（设置中有打开按钮）。私密视频和年龄限制视频可在提供 cookies 后下载：设置 → Cookies（从浏览器获取或使用 cookies.txt 文件）。</value>
   </data>
   <data name="HelpAboutSection" xml:space="preserve">
     <value>关于程序</value>
@@ -790,7 +789,7 @@
     <value>全选</value>
   </data>
   <data name="PreviewSelectNone" xml:space="preserve">
-    <value>全不选</value>
+    <value>取消全选</value>
   </data>
   <data name="PreviewSelectedCount" xml:space="preserve">
     <value>已选 {0}/{1}</value>
@@ -899,5 +898,143 @@
   </data>
   <data name="UseArchiveHint" xml:space="preserve">
     <value>在保存文件夹中维护下载归档（downloaded.txt），避免重复下载</value>
+  </data>
+  <data name="SettingsSaveFailed" xml:space="preserve">
+    <value>无法保存设置</value>
+  </data>
+  <data name="PreviewFormatsAutomation" xml:space="preserve">
+    <value>可用格式</value>
+  </data>
+  <data name="ProxyHint" xml:space="preserve">
+    <value>留空表示不使用代理。支持 http、https、socks4、socks5 和 socks5h</value>
+  </data>
+  <data name="ConvertDropIgnored" xml:space="preserve">
+    <value>已忽略拖入的项目：需要视频文件</value>
+  </data>
+  <data name="ShowPreviewLabel" xml:space="preserve">
+    <value>显示预览</value>
+  </data>
+  <data name="VkProfileAutomation" xml:space="preserve">
+    <value>打开 VK 个人主页</value>
+  </data>
+  <data name="DownloadFailedWithReason" xml:space="preserve">
+    <value>下载失败：{0} — {1}</value>
+  </data>
+  <data name="HistoryNoResults" xml:space="preserve">
+    <value>未找到匹配:</value>
+  </data>
+  <data name="PreviewPlaylistAutomation" xml:space="preserve">
+    <value>播放列表项目</value>
+  </data>
+  <data name="SectionStartAutomation" xml:space="preserve">
+    <value>片段开始（分:秒）</value>
+  </data>
+  <data name="ConvertDropHintBatch" xml:space="preserve">
+    <value>将多个文件拖到此处</value>
+  </data>
+  <data name="FetchingInfo" xml:space="preserve">
+    <value>正在获取信息…</value>
+  </data>
+  <data name="CookiesFileLabel" xml:space="preserve">
+    <value>Cookies 文件</value>
+  </data>
+  <data name="ClipboardEmpty" xml:space="preserve">
+    <value>剪贴板为空</value>
+  </data>
+  <data name="HistoryClearConfirm" xml:space="preserve">
+    <value>清空全部下载历史？此操作无法撤销。</value>
+  </data>
+  <data name="PreviewSelectAtLeastOne" xml:space="preserve">
+    <value>请至少选择一个播放列表项目</value>
+  </data>
+  <data name="CookiesFileNotFound" xml:space="preserve">
+    <value>指定路径下未找到 cookies 文件</value>
+  </data>
+  <data name="ShowPreviewHint" xml:space="preserve">
+    <value>加入队列前打开预览窗口，显示封面、标题和格式选择</value>
+  </data>
+  <data name="RateLimitInvalid" xml:space="preserve">
+    <value>速率限制无效。示例：5M、500K、1.5M</value>
+  </data>
+  <data name="AudioQualityBest" xml:space="preserve">
+    <value>0 — 最佳</value>
+  </data>
+  <data name="HistoryEmpty" xml:space="preserve">
+    <value>暂无下载历史</value>
+  </data>
+  <data name="QueueListAutomation" xml:space="preserve">
+    <value>下载队列</value>
+  </data>
+  <data name="SectionEndAutomation" xml:space="preserve">
+    <value>片段结束（分:秒）</value>
+  </data>
+  <data name="ConvertDropHint" xml:space="preserve">
+    <value>将文件拖到此处或点击“浏览”</value>
+  </data>
+  <data name="EmbedMetadataHint" xml:space="preserve">
+    <value>将元数据（标题、艺术家）嵌入文件</value>
+  </data>
+  <data name="SettingsNetworkPrivacySection" xml:space="preserve">
+    <value>网络与隐私</value>
+  </data>
+  <data name="ResumeButton" xml:space="preserve">
+    <value>继续</value>
+  </data>
+  <data name="PreviewAudioOnlyHint" xml:space="preserve">
+    <value>将按主窗口中选定的音质提取音频</value>
+  </data>
+  <data name="DropIgnoredFiles" xml:space="preserve">
+    <value>已忽略文件：{0}（仅支持 .txt）</value>
+  </data>
+  <data name="OpenFolderFailed" xml:space="preserve">
+    <value>无法打开文件夹：{0}</value>
+  </data>
+  <data name="HistoryDownloadAgain" xml:space="preserve">
+    <value>重新下载</value>
+  </data>
+  <data name="AudioQualityWorst" xml:space="preserve">
+    <value>9 — 最低</value>
+  </data>
+  <data name="EmbedThumbnailHint" xml:space="preserve">
+    <value>将封面嵌入文件 — 适用于 MP3、M4A 和 MP4</value>
+  </data>
+  <data name="ConvertAdvancedHeader" xml:space="preserve">
+    <value>高级编码设置</value>
+  </data>
+  <data name="HistoryActionsColumn" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="ProxyInvalid" xml:space="preserve">
+    <value>代理格式无效。示例：socks5://127.0.0.1:1080</value>
+  </data>
+  <data name="QueueSummaryPaused" xml:space="preserve">
+    <value>{0} 已暂停</value>
+  </data>
+  <data name="DownloadButtonHint" xml:space="preserve">
+    <value>Enter</value>
+  </data>
+  <data name="YtDlpMissing" xml:space="preserve">
+    <value>未找到 yt-dlp.exe。请等待启动时自动下载，或检查网络连接。</value>
+  </data>
+  <data name="AdvancedOptionsHeader" xml:space="preserve">
+    <value>高级</value>
+  </data>
+  <data name="UpdateBarFFmpegMessage" xml:space="preserve">
+    <value>FFmpeg 有可用更新：{0}</value>
+  </data>
+  <data name="UpdateBarAppMessage" xml:space="preserve">
+    <value>VidDownload 有新版本可用：{0}</value>
+  </data>
+  <data name="UpdateBarYtDlpMessage" xml:space="preserve">
+    <value>yt-dlp 有可用更新：{0}</value>
+  </data>
+  <data name="UpdateBarAction" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="UpdateBarTitle" xml:space="preserve">
+    <value>有可用更新</value>
+  </data>
+  <data name="UpdateBarChecking" xml:space="preserve">
+    <value>正在检查更新…</value>
   </data>
 </root>

@@ -10,6 +10,7 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using VidDownload.WPF.Converters;
 using VidDownload.WPF.Resources;
 using VidDownload.WPF.Services;
 using VidDownload.WPF.ViewModels.Base;
@@ -22,10 +23,12 @@ namespace VidDownload.WPF.ViewModels
 
         private readonly IDownloadHistoryService _historyService;
         private readonly INotificationService _notifications;
+        private readonly IDialogService _dialogService;
         private readonly LocalizedStrings _loc;
 
         private readonly ObservableCollection<DownloadHistoryEntry> _allEntries = new();
         private int _loadedCount = PageSize;
+        private bool _loaded;
 
         public LocalizedStrings LocalizedStrings => _loc;
 
@@ -42,20 +45,34 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private bool _canLoadMore;
 
+        /// <summary>История полностью пуста (ни одной записи).</summary>
+        [ObservableProperty]
+        private bool _isEmpty;
+
+        /// <summary>Записи есть, но поиск не дал результатов.</summary>
+        [ObservableProperty]
+        private bool _hasNoResults;
+
         public HistoryViewModel(
             IDownloadHistoryService historyService,
             INotificationService notifications,
+            IDialogService dialogService,
             LocalizedStrings localizedStrings)
         {
             _historyService = historyService;
             _notifications = notifications;
+            _dialogService = dialogService;
             _loc = localizedStrings;
 
             EntriesView = CollectionViewSource.GetDefaultView(_allEntries);
             EntriesView.Filter = FilterEntry;
         }
 
-        partial void OnSearchTextChanged(string value) => EntriesView.Refresh();
+        partial void OnSearchTextChanged(string value)
+        {
+            EntriesView.Refresh();
+            UpdateEmptyStates();
+        }
 
         private bool FilterEntry(object obj)
         {
@@ -65,21 +82,45 @@ namespace VidDownload.WPF.ViewModels
             if (obj is not DownloadHistoryEntry entry)
                 return true;
 
-            return Contains(entry.Title) || Contains(entry.Url) || Contains(entry.Status.ToString());
+            string statusText = _loc[DownloadStatusToTextConverter.GetResourceKey(entry.Status)];
+            return MatchesSearch(entry.Title, entry.Url, statusText, SearchText);
+        }
+
+        /// <summary>Поиск по названию, ссылке и ЛОКАЛИЗОВАННОМУ статусу (чистая логика для тестов).</summary>
+        internal static bool MatchesSearch(string? title, string? url, string? statusText, string? query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return true;
+
+            return Contains(title) || Contains(url) || Contains(statusText);
 
             bool Contains(string? field) =>
                 !string.IsNullOrEmpty(field) &&
-                field.IndexOf(SearchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                field.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>Есть ли ещё записи за пределами уже показанной страницы.</summary>
+        internal static bool HasMoreEntries(int fetchedCount, int displayLimit) => fetchedCount > displayLimit;
+
+        private void UpdateEmptyStates()
+        {
+            IsEmpty = _loaded && _allEntries.Count == 0;
+            HasNoResults = _loaded && _allEntries.Count > 0 && EntriesView.IsEmpty;
         }
 
         public async Task LoadAsync()
         {
-            var entries = await _historyService.GetRecentEntriesAsync(_loadedCount).ConfigureAwait(true);
+            // Запрашиваем на одну запись больше, чтобы честно понять, есть ли следующая страница.
+            var fetched = await _historyService.GetRecentEntriesAsync(_loadedCount + 1).ConfigureAwait(true);
+            CanLoadMore = HasMoreEntries(fetched.Count, _loadedCount);
+
             _allEntries.Clear();
-            foreach (var entry in entries)
+            foreach (var entry in fetched.Take(_loadedCount))
                 _allEntries.Add(entry);
+
+            _loaded = true;
             EntriesView.Refresh();
-            CanLoadMore = entries.Count >= _loadedCount;
+            UpdateEmptyStates();
         }
 
         [RelayCommand]
@@ -136,8 +177,19 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private async Task ClearHistoryAsync()
         {
+            bool confirmed = await _dialogService
+                .ConfirmAsync(_loc["HistoryClearConfirm"], _loc["WarningTitle"])
+                .ConfigureAwait(true);
+            if (!confirmed)
+                return;
+
             await _historyService.ClearHistoryAsync();
             _allEntries.Clear();
+            SelectedEntry = null;
+            _loadedCount = PageSize;
+            CanLoadMore = false;
+            EntriesView.Refresh();
+            UpdateEmptyStates();
         }
 
         [RelayCommand]
@@ -146,6 +198,10 @@ namespace VidDownload.WPF.ViewModels
             if (entry == null) return;
             await _historyService.RemoveEntryAsync(entry.Id);
             _allEntries.Remove(entry);
+            if (ReferenceEquals(SelectedEntry, entry))
+                SelectedEntry = null;
+            EntriesView.Refresh();
+            UpdateEmptyStates();
         }
 
         [RelayCommand]

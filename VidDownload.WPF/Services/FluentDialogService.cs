@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using VidDownload.WPF.Resources;
@@ -10,7 +11,7 @@ namespace VidDownload.WPF.Services
 {
     /// <summary>
     /// Диалоги подтверждения на базе Fluent ContentDialog (WPF-UI).
-    /// Асинхронные по природе: вызывающие код обязаны использовать await.
+    /// Асинхронные по природе: вызывающие код обязан использовать await.
     /// </summary>
     public class FluentDialogService : IDialogService
     {
@@ -36,9 +37,9 @@ namespace VidDownload.WPF.Services
             {
                 // Хост диалога не привязан или окно закрыто — не роняем вызывающий поток
                 AppLog.Error(nameof(FluentDialogService), $"Dialog failed, fallback to classic: {ex.Message}");
-                return System.Windows.MessageBox.Show(
-                    message, title, System.Windows.MessageBoxButton.YesNo,
-                    System.Windows.MessageBoxImage.Question) == System.Windows.MessageBoxResult.Yes;
+                return ShowOwnedMessageBox(
+                    message, title, System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question)
+                    == System.Windows.MessageBoxResult.Yes;
             }
         }
 
@@ -48,7 +49,22 @@ namespace VidDownload.WPF.Services
             Content = message,
             PrimaryButtonText = Loc.GetString("YesButton"),
             CloseButtonText = Loc.GetString("NoButton"),
-            DefaultButton = ContentDialogButton.Primary
+            // Безопасный дефолт: Enter не подтверждает потенциально опасное действие
+            DefaultButton = ContentDialogButton.Close
         };
+
+        /// <summary>Классический MessageBox с владельцем — чтобы он не терялся за модальным окном.</summary>
+        protected static System.Windows.MessageBoxResult ShowOwnedMessageBox(
+            string message, string title, System.Windows.MessageBoxButton buttons, System.Windows.MessageBoxImage image)
+        {
+            // Владельцем берём активное окно: иначе fallback может оказаться под открытым модальным окном
+            var owner = System.Windows.Application.Current?.Windows
+                            .OfType<System.Windows.Window>()
+                            .FirstOrDefault(w => w.IsActive && w.IsVisible)
+                        ?? System.Windows.Application.Current?.MainWindow;
+            return owner is not null
+                ? System.Windows.MessageBox.Show(owner, message, title, buttons, image)
+                : System.Windows.MessageBox.Show(message, title, buttons, image);
+        }
     }
 }

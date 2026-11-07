@@ -1,7 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Общие стили контролов приложения. Ссылки на палитру — только DynamicResource,
-         чтобы переключение Dark/Light работало «на живую» во всех окнах. -->
+         чтобы переключение Dark/Light работало «на живую» во всех окнах.
+         Размеры текста и радиусы — из токенов Shared.xaml. -->
 
     <!-- Карточка-панель -->
     <Style x:Key="CardBorder" TargetType="Border">
@@ -15,7 +16,7 @@
     <!-- Заголовок секции -->
     <Style x:Key="SectionLabel" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Margin" Value="2,0,0,8"/>
@@ -24,16 +25,42 @@
     <!-- Подпись поля -->
     <Style x:Key="FieldLabelText" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,0,8,0"/>
     </Style>
 
+    <!-- Подзаголовок внутри секции -->
+    <Style x:Key="SubsectionLabel" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+
+    <!-- Подсказка под полем -->
+    <Style x:Key="FieldHintText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="0,4,0,0"/>
+    </Style>
+
+    <!-- Текст ошибки под полем -->
+    <Style x:Key="ErrorText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
+        <Setter Property="Foreground" Value="{DynamicResource StatusFailedTextBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="0,4,0,0"/>
+    </Style>
+
     <!-- Мелкий моноширинный текст (скорость, ETA, версии) -->
     <Style x:Key="MetaText" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
@@ -44,7 +71,9 @@
 
     <!-- Прогресс-бар со скруглёнными краями: высота 16 даёт радиус-«пилюлю» 8 —
          максимальный возможный (CornerRadius не превышает полвысоты полосы),
-         цвет полосы берётся из Foreground (у очереди — цвет статуса) -->
+         цвет полосы берётся из Foreground (у очереди — цвет статуса).
+         В indeterminate-режиме показываем полосу на 30% ширины (без анимаций),
+         чтобы не было пустого бара. -->
     <Style x:Key="RoundedProgressBar" TargetType="ProgressBar">
         <Setter Property="Height" Value="8"/>
         <Setter Property="Maximum" Value="100"/>
@@ -53,15 +82,31 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ProgressBar">
                     <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="7*"/>
+                        </Grid.ColumnDefinitions>
                         <Border x:Name="PART_Track"
+                                Grid.ColumnSpan="2"
                                 Background="{DynamicResource SurfaceBgrElevatedBrush}"
                                 CornerRadius="{StaticResource SmallRadius}"/>
                         <Border x:Name="PART_Indicator"
+                                Grid.ColumnSpan="2"
                                 Background="{TemplateBinding Foreground}"
                                 CornerRadius="{StaticResource SmallRadius}"
                                 HorizontalAlignment="Left"/>
+                        <Border x:Name="PART_IndeterminateIndicator"
+                                Grid.Column="0"
+                                Background="{TemplateBinding Foreground}"
+                                CornerRadius="{StaticResource SmallRadius}"
+                                Opacity="0.6"
+                                Visibility="Collapsed"/>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsIndeterminate" Value="True">
+                            <Setter TargetName="PART_Indicator" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="PART_IndeterminateIndicator" Property="Visibility" Value="Visible"/>
+                        </Trigger>
                         <Trigger Property="Orientation" Value="Vertical">
                             <Setter Property="LayoutTransform" TargetName="PART_Track">
                                 <Setter.Value>
@@ -75,18 +120,35 @@
         </Setter>
     </Style>
 
-    <!-- Контейнер элемента очереди: прозрачный, без выделения, на всю ширину -->
+    <!-- Контейнер элемента очереди: прозрачный, на всю ширину,
+         доступен с клавиатуры — при фокусе внутри рисуется тонкая обводка -->
     <Style x:Key="QueueItemContainer" TargetType="ListBoxItem">
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Margin" Value="0"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-        <Setter Property="Focusable" Value="False"/>
-        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <ContentPresenter Margin="{TemplateBinding Padding}"/>
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource MediumRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource FocusRingBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -95,24 +157,30 @@
     <!-- Тултипы: явный текстовый шрифт (иначе наследуют IconFont от кнопок-глифов и дают тофу), компактнее -->
     <Style TargetType="ToolTip">
         <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>
-        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeCaption}"/>
         <Setter Property="Padding" Value="8,5"/>
     </Style>
 
-    <!-- Призрачная кнопка очереди: без яркой подсветки, только мягкий ховер -->
+    <!-- Призрачная кнопка очереди: без яркой подсветки, только мягкий ховер.
+         Фокусируемая; при клавиатурном фокусе — кольцо 2px. -->
     <Style x:Key="QueueGhostButton" TargetType="Button">
-        <Setter Property="Width" Value="34"/>
-        <Setter Property="Height" Value="30"/>
+        <Setter Property="Width" Value="32"/>
+        <Setter Property="Height" Value="32"/>
         <Setter Property="Margin" Value="2,0"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Focusable" Value="True"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="6">
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource SmallRadius}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
                                           RecognizesAccessKey="False"/>
                     </Border>
@@ -123,6 +191,10 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Root" Property="Opacity" Value="0.7"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource FocusRingBrush}"/>
+                            <Setter TargetName="Root" Property="BorderThickness" Value="2"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.35"/>
@@ -136,16 +208,18 @@
     <!-- Строка таблицы истории -->
     <Style x:Key="HistoryCellText" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBody}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="4,2"/>
     </Style>
 
-    <!-- Контейнер строки истории: мягкое выделение вместо системной яркой подсветки -->
+    <!-- Контейнер строки истории: мягкое выделение вместо системной яркой подсветки;
+         при клавиатурном фокусе — тонкая обводка . -->
     <Style x:Key="HistoryRow" TargetType="ListViewItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="MinHeight" Value="36"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -153,7 +227,11 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListViewItem">
-                    <Border x:Name="Root" Background="{TemplateBinding Background}" CornerRadius="5"
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource SmallRadius}"
                             Margin="4,0" Padding="0">
                         <GridViewRowPresenter Content="{TemplateBinding Content}"
                                               Columns="{TemplateBinding GridView.ColumnCollection}"
@@ -165,6 +243,10 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Root" Property="Background" Value="{DynamicResource SurfaceBgrElevatedBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource FocusRingBrush}"/>
+                            <Setter TargetName="Root" Property="BorderThickness" Value="1"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

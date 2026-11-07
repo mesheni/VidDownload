@@ -6,28 +6,27 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="{Binding LocalizedStrings[HelpWindowTitle], FallbackValue=VidDownload}" ResizeMode="CanResize"
-        WindowStartupLocation="CenterScreen" Width="560" Height="680" MinWidth="480" MinHeight="420" Icon="/icon.png"
+        WindowStartupLocation="CenterOwner" Width="560" Height="680" MinWidth="480" MinHeight="420"
+        WindowBackdropType="Mica" Icon="/icon.png"
         ExtendsContentIntoTitleBar="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <ui:TitleBar Grid.Row="0" Title="{Binding LocalizedStrings[HelpWindowTitle], FallbackValue=VidDownload}"/>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="24,8,24,20">
-
-                <TextBlock Text="{Binding LocalizedStrings[HelpWindowTitle]}" FontFamily="{StaticResource DisplayFont}" FontSize="17"
-                           FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,2,0,10"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="16,4,16,10">
 
                 <!-- Быстрый старт -->
                 <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
                     <StackPanel>
                         <TextBlock Text="{Binding LocalizedStrings[HelpQuickStartTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
-                        <TextBlock Text="{Binding LocalizedStrings[HelpQuickStartText]}" TextWrapping="Wrap" FontSize="12.5"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpQuickStartText]}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="20"/>
                     </StackPanel>
                 </Border>
 
@@ -35,8 +34,8 @@
                 <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
                     <StackPanel>
                         <TextBlock Text="{Binding LocalizedStrings[HelpQueueTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
-                        <TextBlock Text="{Binding LocalizedStrings[HelpQueueText]}" TextWrapping="Wrap" FontSize="12.5"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpQueueText]}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="20"/>
                     </StackPanel>
                 </Border>
 
@@ -44,8 +43,8 @@
                 <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
                     <StackPanel>
                         <TextBlock Text="{Binding LocalizedStrings[HelpSubsTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
-                        <TextBlock Text="{Binding LocalizedStrings[HelpSubsText]}" TextWrapping="Wrap" FontSize="12.5"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpSubsText]}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="20"/>
                     </StackPanel>
                 </Border>
 
@@ -53,8 +52,8 @@
                 <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
                     <StackPanel>
                         <TextBlock Text="{Binding LocalizedStrings[HelpConverterTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
-                        <TextBlock Text="{Binding LocalizedStrings[HelpConverterText]}" TextWrapping="Wrap" FontSize="12.5"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpConverterText]}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="20"/>
                     </StackPanel>
                 </Border>
 
@@ -62,8 +61,8 @@
                 <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
                     <StackPanel>
                         <TextBlock Text="{Binding LocalizedStrings[HelpHotkeysTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
-                        <TextBlock Text="{Binding LocalizedStrings[HelpHotkeysText]}" TextWrapping="Wrap" FontSize="12.5"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpHotkeysText]}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="20"/>
                     </StackPanel>
                 </Border>
 
@@ -71,8 +70,8 @@
                 <Border Style="{StaticResource CardBorder}" Padding="12,10" Margin="0,0,0,8">
                     <StackPanel>
                         <TextBlock Text="{Binding LocalizedStrings[HelpTroubleshootingTitle]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,5"/>
-                        <TextBlock Text="{Binding LocalizedStrings[HelpTroubleshootingText]}" TextWrapping="Wrap" FontSize="12.5"
-                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="19"/>
+                        <TextBlock Text="{Binding LocalizedStrings[HelpTroubleshootingText]}" TextWrapping="Wrap" FontSize="{StaticResource FontSizeBody}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" LineHeight="20"/>
                     </StackPanel>
                 </Border>
 
@@ -88,28 +87,33 @@
                             </Border>
                         </StackPanel>
 
-                        <TextBlock Text="{Binding LocalizedStrings[HelpAuthorLabel]}" FontFamily="{StaticResource DisplayFont}" FontSize="15"
+                        <TextBlock Text="{Binding LocalizedStrings[HelpAuthorLabel]}" FontFamily="{StaticResource DisplayFont}"
+                                   FontSize="{StaticResource FontSizeBodyLarge}"
                                    FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,10,0,0"/>
 
                         <Border HorizontalAlignment="Center" CornerRadius="{StaticResource PillRadius}" Padding="13,3" Margin="0,8,0,0"
                                 Background="{DynamicResource SurfaceBgrElevatedBrush}" BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1">
-                            <TextBlock FontFamily="{StaticResource MonoFont}" FontSize="12">
+                            <TextBlock FontFamily="{StaticResource MonoFont}" FontSize="{StaticResource FontSizeCaption}">
                                 <Run Text="v"/>
                                 <Run Text="{Binding AppVersion, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}"/>
                             </TextBlock>
                         </Border>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0">
-                            <ui:Button Appearance="Secondary" Height="32" Padding="12,0" Margin="0,0,8,0" FontSize="12" Click="Hyperlink_Vk_Click"
+                            <ui:Button Appearance="Secondary" Height="32" Padding="12,0" Margin="0,0,8,0" FontSize="{StaticResource FontSizeBody}"
+                                       Click="Hyperlink_Vk_Click"
+                                       AutomationProperties.Name="{Binding LocalizedStrings[TelegramLinkText]}"
                                        Content="{Binding LocalizedStrings[TelegramLinkText]}">
                                 <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="Globe24" FontSize="13"/>
+                                    <ui:SymbolIcon Symbol="Globe24" FontSize="{StaticResource FontSizeBody}"/>
                                 </ui:Button.Icon>
                             </ui:Button>
-                            <ui:Button Appearance="Secondary" Height="32" Padding="12,0" FontSize="12" Click="Hyperlink_Gh_Click"
+                            <ui:Button Appearance="Secondary" Height="32" Padding="12,0" FontSize="{StaticResource FontSizeBody}"
+                                       Click="Hyperlink_Gh_Click"
+                                       AutomationProperties.Name="{Binding LocalizedStrings[GitHubLinkText]}"
                                        Content="{Binding LocalizedStrings[GitHubLinkText]}">
                                 <ui:Button.Icon>
-                                    <ui:SymbolIcon Symbol="OpenFolder24" FontSize="13"/>
+                                    <ui:SymbolIcon Symbol="Code24" FontSize="{StaticResource FontSizeBody}"/>
                                 </ui:Button.Icon>
                             </ui:Button>
                         </StackPanel>
@@ -117,14 +121,22 @@
                         <Border CornerRadius="{StaticResource MediumRadius}" ClipToBounds="True" Margin="0,14,0,0"
                                 BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
                                 Cursor="Hand" MouseLeftButtonDown="imgJojack_MouseLeftButtonDown"
-                                ToolTip="https://vk.com/jojacki">
+                                ToolTip="https://vk.com/jojacki"
+                                AutomationProperties.Name="{Binding LocalizedStrings[VkProfileAutomation]}">
                             <Image x:Name="imgJojack" Source="/jojack.jpg" Height="168" Stretch="Uniform"/>
                         </Border>
                     </StackPanel>
                 </Border>
-
-                <ui:ContentDialogHost x:Name="RootContentDialog" Panel.ZIndex="50"/>
             </StackPanel>
         </ScrollViewer>
+
+        <!-- Закрытие: кнопка внизу и Esc через IsCancel -->
+        <StackPanel Grid.Row="2" Margin="16,8,16,10" Orientation="Horizontal" HorizontalAlignment="Center">
+            <ui:Button Appearance="Secondary" IsCancel="True" MinWidth="130" Height="32"
+                       FontSize="{StaticResource FontSizeBody}"
+                       Content="{Binding LocalizedStrings[CloseButton]}"/>
+        </StackPanel>
+
+        <ui:ContentDialogHost x:Name="RootContentDialog" Grid.RowSpan="3" Panel.ZIndex="50"/>
     </Grid>
 </ui:FluentWindow>

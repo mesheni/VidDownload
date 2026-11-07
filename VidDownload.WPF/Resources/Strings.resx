@@ -225,9 +225,6 @@
   <data name="StatusColumn" xml:space="preserve">
     <value>Статус</value>
   </data>
-  <data name="DownloadActionColumn" xml:space="preserve">
-    <value>Скачать</value>
-  </data>
   <data name="ClearHistoryButton" xml:space="preserve">
     <value>Очистить историю</value>
   </data>
@@ -568,7 +565,9 @@
     <value>Updater.exe не найден: {0}</value>
   </data>
   <data name="ClipboardLinkDetected" xml:space="preserve">
-    <value>В буфере обмена найдена ссылка:&#10;{0}&#10;Добавить в очередь?</value>
+    <value>В буфере обмена найдена ссылка:
+{0}
+Добавить в очередь?</value>
   </data>
   <data name="ClipboardLinkTitle" xml:space="preserve">
     <value>Ссылка в буфере обмена</value>
@@ -772,13 +771,13 @@
     <value>Горячие клавиши</value>
   </data>
   <data name="HelpHotkeysText" xml:space="preserve">
-    <value>Enter — добавить ссылку в очередь. Esc — отменить активную загрузку (с подтверждением). Переключение темы — кнопка в заголовке окна.</value>
+    <value>Enter — добавить ссылку в очередь. Esc — отменить активную загрузку (с подтверждением). Ctrl+V — вставить ссылку из буфера обмена. Перетащите ссылки или .txt-файл в окно, чтобы добавить их в очередь. Переключение темы — кнопка в заголовке окна.</value>
   </data>
   <data name="HelpTroubleshootingTitle" xml:space="preserve">
     <value>Решение проблем</value>
   </data>
   <data name="HelpTroubleshootingText" xml:space="preserve">
-    <value>Если видео не скачивается — обновите yt-dlp (кнопка проверки обновления в подвале окна). FFmpeg нужен для склейки потоков и конвертера, скачивается там же. Логи каждой загрузки лежат в %LocalAppData%\VidDownload\logs (кнопка в настройках). Приватные видео пока не поддерживаются.</value>
+    <value>Если видео не скачивается — обновите yt-dlp (кнопка проверки обновления в подвале окна). FFmpeg нужен для склейки потоков и конвертера, скачивается там же. Логи каждой загрузки лежат в %LocalAppData%\VidDownload\logs (кнопка в настройках). Приватные видео и видео с возрастным ограничением скачиваются после добавления куки: Настройки → Куки (из браузера или файл cookies.txt).</value>
   </data>
   <data name="HelpAboutSection" xml:space="preserve">
     <value>О программе</value>
@@ -790,10 +789,10 @@
     <value>Элементы плейлиста</value>
   </data>
   <data name="PreviewSelectAll" xml:space="preserve">
-    <value>Все</value>
+    <value>Выбрать все</value>
   </data>
   <data name="PreviewSelectNone" xml:space="preserve">
-    <value>Снять выделение</value>
+    <value>Снять все</value>
   </data>
   <data name="PreviewSelectedCount" xml:space="preserve">
     <value>Выбрано {0} из {1}</value>
@@ -902,5 +901,140 @@
   </data>
   <data name="UseArchiveHint" xml:space="preserve">
     <value>Вести архив загрузок (downloaded.txt в папке сохранения) и не качать повторно</value>
+  </data>
+  <data name="SettingsSaveFailed" xml:space="preserve">
+    <value>Не удалось сохранить настройки</value>
+  </data>
+  <data name="PreviewFormatsAutomation" xml:space="preserve">
+    <value>Доступные форматы</value>
+  </data>
+  <data name="ProxyHint" xml:space="preserve">
+    <value>Пусто — без прокси. Поддерживаются http, https, socks4, socks5 и socks5h</value>
+  </data>
+  <data name="ConvertDropIgnored" xml:space="preserve">
+    <value>Перетащенные элементы пропущены: нужны файлы видео</value>
+  </data>
+  <data name="ShowPreviewLabel" xml:space="preserve">
+    <value>Показывать предпросмотр</value>
+  </data>
+  <data name="VkProfileAutomation" xml:space="preserve">
+    <value>Открыть профиль ВКонтакте</value>
+  </data>
+  <data name="DownloadFailedWithReason" xml:space="preserve">
+    <value>Ошибка загрузки: {0} — {1}</value>
+  </data>
+  <data name="HistoryNoResults" xml:space="preserve">
+    <value>Ничего не найдено:</value>
+  </data>
+  <data name="PreviewPlaylistAutomation" xml:space="preserve">
+    <value>Элементы плейлиста</value>
+  </data>
+  <data name="SectionStartAutomation" xml:space="preserve">
+    <value>Начало фрагмента (мм:сс)</value>
+  </data>
+  <data name="ConvertDropHintBatch" xml:space="preserve">
+    <value>Перетащите несколько файлов сюда</value>
+  </data>
+  <data name="FetchingInfo" xml:space="preserve">
+    <value>Получаем информацию…</value>
+  </data>
+  <data name="CookiesFileLabel" xml:space="preserve">
+    <value>Файл cookies</value>
+  </data>
+  <data name="ClipboardEmpty" xml:space="preserve">
+    <value>Буфер обмена пуст</value>
+  </data>
+  <data name="HistoryClearConfirm" xml:space="preserve">
+    <value>Очистить всю историю загрузок? Это действие нельзя отменить.</value>
+  </data>
+  <data name="PreviewSelectAtLeastOne" xml:space="preserve">
+    <value>Выберите хотя бы один элемент плейлиста</value>
+  </data>
+  <data name="CookiesFileNotFound" xml:space="preserve">
+    <value>Файл cookies не найден по указанному пути</value>
+  </data>
+  <data name="ShowPreviewHint" xml:space="preserve">
+    <value>Перед добавлением в очередь открывать окно с обложкой, названием и выбором формата</value>
+  </data>
+  <data name="RateLimitInvalid" xml:space="preserve">
+    <value>Некорректный лимит скорости. Примеры: 5M, 500K, 1.5M</value>
+  </data>
+  <data name="AudioQualityBest" xml:space="preserve">
+    <value>0 — лучшее</value>
+  </data>
+  <data name="HistoryEmpty" xml:space="preserve">
+    <value>История пуста</value>
+  </data>
+  <data name="QueueListAutomation" xml:space="preserve">
+    <value>Очередь загрузок</value>
+  </data>
+  <data name="SectionEndAutomation" xml:space="preserve">
+    <value>Конец фрагмента (мм:сс)</value>
+  </data>
+  <data name="ConvertDropHint" xml:space="preserve">
+    <value>Перетащите файл сюда или нажмите «Обзор»</value>
+  </data>
+  <data name="EmbedMetadataHint" xml:space="preserve">
+    <value>Встроить метаданные (название, исполнитель) в файл</value>
+  </data>
+  <data name="SettingsNetworkPrivacySection" xml:space="preserve">
+    <value>Сеть и приватность</value>
+  </data>
+  <data name="ResumeButton" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
+  <data name="PreviewAudioOnlyHint" xml:space="preserve">
+    <value>Аудио будет извлечено в качестве, выбранном в главном окне</value>
+  </data>
+  <data name="DropIgnoredFiles" xml:space="preserve">
+    <value>Пропущено файлов: {0} (поддерживаются только .txt)</value>
+  </data>
+  <data name="OpenFolderFailed" xml:space="preserve">
+    <value>Не удалось открыть папку: {0}</value>
+  </data>
+  <data name="HistoryDownloadAgain" xml:space="preserve">
+    <value>Скачать снова</value>
+  </data>
+  <data name="AudioQualityWorst" xml:space="preserve">
+    <value>9 — минимальное</value>
+  </data>
+  <data name="EmbedThumbnailHint" xml:space="preserve">
+    <value>Встроить обложку в файл — работает для MP3, M4A и MP4</value>
+  </data>
+  <data name="ConvertAdvancedHeader" xml:space="preserve">
+    <value>Дополнительные параметры кодирования</value>
+  </data>
+  <data name="HistoryActionsColumn" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="ProxyInvalid" xml:space="preserve">
+    <value>Неверный формат прокси. Пример: socks5://127.0.0.1:1080</value>
+  </data>
+  <data name="QueueSummaryPaused" xml:space="preserve">
+    <value>{0} на паузе</value>
+  </data>
+  <data name="DownloadButtonHint" xml:space="preserve">
+    <value>Enter</value>
+  </data>
+  <data name="AdvancedOptionsHeader" xml:space="preserve">
+    <value>Дополнительно</value>
+  </data>
+  <data name="UpdateBarFFmpegMessage" xml:space="preserve">
+    <value>Доступно обновление FFmpeg: {0}</value>
+  </data>
+  <data name="UpdateBarAppMessage" xml:space="preserve">
+    <value>Доступна новая версия VidDownload: {0}</value>
+  </data>
+  <data name="UpdateBarYtDlpMessage" xml:space="preserve">
+    <value>Доступно обновление yt-dlp: {0}</value>
+  </data>
+  <data name="UpdateBarAction" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="UpdateBarTitle" xml:space="preserve">
+    <value>Доступны обновления</value>
+  </data>
+  <data name="UpdateBarChecking" xml:space="preserve">
+    <value>Проверяем обновления…</value>
   </data>
 </root>

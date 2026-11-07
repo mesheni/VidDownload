@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using VidDownload.WPF.Services;
@@ -25,15 +26,28 @@ namespace VidDownload.WPF.SettingsWindow
 
         private async void OnSaveClick(object sender, RoutedEventArgs e)
         {
-            await _viewModel.SaveCommand.ExecuteAsync(null);
-            DialogResult = true;
-            Close();
-        }
+            // Не закрываем окно молча при невалидных полях: подсвечиваем ошибку
+            // под полем и переводим туда фокус.
+            if (!_viewModel.ValidateSettings())
+            {
+                if (_viewModel.HasProxyError)
+                    ProxyBox.Focus();
+                else if (_viewModel.HasCookiesFileError)
+                    CookiesFileBox.Focus();
+                return;
+            }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-            Close();
+            try
+            {
+                await _viewModel.SaveCommand.ExecuteAsync(null);
+                DialogResult = true;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(SettingsWindow), $"Save failed: {ex.Message}");
+                _viewModel.SaveError = _viewModel.LocalizedStrings["SettingsSaveFailed"];
+            }
         }
     }
 }
