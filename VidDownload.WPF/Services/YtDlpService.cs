@@ -45,6 +45,8 @@ namespace VidDownload.WPF.Services
                 proc.StartInfo.RedirectStandardError = true;
                 proc.StartInfo.CreateNoWindow = true;
 
+                AddJavaScriptRuntimeArgument(proc);
+
                 foreach (var arg in args)
                 {
                     proc.StartInfo.ArgumentList.Add(arg);
@@ -164,6 +166,8 @@ namespace VidDownload.WPF.Services
             proc.StartInfo.RedirectStandardError = true;
             proc.StartInfo.CreateNoWindow = true;
 
+            AddJavaScriptRuntimeArgument(proc);
+
             foreach (var arg in args)
             {
                 proc.StartInfo.ArgumentList.Add(arg);
@@ -201,6 +205,16 @@ namespace VidDownload.WPF.Services
 
             string json = await stdoutTask.ConfigureAwait(false);
             return MetadataParser.ParseVideoInfo(json);
+        }
+
+        private static void AddJavaScriptRuntimeArgument(Process process)
+        {
+            string? runtime = JavaScriptRuntimeResolver.ResolveRuntime();
+            if (string.IsNullOrEmpty(runtime))
+                return;
+
+            process.StartInfo.ArgumentList.Add("--js-runtimes");
+            process.StartInfo.ArgumentList.Add(runtime);
         }
 
         public async Task<string> GetLocalVersionAsync()
