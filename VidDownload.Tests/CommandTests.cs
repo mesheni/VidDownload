@@ -6,6 +6,22 @@ namespace VidDownload.Tests
 {
     public class CommandTests
     {
+        [Fact]
+        public void WithYoutubeClientFallback_InsertsExtractorArgumentBeforeUrl()
+        {
+            var original = new List<string> { "-f", "best", "https://www.youtube.com/watch?v=test" };
+
+            var fallback = Command.WithYoutubeClientFallback(original);
+
+            Assert.Equal(new[]
+            {
+                "-f", "best",
+                "--extractor-args", "youtube:player_client=android",
+                "https://www.youtube.com/watch?v=test"
+            }, fallback);
+            Assert.Equal(new[] { "-f", "best", "https://www.youtube.com/watch?v=test" }, original);
+        }
+
         private static Settings BaseSettings() => new()
         {
             Resolution = "1080",

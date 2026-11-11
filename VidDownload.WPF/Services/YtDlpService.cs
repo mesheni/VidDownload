@@ -21,6 +21,21 @@ namespace VidDownload.WPF.Services
             IProgress<DownloadProgress> progress,
             CancellationToken cancellationToken)
         {
+            return await DownloadAsyncInternal(
+                url, settings, isPlaylist, isAudioOnly, isReEncode, progress, cancellationToken,
+                useYoutubeFallback: false).ConfigureAwait(false);
+        }
+
+        private async Task<DownloadResult> DownloadAsyncInternal(
+            string url,
+            Settings settings,
+            bool isPlaylist,
+            bool isAudioOnly,
+            bool isReEncode,
+            IProgress<DownloadProgress> progress,
+            CancellationToken cancellationToken,
+            bool useYoutubeFallback)
+        {
             string ytDlpPath = AppPaths.ResolveToolPath("yt-dlp.exe");
             if (!File.Exists(ytDlpPath))
                 throw new InvalidOperationException(LocalizedStrings.Instance["YtDlpMissing"]);
@@ -30,6 +45,9 @@ namespace VidDownload.WPF.Services
             List<string> args = isAudioOnly
                 ? Command.LoadAudio(settings, url, isPlaylist)
                 : Command.LoadVideo(url, settings, isPlaylist, isReEncode);
+
+            if (useYoutubeFallback)
+                args = Command.WithYoutubeClientFallback(args);
 
             // Последний распарсенный прогресс — нераспознанные строки yt-dlp не должны
             // сбрасывать проценты/скорость в ноль
@@ -133,6 +151,16 @@ namespace VidDownload.WPF.Services
                         string message = string.Format(LocalizedStrings.Instance["YtDlpProcessError"], proc.ExitCode);
                         if (!string.IsNullOrEmpty(stderr))
                             message += Environment.NewLine + stderr;
+
+                        if (!useYoutubeFallback && IsYoutubeUrl(url) && IsHttpForbidden(stderr))
+                        {
+                            AppLog.Info(nameof(YtDlpService),
+                                "YouTube returned HTTP 403; retrying with the android player client.");
+                            return await DownloadAsyncInternal(
+                                url, settings, isPlaylist, isAudioOnly, isReEncode, progress, cancellationToken,
+                                useYoutubeFallback: true).ConfigureAwait(false);
+                        }
+
                         throw new Exception(message);
                     }
                 }
@@ -145,6 +173,22 @@ namespace VidDownload.WPF.Services
                 result.Title = Path.GetFileNameWithoutExtension(lastDestination);
             }
             return result;
+        }
+
+        private static bool IsHttpForbidden(string stderr) =>
+            stderr.Contains("HTTP Error 403", StringComparison.OrdinalIgnoreCase) ||
+            stderr.Contains("403 Forbidden", StringComparison.OrdinalIgnoreCase);
+
+        private static bool IsYoutubeUrl(string url)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                return false;
+
+            string host = uri.Host;
+            return host.Equals("youtu.be", StringComparison.OrdinalIgnoreCase) ||
+                host.EndsWith(".youtu.be", StringComparison.OrdinalIgnoreCase) ||
+                host.Equals("youtube.com", StringComparison.OrdinalIgnoreCase) ||
+                host.EndsWith(".youtube.com", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

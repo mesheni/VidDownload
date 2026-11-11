@@ -198,6 +198,15 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private string _appUpdateStatusMessage = string.Empty;
 
+        [ObservableProperty]
+        private bool _isAppUpdateDownloading;
+
+        [ObservableProperty]
+        private int _appUpdateProgressPercent;
+
+        /// <summary>Карточка видна как до подтверждения, так и во время загрузки обновления.</summary>
+        public bool ShowAppUpdateCard => IsAppUpdateAvailable || IsAppUpdateDownloading;
+
         /// <summary>Раскрыт ли блок редко используемых параметров загрузки (только в памяти).</summary>
         [ObservableProperty]
         private bool _advancedOptionsExpanded;
@@ -467,6 +476,10 @@ namespace VidDownload.WPF.ViewModels
         partial void OnYtDlpStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
 
         partial void OnAppUpdateStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
+
+        partial void OnIsAppUpdateAvailableChanged(bool value) => OnPropertyChanged(nameof(ShowAppUpdateCard));
+
+        partial void OnIsAppUpdateDownloadingChanged(bool value) => OnPropertyChanged(nameof(ShowAppUpdateCard));
 
         partial void OnFfmpegStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
 
@@ -1513,13 +1526,15 @@ namespace VidDownload.WPF.ViewModels
                 return;
             }
 
-            IsAppUpdateChecking = true;
+            IsAppUpdateDownloading = true;
+            AppUpdateProgressPercent = 0;
             AppUpdateStatusMessage = _loc["AppUpdateDownloading"];
 
             try
             {
                 var progress = new Progress<DownloadProgress>(p =>
                 {
+                    AppUpdateProgressPercent = Math.Clamp(p.Percent, 0, 100);
                     if (!string.IsNullOrEmpty(p.StatusMessage))
                         AppUpdateStatusMessage = p.StatusMessage;
                 });
@@ -1566,7 +1581,7 @@ namespace VidDownload.WPF.ViewModels
             }
             finally
             {
-                IsAppUpdateChecking = false;
+                IsAppUpdateDownloading = false;
             }
         }
 

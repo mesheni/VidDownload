@@ -5,6 +5,19 @@ namespace VidDownload.WPF.Control
 {
     public static class Command
     {
+        /// <summary>
+        /// Формирует повторную попытку для YouTube с альтернативным клиентом.
+        /// Аргумент вставляется перед URL, чтобы он не оказался частью списка ссылок.
+        /// </summary>
+        public static List<string> WithYoutubeClientFallback(IReadOnlyList<string> args)
+        {
+            var fallback = new List<string>(args);
+            int urlIndex = Math.Max(0, fallback.Count - 1);
+            fallback.Insert(urlIndex, "--extractor-args");
+            fallback.Insert(urlIndex + 1, "youtube:player_client=android");
+            return fallback;
+        }
+
         public static List<string> LoadAudio(Settings settings, string reference, bool? isPlaylist)
         {
             bool _isPlaylist = isPlaylist ?? false;
