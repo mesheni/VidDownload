@@ -84,10 +84,17 @@
                         </StackPanel>
                     </DockPanel>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Entries}" Background="Transparent" BorderThickness="0" MaxHeight="260"
+                    <ListBox x:Name="EntriesList" Grid.Row="1" ItemsSource="{Binding Entries}" Background="Transparent" BorderThickness="0" MaxHeight="260"
+                             SizeChanged="OnSnapListSizeChanged"
                              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.CanContentScroll="True"
                              AutomationProperties.Name="{Binding LocalizedStrings[PreviewPlaylistAutomation]}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <Setter Property="Padding" Value="8,4"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Margin="0,3">
@@ -123,11 +130,18 @@
                                   Margin="16,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <ListBox Grid.Row="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
-                             Background="Transparent" BorderThickness="0" MaxHeight="240"
+                    <ListBox x:Name="FormatsList" Grid.Row="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
+                             Background="Transparent" BorderThickness="0" MaxHeight="300" MinHeight="120"
+                             SizeChanged="OnSnapListSizeChanged"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.CanContentScroll="True"
                              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                              AutomationProperties.Name="{Binding LocalizedStrings[PreviewFormatsAutomation]}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                <Setter Property="Padding" Value="8,5"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding DisplayText}" FontFamily="{StaticResource MonoFont}" FontSize="{StaticResource FontSizeCaption}"

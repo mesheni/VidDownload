@@ -36,5 +36,11 @@ namespace VidDownload.WPF.Help
         {
             OpenUri("https://vk.com/jojacki");
         }
+
+        private void OnWindowKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Escape)
+                Close();
+        }
     }
 }

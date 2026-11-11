@@ -83,10 +83,69 @@ namespace VidDownload.WPF.ViewModels
         private bool _isAudioOptionsVisible;
 
         [ObservableProperty]
+        private MainNavigationPage _currentPage = MainNavigationPage.Downloads;
+
+        public bool IsDownloadsPage => CurrentPage == MainNavigationPage.Downloads;
+        public bool IsHistoryPage => CurrentPage == MainNavigationPage.History;
+        public bool IsConverterPage => CurrentPage == MainNavigationPage.Converter;
+
+        [ObservableProperty]
+        private int _activeDownloadsBadgeCount;
+
+        [ObservableProperty]
+        private bool _hasActiveBadge;
+
+        public bool IsVideoTabSelected
+        {
+            get => !IsAudioOnly;
+            set
+            {
+                if (value && IsAudioOnly)
+                    IsAudioOnly = false;
+                OnPropertyChanged(nameof(IsVideoTabSelected));
+                OnPropertyChanged(nameof(IsAudioTabSelected));
+            }
+        }
+
+        public bool IsAudioTabSelected
+        {
+            get => IsAudioOnly;
+            set
+            {
+                if (value && !IsAudioOnly)
+                    IsAudioOnly = true;
+                OnPropertyChanged(nameof(IsVideoTabSelected));
+                OnPropertyChanged(nameof(IsAudioTabSelected));
+            }
+        }
+
+        private ConvertViewModel? _convertVm;
+        public ConvertViewModel ConvertVm => _convertVm ??= AppServices.ServiceProvider.GetRequiredService<ConvertViewModel>();
+
+        private HistoryViewModel? _historyVm;
+        public HistoryViewModel HistoryVm => _historyVm ??= AppServices.ServiceProvider.GetRequiredService<HistoryViewModel>();
+
+        [ObservableProperty]
         private string _linkLabelText = LocalizedStrings.Instance["LinkLabelVideo"];
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(FfmpegDisplayVersion))]
         private string _ffmpegVersion = LocalizedStrings.Instance["FFmpegChecking"];
+
+        public string FfmpegDisplayVersion
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_ffmpegVersion)) return "ffmpeg";
+                if (_ffmpegVersion.Contains("провер", StringComparison.OrdinalIgnoreCase) ||
+                    _ffmpegVersion.Contains("check", StringComparison.OrdinalIgnoreCase))
+                    return "ffmpeg ...";
+                string v = _ffmpegVersion.TrimStart('n', 'v', ' ');
+                int dash = v.IndexOf('-');
+                if (dash > 0) v = v.Substring(0, dash);
+                return $"ffmpeg {v}";
+            }
+        }
 
         [ObservableProperty]
         private bool _isFfmpegChecking;
@@ -411,10 +470,28 @@ namespace VidDownload.WPF.ViewModels
 
         partial void OnFfmpegStatusMessageChanged(string value) => OnPropertyChanged(nameof(UpdateStatusText));
 
+        partial void OnCurrentPageChanged(MainNavigationPage value)
+        {
+            OnPropertyChanged(nameof(IsDownloadsPage));
+            OnPropertyChanged(nameof(IsHistoryPage));
+            OnPropertyChanged(nameof(IsConverterPage));
+
+            if (value == MainNavigationPage.History)
+            {
+                _ = HistoryVm.LoadAsync();
+            }
+            else if (value == MainNavigationPage.Converter)
+            {
+                _ = ConvertVm.InitializeAsync();
+            }
+        }
+
         partial void OnIsAudioOnlyChanged(bool value)
         {
             IsVideoOptionsVisible = !value;
             IsAudioOptionsVisible = value;
+            OnPropertyChanged(nameof(IsVideoTabSelected));
+            OnPropertyChanged(nameof(IsAudioTabSelected));
         }
 
         partial void OnIsPlaylistChanged(bool value)
@@ -965,6 +1042,9 @@ namespace VidDownload.WPF.ViewModels
             int paused = _queue.Items.Count(i => i.Status == DownloadItemStatus.Paused);
             QueueSummaryText = BuildQueueSummary(downloading, queued, paused, _loc.GetString);
 
+            ActiveDownloadsBadgeCount = downloading;
+            HasActiveBadge = downloading > 0;
+
             ClearFinishedCommand.NotifyCanExecuteChanged();
         }
 
@@ -1000,6 +1080,37 @@ namespace VidDownload.WPF.ViewModels
             {
                 AppLog.Error(nameof(MainViewModel), $"OpenFolder failed: {ex.Message}");
                 _notifications.Error(string.Format(_loc["OpenFolderFailed"], ex.Message));
+            }
+        }
+
+        [RelayCommand]
+        public void ShowDownloads()
+        {
+            CurrentPage = MainNavigationPage.Downloads;
+        }
+
+        [RelayCommand]
+        public async Task ShowHistoryAsync()
+        {
+            CurrentPage = MainNavigationPage.History;
+            await HistoryVm.LoadAsync();
+        }
+
+        [RelayCommand]
+        public async Task ShowConverterAsync()
+        {
+            CurrentPage = MainNavigationPage.Converter;
+            await ConvertVm.InitializeAsync();
+        }
+
+        [RelayCommand]
+        public void RedownloadHistory(DownloadHistoryEntry? entry)
+        {
+            if (entry != null && !string.IsNullOrWhiteSpace(entry.Url))
+            {
+                Url = entry.Url;
+                CurrentPage = MainNavigationPage.Downloads;
+                DownloadCommand.Execute(null);
             }
         }
 
