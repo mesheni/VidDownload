@@ -245,9 +245,19 @@
         <Setter Property="Padding" Value="5,1"/>
     </Style>
 
+    <!-- ═══ Выпадающие списки ═══
+         По умолчанию WPF ограничивает высоту popup третью экрана (360px при 1080p),
+         из-за чего длинные списки (языки субтитров — 11 пунктов) обрезаются по высоте.
+         Поднимаем лимит и включаем горизонтальную прокрутку, чтобы длинные пункты
+         (кодеки, форматы с размером файла) было видно целиком. -->
+    <Style TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="MaxDropDownHeight" Value="560"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+    </Style>
+
     <!-- Сегментированная кнопка табов (Видео / Аудио) -->
-    <Style x:Key="SegmentedTabRadio" TargetType="RadioButton">
-        <Setter Property="Height" Value="32"/>
+    <Style x:Key="SegmentedTabRadio" TargetType="RadioButton">        <Setter Property="Height" Value="32"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource TextFont}"/>

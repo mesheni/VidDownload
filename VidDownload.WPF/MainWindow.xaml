@@ -197,8 +197,8 @@
                 <!-- ══════════════════════════════════════════════════════════ -->
                 <Grid Visibility="{Binding IsDownloadsPage, Converter={StaticResource BoolToVis}}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="2*" MinWidth="360"/>
+                        <ColumnDefinition Width="*" MinWidth="240" MaxWidth="320"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Левая колонка: Ввод ссылки + Сохранение + Очередь -->
@@ -308,18 +308,19 @@
                             <TextBlock Text="Очередь" Style="{StaticResource SectionLabel}"
                                        FontSize="15" Margin="0" VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="1" Text="{Binding QueueSummaryText}" Style="{StaticResource MetaText}"
-                                       VerticalAlignment="Center" Margin="4,0,4,0" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
+                                       VerticalAlignment="Center" Margin="4,0,6,0" FontSize="11.5"
+                                       TextWrapping="Wrap" ToolTip="{Binding QueueSummaryText}"/>
 
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,6,0">
                                 <TextBlock Text="{Binding LocalizedStrings[PostQueueActionLabel]}" Style="{StaticResource FieldLabelText}"
                                            FontSize="11.5" Margin="0,0,4,0" VerticalAlignment="Center"/>
                                 <ComboBox ItemsSource="{Binding PostQueueActionItems}" SelectedIndex="{Binding SelectedPostQueueIndex}"
-                                          MinWidth="85" MinHeight="28" FontSize="11.5" VerticalAlignment="Center"/>
+                                          MinWidth="115" MinHeight="28" FontSize="11.5" VerticalAlignment="Center"/>
                             </StackPanel>
 
                             <Button Grid.Column="3" Style="{StaticResource SecondaryFlatButton}"
                                     Content="{Binding LocalizedStrings[ClearFinishedButton]}"
-                                    Padding="10,0" Height="28" FontSize="12"
+                                    Padding="12,0" Height="28" FontSize="12"
                                     Command="{Binding ClearFinishedCommand}"/>
                         </Grid>
 
@@ -422,7 +423,7 @@
 
                                                     <!-- Ошибка -->
                                                     <TextBlock Grid.Row="4" Text="{Binding ErrorMessage, Converter={StaticResource FlatNewlines}}"
-                                                               Style="{StaticResource ErrorText}" TextWrapping="Wrap" MaxHeight="34" TextTrimming="CharacterEllipsis"
+                                                               Style="{StaticResource ErrorText}" TextWrapping="Wrap"
                                                                ToolTip="{Binding ErrorMessage}" Margin="0,4,0,0"
                                                                Visibility="{Binding ErrorMessage, Converter={StaticResource TextToVis}}"/>
                                                 </Grid>
@@ -497,11 +498,11 @@
                                 <StackPanel Visibility="{Binding IsVideoOptionsVisible, Converter={StaticResource BoolToVis}}">
                                     <TextBlock Text="{Binding LocalizedStrings[ResolutionLabel]}" Style="{StaticResource FieldLabelText}"/>
                                     <ComboBox ItemsSource="{Binding Resolutions}" SelectedItem="{Binding SelectedResolution}"
-                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+                                              MinHeight="36" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
 
                                     <TextBlock Text="{Binding LocalizedStrings[CodecLabel]}" Style="{StaticResource FieldLabelText}"/>
                                     <ComboBox ItemsSource="{Binding Codecs}" SelectedItem="{Binding SelectedCodec}"
-                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+                                              MinHeight="36" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
 
                                     <TextBlock Text="{Binding LocalizedStrings[FileExtensionLabel]}" Style="{StaticResource FieldLabelText}"/>
                                     <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
@@ -512,7 +513,7 @@
                                 <StackPanel Visibility="{Binding IsAudioOptionsVisible, Converter={StaticResource BoolToVis}}">
                                     <TextBlock Text="{Binding LocalizedStrings[AudioFormatLabel]}" Style="{StaticResource FieldLabelText}"/>
                                     <ComboBox ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding SelectedAudioFormat}"
-                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+                                              MinHeight="36" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
 
                                     <TextBlock Text="{Binding LocalizedStrings[AudioQualityLabel]}" Style="{StaticResource FieldLabelText}"/>
                                     <ComboBox ItemsSource="{Binding AudioQualities}" SelectedValuePath="Value"
@@ -531,12 +532,12 @@
                                     <ui:TextBox Text="{Binding SectionStart, UpdateSourceTrigger=PropertyChanged}" Height="32"
                                                 FontSize="{StaticResource FontSizeCaption}" FontFamily="{StaticResource MonoFont}"
                                                 VerticalContentAlignment="Center" ClearButtonEnabled="False"
-                                                PlaceholderText="00:00:00"/>
+                                                 PlaceholderText="{Binding LocalizedStrings[TimeStartPlaceholder]}"/>
                                     <TextBlock Grid.Column="1" Text="—" Style="{StaticResource MetaText}" Margin="8,0" VerticalAlignment="Center"/>
                                     <ui:TextBox Grid.Column="2" Text="{Binding SectionEnd, UpdateSourceTrigger=PropertyChanged}" Height="32"
                                                 FontSize="{StaticResource FontSizeCaption}" FontFamily="{StaticResource MonoFont}"
                                                 VerticalContentAlignment="Center" ClearButtonEnabled="False"
-                                                PlaceholderText="00:05:00"/>
+                                                 PlaceholderText="{Binding LocalizedStrings[TimeEndPlaceholder]}"/>
                                 </Grid>
 
                                 <!-- Переключатели режимов (toggles) -->
@@ -591,7 +592,7 @@
                         <!-- Поле поиска -->
                         <Border DockPanel.Dock="Right" Background="{DynamicResource SurfaceBgrBrush}"
                                 BorderBrush="{DynamicResource LineBrush}" BorderThickness="1"
-                                CornerRadius="{StaticResource MediumRadius}" Width="320" Height="36" Padding="8,0">
+                                 CornerRadius="{StaticResource MediumRadius}" MinWidth="200" MaxWidth="320" Height="36" Padding="8,0">
                             <DockPanel LastChildFill="True">
                                 <ui:SymbolIcon Symbol="Search24" FontSize="16" Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -607,10 +608,11 @@
                     <!-- Таблица записей истории -->
                     <Border Grid.Row="1" Style="{StaticResource CardSectionBorder}" Padding="0" Margin="0,0,0,12">
                         <Grid>
-                            <ListView ItemsSource="{Binding EntriesView}" SelectedItem="{Binding SelectedEntry}"
+                            <ListView x:Name="HistoryList" ItemsSource="{Binding EntriesView}" SelectedItem="{Binding SelectedEntry}"
                                       BorderThickness="0" Background="Transparent" Foreground="{DynamicResource TextPrimaryBrush}"
                                       FontSize="{StaticResource FontSizeBody}" ItemContainerStyle="{StaticResource HistoryRow}"
                                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      SizeChanged="OnHistoryListSizeChanged"
                                       VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
                                 <ListView.View>
                                     <GridView>
@@ -628,7 +630,8 @@
                                                 <DataTemplate>
                                                     <StackPanel VerticalAlignment="Center" Margin="4,2">
                                                         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"
-                                                                   Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                                   Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding Title}"/>
                                                         <TextBlock Text="{Binding Url}" Style="{StaticResource MetaText}" FontSize="11"
                                                                    Foreground="{DynamicResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis"/>
                                                     </StackPanel>
@@ -723,9 +726,9 @@
                     <!-- Две колонки: Источник/Назначение (слева) и Кодирование/Качество (справа) -->
                     <Grid Grid.Row="1" Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="2*" MinWidth="360"/>
                             <ColumnDefinition Width="14"/>
-                            <ColumnDefinition Width="340"/>
+                            <ColumnDefinition Width="*" MinWidth="300" MaxWidth="360"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- Левая колонка: Источник + Назначение -->
@@ -834,12 +837,12 @@
 
                                     <TextBlock Text="{Binding LocalizedStrings[ExtensionLabel]}" Style="{StaticResource FieldLabelText}"/>
                                     <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
-                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+                                              MinHeight="36" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
 
                                     <StackPanel Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
                                         <TextBlock Text="{Binding LocalizedStrings[VideoCodecLabel]}" Style="{StaticResource FieldLabelText}"/>
                                         <ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding SelectedVideoCodec}"
-                                                  Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+                                                  MinHeight="36" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
 
                                         <Grid Margin="0,0,0,8">
                                             <Grid.ColumnDefinitions>
@@ -862,7 +865,7 @@
 
                                     <TextBlock Text="{Binding LocalizedStrings[AudioCodecLabel]}" Style="{StaticResource FieldLabelText}"/>
                                     <ComboBox ItemsSource="{Binding AudioCodecs}" SelectedItem="{Binding SelectedAudioCodec}"
-                                              Height="30" MinHeight="30" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
+                                              MinHeight="36" Margin="0,0,0,6" HorizontalAlignment="Stretch"/>
 
                                     <!-- Разделитель -->
                                     <Border BorderBrush="{DynamicResource AppBorderSubtleBrush}" BorderThickness="0,1,0,0" Margin="0,2,0,6"/>
@@ -879,19 +882,19 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="{Binding LocalizedStrings[CrfLabel]}" Style="{StaticResource FieldLabelText}"/>
-                                            <ui:NumberBox Value="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" Height="30"
+                                            <ui:NumberBox Value="{Binding Crf, UpdateSourceTrigger=PropertyChanged}" MinHeight="36"
                                                           Minimum="0" Maximum="51" SmallChange="1" ClearButtonEnabled="False"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="2">
                                             <TextBlock Text="{Binding LocalizedStrings[VideoBitrateLabel]}" Style="{StaticResource FieldLabelText}"/>
-                                            <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Height="30"
-                                                          Minimum="0" SmallChange="100" ClearButtonEnabled="False" PlaceholderText="авто"/>
+                                            <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" MinHeight="36"
+                                                           Minimum="0" SmallChange="100" ClearButtonEnabled="False" PlaceholderText="{Binding LocalizedStrings[AutoPlaceholder]}"/>
                                         </StackPanel>
                                     </Grid>
 
                                     <StackPanel>
                                         <TextBlock Text="{Binding LocalizedStrings[AudioBitrateLabel]}" Style="{StaticResource FieldLabelText}"/>
-                                        <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Height="30"
+                                        <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" MinHeight="36"
                                                       Minimum="0" SmallChange="32" ClearButtonEnabled="False"/>
                                     </StackPanel>
                                 </StackPanel>

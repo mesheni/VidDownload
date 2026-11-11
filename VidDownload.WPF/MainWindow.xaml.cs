@@ -48,6 +48,54 @@ namespace VidDownload.WPF
         public Wpf.Ui.Controls.ContentDialogHost DialogHost => RootContentDialog;
 
         /// <summary>
+        /// Адаптивные колонки истории: при сужении окна колонка «URL / Название» сжимается,
+        /// чтобы кнопки действий не уезжали за правый край (горизонтальная прокрутка отключена).
+        /// </summary>
+        private void OnHistoryListSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.ListView listView
+                || listView.View is not System.Windows.Controls.GridView gridView
+                || gridView.Columns.Count < 4)
+                return;
+
+            double available = listView.ActualWidth - SystemParameters.VerticalScrollBarWidth - 4;
+            if (available <= 0)
+                return;
+
+            // Нижние границы: дата не уже 120, действия не уже 200, статус — 90.
+            const double minDate = 120;
+            const double minStatus = 90;
+            const double minActions = 200;
+            const double minTitle = 140;
+
+            double dateWidth = 150;
+            double statusWidth = 100;
+            double actionsWidth = 220;
+
+            double flexible = available - dateWidth - statusWidth - actionsWidth;
+            if (flexible < minTitle)
+            {
+                // Не хватает места — сжимаем фиксированные колонки до минимумов.
+                double deficit = minTitle - flexible;
+                double shrinkDate = Math.Min(deficit / 2, dateWidth - minDate);
+                dateWidth -= shrinkDate;
+                deficit -= shrinkDate;
+                double shrinkActions = Math.Min(deficit, actionsWidth - minActions);
+                actionsWidth -= shrinkActions;
+                deficit -= shrinkActions;
+                if (deficit > 0)
+                    statusWidth = Math.Max(minStatus, statusWidth - deficit);
+                flexible = available - dateWidth - statusWidth - actionsWidth;
+            }
+
+            gridView.Columns[0].Width = dateWidth;
+            gridView.Columns[2].Width = statusWidth;
+            gridView.Columns[3].Width = actionsWidth;
+            if (flexible > 0)
+                gridView.Columns[1].Width = flexible;
+        }
+
+        /// <summary>
         /// Esc отменяет активную загрузку, но не перехватывается у открытого диалога
         /// или раскрытого выпадающего списка — они должны закрыться сами.
         /// </summary>

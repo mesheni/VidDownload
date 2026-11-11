@@ -991,4 +991,7 @@ Add to queue?</value>
   <data name="ChooseFolderButton" xml:space="preserve"><value>Select folder</value></data>
   <data name="QualitySectionTitle" xml:space="preserve"><value>Quality</value></data>
   <data name="ProxyPlaceholder" xml:space="preserve"><value>socks5://127.0.0.1:1080</value></data>
+  <data name="TimeStartPlaceholder" xml:space="preserve"><value>00:00:00</value></data>
+  <data name="TimeEndPlaceholder" xml:space="preserve"><value>00:05:00</value></data>
+  <data name="AutoPlaceholder" xml:space="preserve"><value>auto</value></data>
 </root>

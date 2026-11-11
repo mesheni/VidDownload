@@ -113,7 +113,8 @@
                         <TextBlock Text="{Binding LocalizedStrings[EncodingSectionLabel]}" Style="{StaticResource SectionLabel}" Margin="2,0,0,6"/>
 
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
-                            <TextBlock Text="{Binding LocalizedStrings[ExtensionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"/>
+                            <TextBlock Text="{Binding LocalizedStrings[ExtensionLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"
+                                       Margin="0,0,10,0"/>
                             <ComboBox ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
                                       IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" FontSize="{StaticResource FontSizeBody}"
                                       AutomationProperties.Name="{Binding LocalizedStrings[ExtensionLabel]}"/>
@@ -121,13 +122,15 @@
 
                         <StackPanel Orientation="Horizontal" Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
                             <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
-                                <TextBlock Text="{Binding LocalizedStrings[VideoCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"/>
+                                <TextBlock Text="{Binding LocalizedStrings[VideoCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"
+                                           Margin="0,0,10,0"/>
                                 <ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding SelectedVideoCodec}"
                                           IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="172" FontSize="{StaticResource FontSizeBody}"
                                           AutomationProperties.Name="{Binding LocalizedStrings[VideoCodecLabel]}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding LocalizedStrings[AudioCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"/>
+                                <TextBlock Text="{Binding LocalizedStrings[AudioCodecLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"
+                                           Margin="0,0,10,0"/>
                                 <ComboBox ItemsSource="{Binding AudioCodecs}" SelectedItem="{Binding SelectedAudioCodec}"
                                           IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="124" FontSize="{StaticResource FontSizeBody}"
                                           AutomationProperties.Name="{Binding LocalizedStrings[AudioCodecLabel]}"/>
@@ -150,7 +153,8 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,7"
                                     Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
                             <StackPanel Orientation="Horizontal" Margin="0,0,24,0">
-                                <TextBlock Text="{Binding LocalizedStrings[HardwareEncoderLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"/>
+                                <TextBlock Text="{Binding LocalizedStrings[HardwareEncoderLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"
+                                           Margin="0,0,10,0" TextWrapping="Wrap"/>
                                 <ComboBox ItemsSource="{Binding HardwareEncoders}" SelectedItem="{Binding SelectedHardwareEncoder}"
                                           IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}" MinHeight="29" MinWidth="104" FontSize="{StaticResource FontSizeBody}"
                                           AutomationProperties.Name="{Binding LocalizedStrings[HardwareEncoderLabel]}"/>
@@ -177,7 +181,7 @@
                             <StackPanel Orientation="Horizontal" Margin="0,0,18,7"
                                         Visibility="{Binding ShowVideoEncoding, Converter={StaticResource BoolToVis}}">
                                 <TextBlock Text="{Binding LocalizedStrings[VideoBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"/>
-                                <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Width="auto" MaxWidth="150" MinHeight="29"
+                                <ui:NumberBox Value="{Binding VideoBitrate, UpdateSourceTrigger=PropertyChanged}" Width="120" MinHeight="29"
                                               Minimum="0" SmallChange="100" ClearButtonEnabled="False"
                                               IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
                                               ToolTip="{Binding LocalizedStrings[VideoBitrateHint]}"
@@ -185,7 +189,7 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,7">
                                 <TextBlock Text="{Binding LocalizedStrings[AudioBitrateLabel]}" Style="{StaticResource FieldLabelText}" FontSize="{StaticResource FontSizeBody}"/>
-                                <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Width="auto" MaxWidth="150" MinHeight="29"
+                                <ui:NumberBox Value="{Binding AudioBitrate, UpdateSourceTrigger=PropertyChanged}" Width="120" MinHeight="29"
                                               Minimum="0" SmallChange="32" ClearButtonEnabled="False"
                                               IsEnabled="{Binding IsConverting, Converter={StaticResource InvertBool}}"
                                               ToolTip="{Binding LocalizedStrings[AudioBitrateHint]}"
