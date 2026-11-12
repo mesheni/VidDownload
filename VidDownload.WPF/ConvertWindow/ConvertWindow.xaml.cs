@@ -53,7 +53,7 @@ namespace VidDownload.WPF.ConvertWindow
         private void OnWindowDragOver(object sender, DragEventArgs e)
         {
             // принимаем только реальные файлы: папки и прочие элементы подсвечиваются как недопустимые
-            e.Effects = GetExistingFiles(e).Count > 0
+            e.Effects = DataContext is ConvertViewModel { IsConverting: false } && GetExistingFiles(e).Count > 0
                 ? DragDropEffects.Copy
                 : DragDropEffects.None;
             e.Handled = true;
@@ -61,7 +61,10 @@ namespace VidDownload.WPF.ConvertWindow
 
         private void OnWindowDrop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             if (DataContext is not ConvertViewModel vm)
+                return;
+            if (vm.IsConverting)
                 return;
 
             var existing = GetExistingFiles(e);

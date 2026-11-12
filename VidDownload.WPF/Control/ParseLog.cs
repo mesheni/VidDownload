@@ -12,7 +12,7 @@ namespace VidDownload.WPF.Control
         // [download] 100% of 10.00MiB in 00:00:10 at 2.50MiB/s
         // [download]  42.3% of 10.00MiB at Unknown B/s ETA Unknown
         private static readonly Regex ProgressRegex = new(
-            @"\[download\]\s+(?<pct>[\d.]+)%\s+of\s+~?(?<size>[\d.]+)\s*(?<sizeUnit>[KMGTP]?i?B)" +
+            @"\[download\]\s+(?<pct>[\d.]+)%\s+of\s+~?\s*(?<size>[\d.]+)\s*(?<sizeUnit>[KMGTP]?i?B)" +
             @"(?:\s+in\s+[\d:]+)?" +
             @"(?:\s+at\s+(?:(?<spd>[\d.]+)\s*(?<spdUnit>[KMGTP]?i?B/s)|Unknown\s*\S*/s))?" +
             @"(?:\s+ETA\s+(?:(?<eta>[\d:]+)|Unknown))?",

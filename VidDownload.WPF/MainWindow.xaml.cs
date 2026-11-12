@@ -159,7 +159,7 @@ namespace VidDownload.WPF
         {
             if (_viewModel.IsConverterPage)
             {
-                e.Effects = (e.Data.GetDataPresent(DataFormats.FileDrop) &&
+                e.Effects = (!_viewModel.ConvertVm.IsConverting && e.Data.GetDataPresent(DataFormats.FileDrop) &&
                              e.Data.GetData(DataFormats.FileDrop) is string[] f &&
                              f.Any(File.Exists))
                     ? DragDropEffects.Copy
@@ -176,8 +176,11 @@ namespace VidDownload.WPF
 
         private void OnWindowDrop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             if (_viewModel.IsConverterPage)
             {
+                if (_viewModel.ConvertVm.IsConverting)
+                    return;
                 if (e.Data.GetDataPresent(DataFormats.FileDrop) &&
                     e.Data.GetData(DataFormats.FileDrop) is string[] cFiles)
                 {

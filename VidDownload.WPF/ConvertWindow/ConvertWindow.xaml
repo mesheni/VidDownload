@@ -9,7 +9,7 @@
         Title="{Binding LocalizedStrings[ConvertWindowTitle]}" Width="820" Height="760" MinWidth="700" MinHeight="520"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize" WindowBackdropType="Mica" Icon="/icon.png"
         ExtendsContentIntoTitleBar="True"
-        AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"
+        AllowDrop="True" PreviewDragOver="OnWindowDragOver" PreviewDrop="OnWindowDrop"
         PreviewKeyDown="OnPreviewKeyDown">
     <Window.Resources>
         <converters:BooleanInvertConverter x:Key="InvertBool"/>

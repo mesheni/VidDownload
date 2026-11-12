@@ -7,6 +7,15 @@ namespace VidDownload.Tests
     public class ParseLogTests
     {
         [Fact]
+        public void HlsProgress_WithSpaceAfterEstimateMarker_ParsesPercentAndSize()
+        {
+            var result = ParseLog.ParseProgressLine("[download]  42.3% of ~ 201.35MiB at 2.97MiB/s ETA 00:01 (frag 67/160)");
+            Assert.Equal(42, result.Percent);
+            Assert.Equal("201.35 MiB", result.TotalSize);
+            Assert.Equal("2.97 MiB/s", result.Speed);
+        }
+
+        [Fact]
         public void StandardLine_ParsesAllFields()
         {
             var progress = ParseLog.ParseProgressLine(

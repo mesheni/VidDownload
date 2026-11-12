@@ -64,6 +64,7 @@ namespace VidDownload.WPF.Services
                 proc.StartInfo.CreateNoWindow = true;
 
                 AddJavaScriptRuntimeArgument(proc);
+                proc.StartInfo.ArgumentList.Add("--newline");
 
                 foreach (var arg in args)
                 {

@@ -22,8 +22,8 @@
        <TextBlock Text="{Binding AppUpdateProgressPercent, StringFormat={}{0}%}" HorizontalAlignment="Right" Margin="0,5,0,8"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-       <Button Content="{Binding LocalizedStrings[CheckShortButton]}" Command="{Binding RefreshAppUpdateCommand}" IsEnabled="{Binding CanManageAppUpdate}" Padding="14,7" Margin="0,0,8,0"/>
-       <Button Content="{Binding LocalizedStrings[UpdateBarAction]}" Command="{Binding UpdateAppCommand}" IsEnabled="{Binding CanManageAppUpdate}" Padding="14,7" Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource VisibleWhen}}"/>
+       <Button Content="{Binding LocalizedStrings[CheckShortButton]}" Command="{Binding RefreshAppUpdateCommand}" IsEnabled="{Binding CanManageAppUpdate}" Padding="14,7"/>
+       <Button Content="{Binding LocalizedStrings[UpdateBarAction]}" Command="{Binding UpdateAppCommand}" IsEnabled="{Binding CanManageAppUpdate}" Padding="14,7" Margin="8,0,0,0" Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource VisibleWhen}}"/>
       </StackPanel>
      </StackPanel>
     </Border>

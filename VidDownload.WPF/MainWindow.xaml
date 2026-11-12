@@ -10,7 +10,7 @@
         Title="{Binding LocalizedStrings[MainWindowTitle]}" WindowStartupLocation="CenterScreen" Icon="/icon.png"
         ResizeMode="CanResize" Width="1120" Height="720" MinWidth="960" MinHeight="620"
         ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica"
-        AllowDrop="True" DragOver="OnWindowDragOver" Drop="OnWindowDrop"
+        AllowDrop="True" PreviewDragOver="OnWindowDragOver" PreviewDrop="OnWindowDrop"
         KeyDown="OnWindowKeyDown"
         FocusManager.FocusedElement="{Binding ElementName=UrlBox}">
 

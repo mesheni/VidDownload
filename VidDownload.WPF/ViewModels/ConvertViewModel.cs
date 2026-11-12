@@ -465,18 +465,24 @@ namespace VidDownload.WPF.ViewModels
             IsCancellable = true;
             _cts = new CancellationTokenSource();
 
+            bool acceptProgress = true;
+
             try
             {
                 var progress = new Progress<DownloadProgress>(p =>
                 {
+                    if (!acceptProgress || !IsConverting) return;
                     StatusMessage = p.StatusMessage;
                     ProgressPercent = p.Percent;
                 });
 
                 var result = await _ffmpegAction.ConvertVideoAsync(options, progress, _cts.Token);
+                acceptProgress = false;
 
                 if (result.Success)
                 {
+                    StatusMessage = string.Empty;
+                    ProgressPercent = 0;
                     _messageService.Info(string.Format(_loc["ConversionSuccess"], result.OutputPath), _loc["SuccessTitle"]);
                     await SaveSettingsAsync();
                 }
@@ -506,8 +512,10 @@ namespace VidDownload.WPF.ViewModels
             }
             finally
             {
+                acceptProgress = false;
                 IsCancellable = false;
                 IsConverting = false;
+                ProgressPercent = 0;
                 _cts?.Dispose();
                 _cts = null;
             }
@@ -572,13 +580,16 @@ namespace VidDownload.WPF.ViewModels
                 foreach (var options in optionsList)
                 {
                     int index = done + failed + 1;
+                    bool acceptFileProgress = true;
                     var progress = new Progress<DownloadProgress>(p =>
                     {
+                        if (!acceptFileProgress || !IsConverting) return;
                         ProgressPercent = (int)Math.Round((done + failed + p.Percent / 100.0) / optionsList.Count * 100);
                         StatusMessage = $"[{index}/{optionsList.Count}] {Path.GetFileName(options.InputPath)} — {p.Percent}%";
                     });
 
                     var result = await _ffmpegAction.ConvertVideoAsync(options, progress, _cts.Token);
+                    acceptFileProgress = false;
                     if (result.Cancelled)
                     {
                         cancelled = true;
@@ -635,6 +646,7 @@ namespace VidDownload.WPF.ViewModels
             {
                 IsCancellable = false;
                 IsConverting = false;
+                ProgressPercent = 0;
                 _cts?.Dispose();
                 _cts = null;
             }
