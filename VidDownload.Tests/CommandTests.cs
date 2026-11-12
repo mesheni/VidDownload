@@ -7,6 +7,42 @@ namespace VidDownload.Tests
     public class CommandTests
     {
         [Fact]
+        public void FetchInfo_UsesDownloadAuthenticationAndProxyWithoutDownloadSideEffects()
+        {
+            var settings = BaseSettings();
+            settings.CookiesFromBrowser = "firefox:C:\\profiles\\test";
+            settings.Proxy = "socks5://127.0.0.1:1080";
+            settings.DownloadSubtitles = true;
+            settings.UseDownloadArchive = true;
+            var args = Command.FetchInfo("url", false, settings);
+            Assert.Contains("firefox:C:\\profiles\\test", args);
+            Assert.Contains(settings.Proxy, args);
+            Assert.DoesNotContain("--write-subs", args);
+            Assert.DoesNotContain("--download-archive", args);
+            Assert.Equal("url", args.Last());
+        }
+
+        [Theory]
+        [InlineData("1080", "b[protocol^=m3u8][height<=1080]")]
+        [InlineData("720", "b[protocol^=m3u8][height<=720]")]
+        [InlineData("", "b[protocol^=m3u8]")]
+        public void HlsFallback_RespectsResolution(string resolution, string expected)
+        {
+            Assert.Equal(expected, Command.HlsFormatSelector(resolution));
+        }
+
+        [Theory]
+        [InlineData("https://www.youtube.com/watch?v=x", "ERROR: HTTP Error 403: Forbidden", false, false, true)]
+        [InlineData("https://youtu.be/x", "ERROR: HTTP Error 403: Forbidden", true, false, false)]
+        [InlineData("https://example.com/video", "ERROR: HTTP Error 403: Forbidden", false, false, false)]
+        [InlineData("https://youtube.com/watch?v=x", "format unavailable", false, false, false)]
+        [InlineData("https://youtube.com/watch?v=x", "HTTP Error 403: Forbidden", false, true, false)]
+        public void AlternativeFormat_IsOfferedOnlyForSingleYoutubeVideo403(string url, string error, bool audio, bool playlist, bool expected)
+        {
+            Assert.Equal(expected, VidDownload.WPF.Services.YtDlpService.CanOfferAlternativeFormat(url, error, audio, playlist));
+        }
+
+        [Fact]
         public void WithYoutubeClientFallback_InsertsExtractorArgumentBeforeUrl()
         {
             var original = new List<string> { "-f", "best", "https://www.youtube.com/watch?v=test" };

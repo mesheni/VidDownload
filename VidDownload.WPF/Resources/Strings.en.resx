@@ -994,4 +994,8 @@ Add to queue?</value>
   <data name="TimeStartPlaceholder" xml:space="preserve"><value>00:00:00</value></data>
   <data name="TimeEndPlaceholder" xml:space="preserve"><value>00:05:00</value></data>
   <data name="AutoPlaceholder" xml:space="preserve"><value>auto</value></data>
+  <data name="AlternativeFormatTitle" xml:space="preserve"><value>Alternative video format</value></data>
+  <data name="AlternativeFormatPrompt" xml:space="preserve"><value>YouTube rejected the direct download (HTTP 403). Retry using HLS with the selected resolution limit? The codec may change and the file may be larger.</value></data>
+  <data name="UpdatesTitle" xml:space="preserve"><value>Updates</value></data>
+  <data name="UpdatesDescription" xml:space="preserve"><value>Application and download tools. Check for updates and follow installation progress.</value></data>
 </root>

@@ -5,6 +5,11 @@ namespace VidDownload.WPF.Control
 {
     public static class Command
     {
+        public static string HlsFormatSelector(string resolution) =>
+            int.TryParse(resolution, out int height) && height > 0
+                ? $"b[protocol^=m3u8][height<={height}]"
+                : "b[protocol^=m3u8]";
+
         /// <summary>
         /// Формирует повторную попытку для YouTube с альтернативным клиентом.
         /// Аргумент вставляется перед URL, чтобы он не оказался частью списка ссылок.
@@ -133,7 +138,7 @@ namespace VidDownload.WPF.Control
             if (!string.IsNullOrWhiteSpace(settings.CookiesFromBrowser))
             {
                 args.Add("--cookies-from-browser");
-                args.Add(settings.CookiesFromBrowser.Trim());
+                args.Add(ResolveCookiesBrowser(settings.CookiesFromBrowser.Trim()));
             }
             else if (!string.IsNullOrWhiteSpace(settings.CookiesFile))
             {
@@ -168,6 +173,61 @@ namespace VidDownload.WPF.Control
             }
         }
 
+        private static string ResolveCookiesBrowser(string browser)
+        {
+            if (!browser.Equals("waterfox", System.StringComparison.OrdinalIgnoreCase))
+                return browser;
+
+            string root = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Waterfox");
+            string ini = Path.Combine(root, "profiles.ini");
+            if (!File.Exists(ini))
+                throw new System.InvalidOperationException("Waterfox profiles.ini not found: " + ini);
+
+            string section = string.Empty;
+            string? installDefault = null;
+            string? profilePath = null;
+            bool profileDefault = false;
+            bool isRelative = true;
+            var profiles = new List<(string Path, bool Relative, bool Default)>();
+            foreach (string raw in File.ReadAllLines(ini).Append("[End]"))
+            {
+                string line = raw.Trim();
+                if (line.StartsWith("[") && line.EndsWith("]"))
+                {
+                    if (section.StartsWith("Profile", System.StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(profilePath))
+                        profiles.Add((profilePath, isRelative, profileDefault));
+                    section = line[1..^1];
+                    profilePath = null;
+                    profileDefault = false;
+                    isRelative = true;
+                }
+                else if (line.StartsWith("Default=", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    string value = line[8..].Trim();
+                    if (section.StartsWith("Install", System.StringComparison.OrdinalIgnoreCase) && installDefault == null)
+                        installDefault = value;
+                    else if (section.StartsWith("Profile", System.StringComparison.OrdinalIgnoreCase))
+                        profileDefault = value == "1";
+                }
+                else if (line.StartsWith("Path=", System.StringComparison.OrdinalIgnoreCase))
+                    profilePath = line[5..].Trim();
+                else if (line.Equals("IsRelative=0", System.StringComparison.OrdinalIgnoreCase))
+                    isRelative = false;
+            }
+
+            var selected = profiles.FirstOrDefault(p => installDefault != null && p.Path.Equals(installDefault, System.StringComparison.OrdinalIgnoreCase));
+            if (selected.Path == null)
+                selected = profiles.FirstOrDefault(p => p.Default);
+            if (selected.Path == null && profiles.Count == 1)
+                selected = profiles[0];
+            if (selected.Path == null)
+                throw new System.InvalidOperationException("Default Waterfox profile not found in " + ini);
+            string path = selected.Relative ? Path.GetFullPath(Path.Combine(root, selected.Path)) : selected.Path;
+            if (!File.Exists(Path.Combine(path, "cookies.sqlite")))
+                throw new System.InvalidOperationException("Waterfox cookies database not found in " + path);
+            return "firefox:" + path;
+        }
+
         private static void AppendPlaylistItems(List<string> args, Settings settings, bool isPlaylist)
         {
             if (isPlaylist && !string.IsNullOrWhiteSpace(settings.PlaylistItems))
@@ -192,7 +252,7 @@ namespace VidDownload.WPF.Control
         }
 
         /// <summary>Аргументы запроса метаданных (`yt-dlp -J`) — синхронное поведение с загрузкой.</summary>
-        public static List<string> FetchInfo(string reference, bool isPlaylist)
+        public static List<string> FetchInfo(string reference, bool isPlaylist, Settings? settings = null)
         {
             var args = new List<string>
             {
@@ -206,6 +266,14 @@ namespace VidDownload.WPF.Control
                 args.Add("--flat-playlist");
             }
 
+            if (settings != null)
+                AppendCommon(args, new Settings
+                {
+                    CookiesFromBrowser = settings.CookiesFromBrowser,
+                    CookiesFile = settings.CookiesFile,
+                    Proxy = settings.Proxy,
+                    Retries = settings.Retries
+                });
             args.Add(reference);
             return args;
         }

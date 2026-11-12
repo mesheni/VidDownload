@@ -206,6 +206,12 @@ namespace VidDownload.WPF
                 var helpWin = AppServices.ServiceProvider.GetRequiredService<HelpWindow>();
                 await CaptureAndSaveAsync(helpWin, Path.Combine(dir, "screenshot_help.png"), 560, 720);
             }
+            else if (targetView == "updates")
+            {
+                var vm = AppServices.ServiceProvider.GetRequiredService<MainViewModel>();
+                var updates = new UpdatesWindow(vm);
+                await CaptureAndSaveAsync(updates, outputPath, 620, 650);
+            }
             else if (targetView == "settings")
             {
                 var settingsWin = AppServices.ServiceProvider.GetRequiredService<SettingsWindow.SettingsWindow>();

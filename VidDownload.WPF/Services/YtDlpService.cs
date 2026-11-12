@@ -152,7 +152,9 @@ namespace VidDownload.WPF.Services
                         if (!string.IsNullOrEmpty(stderr))
                             message += Environment.NewLine + stderr;
 
-                        if (!useYoutubeFallback && IsYoutubeUrl(url) && IsHttpForbidden(stderr))
+                        if (isAudioOnly && !useYoutubeFallback && IsYoutubeUrl(url) && IsHttpForbidden(stderr)
+                            && string.IsNullOrWhiteSpace(settings.CookiesFromBrowser)
+                            && string.IsNullOrWhiteSpace(settings.CookiesFile))
                         {
                             AppLog.Info(nameof(YtDlpService),
                                 "YouTube returned HTTP 403; retrying with the android player client.");
@@ -179,6 +181,9 @@ namespace VidDownload.WPF.Services
             stderr.Contains("HTTP Error 403", StringComparison.OrdinalIgnoreCase) ||
             stderr.Contains("403 Forbidden", StringComparison.OrdinalIgnoreCase);
 
+        public static bool CanOfferAlternativeFormat(string url, string error, bool audio, bool playlist) =>
+            !audio && !playlist && IsYoutubeUrl(url) && IsHttpForbidden(error ?? string.Empty);
+
         private static bool IsYoutubeUrl(string url)
         {
             if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
@@ -195,13 +200,13 @@ namespace VidDownload.WPF.Services
         /// Получает метаданные до загрузки (`yt-dlp -J`, для плейлистов — --flat-playlist).
         /// Бросает исключение с текстом stderr при ненулевом коде выхода.
         /// </summary>
-        public async Task<VideoInfo> FetchInfoAsync(string url, bool isPlaylist, CancellationToken cancellationToken = default)
+        public async Task<VideoInfo> FetchInfoAsync(string url, bool isPlaylist, CancellationToken cancellationToken = default, Settings? settings = null)
         {
             string ytDlpPath = AppPaths.ResolveToolPath("yt-dlp.exe");
             if (!File.Exists(ytDlpPath))
                 throw new InvalidOperationException(LocalizedStrings.Instance["YtDlpMissing"]);
 
-            List<string> args = Command.FetchInfo(url, isPlaylist);
+            List<string> args = Command.FetchInfo(url, isPlaylist, settings);
 
             using Process proc = new();
             proc.StartInfo.FileName = ytDlpPath;

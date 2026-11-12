@@ -20,9 +20,9 @@ namespace VidDownload.WPF.ViewModels
     public partial class SettingsViewModel : ViewModelBase
     {
         /// <summary>Индекс 5 — куки из файла cookies.txt.</summary>
-        private const int CookiesFileIndex = 5;
+        private const int CookiesFileIndex = 6;
 
-        private static readonly string[] CookiesKeys = { "", "chrome", "edge", "firefox", "opera", "FILE" };
+        private static readonly string[] CookiesKeys = { "", "chrome", "edge", "firefox", "opera", "waterfox", "FILE" };
 
         /// <summary>Схемы прокси, которые принимает yt-dlp (--proxy).</summary>
         private static readonly string[] ProxySchemes = { "http", "https", "socks4", "socks5", "socks5h" };
@@ -121,6 +121,7 @@ namespace VidDownload.WPF.ViewModels
             CookiesSources.Add("Edge");
             CookiesSources.Add("Firefox");
             CookiesSources.Add("Opera");
+            CookiesSources.Add("Waterfox");
             CookiesSources.Add(_loc["CookiesFileOption"]);
             SelectedCookiesIndex = selected;
         }

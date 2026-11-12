@@ -994,4 +994,8 @@
   <data name="TimeStartPlaceholder" xml:space="preserve"><value>00:00:00</value></data>
   <data name="TimeEndPlaceholder" xml:space="preserve"><value>00:05:00</value></data>
   <data name="AutoPlaceholder" xml:space="preserve"><value>自动</value></data>
+  <data name="AlternativeFormatTitle" xml:space="preserve"><value>其他视频格式</value></data>
+  <data name="AlternativeFormatPrompt" xml:space="preserve"><value>YouTube 拒绝了直接下载（HTTP 403）。是否使用 HLS 按所选分辨率上限重试？编码格式可能改变，文件可能更大。</value></data>
+  <data name="UpdatesTitle" xml:space="preserve"><value>更新</value></data>
+  <data name="UpdatesDescription" xml:space="preserve"><value>查看应用和下载工具的版本、更新及安装进度。</value></data>
 </root>

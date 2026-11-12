@@ -1,0 +1,57 @@
+<ui:FluentWindow x:Class="VidDownload.WPF.UpdatesWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+ xmlns:c="clr-namespace:VidDownload.WPF.Converters"
+ Title="{Binding LocalizedStrings[UpdatesTitle]}" Width="620" Height="650" MinWidth="480" MinHeight="480"
+ WindowStartupLocation="CenterOwner" ExtendsContentIntoTitleBar="True" WindowBackdropType="Mica" Icon="/icon.png">
+ <Window.Resources><c:BooleanToVisibilityConverter x:Key="VisibleWhen"/></Window.Resources>
+ <Grid>
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+  <ui:TitleBar Title="{Binding LocalizedStrings[UpdatesTitle]}"/>
+  <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+   <StackPanel Margin="24,12,24,24">
+    <TextBlock Text="{Binding LocalizedStrings[UpdatesTitle]}" FontSize="26" FontWeight="SemiBold"/>
+    <TextBlock Text="{Binding LocalizedStrings[UpdatesDescription]}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,6,0,20"/>
+    <Border Style="{StaticResource CardBorder}" Padding="18" Margin="0,0,0,12">
+     <StackPanel>
+      <DockPanel><TextBlock Text="VidDownload" FontSize="17" FontWeight="SemiBold"/><TextBlock Text="{Binding AppVersion}" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondaryBrush}"/></DockPanel>
+      <TextBlock Text="{Binding AppUpdateStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+      <StackPanel Visibility="{Binding IsAppUpdateDownloading, Converter={StaticResource VisibleWhen}}">
+       <ProgressBar Value="{Binding AppUpdateProgressPercent}" Maximum="100" Height="6" Style="{StaticResource RoundedProgressBar}"/>
+       <TextBlock Text="{Binding AppUpdateProgressPercent, StringFormat={}{0}%}" HorizontalAlignment="Right" Margin="0,5,0,8"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+       <Button Content="{Binding LocalizedStrings[CheckShortButton]}" Command="{Binding RefreshAppUpdateCommand}" IsEnabled="{Binding CanManageAppUpdate}" Padding="14,7" Margin="0,0,8,0"/>
+       <Button Content="{Binding LocalizedStrings[UpdateBarAction]}" Command="{Binding UpdateAppCommand}" IsEnabled="{Binding CanManageAppUpdate}" Padding="14,7" Visibility="{Binding IsAppUpdateAvailable, Converter={StaticResource VisibleWhen}}"/>
+      </StackPanel>
+     </StackPanel>
+    </Border>
+    <Border Style="{StaticResource CardBorder}" Padding="18" Margin="0,0,0,12">
+     <StackPanel>
+      <DockPanel><TextBlock Text="yt-dlp" FontSize="17" FontWeight="SemiBold"/><TextBlock Text="{Binding YtDlpVersion}" HorizontalAlignment="Right" Foreground="{DynamicResource TextSecondaryBrush}"/></DockPanel>
+      <TextBlock Text="{Binding YtDlpStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+      <StackPanel Visibility="{Binding IsYtDlpDownloading, Converter={StaticResource VisibleWhen}}">
+       <ProgressBar Value="{Binding YtDlpUpdateProgressPercent}" Maximum="100" Height="6" Style="{StaticResource RoundedProgressBar}"/>
+       <TextBlock Text="{Binding YtDlpUpdateProgressPercent, StringFormat={}{0}%}" HorizontalAlignment="Right" Margin="0,5,0,8"/>
+      </StackPanel>
+      <Button Content="{Binding LocalizedStrings[CheckShortButton]}" Command="{Binding UpdateYtDlpCommand}" IsEnabled="{Binding CanManageYtDlpUpdate}" HorizontalAlignment="Right" Padding="14,7"/>
+     </StackPanel>
+    </Border>
+    <Border Style="{StaticResource CardBorder}" Padding="18">
+     <StackPanel>
+      <TextBlock Text="FFmpeg" FontSize="17" FontWeight="SemiBold"/>
+      <TextBlock Text="{Binding FfmpegVersion}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,6,0,0" ToolTip="{Binding FfmpegVersion}"/>
+      <TextBlock Text="{Binding FfmpegStatusMessage}" TextWrapping="Wrap" Margin="0,8,0,10" Foreground="{DynamicResource TextSecondaryBrush}"/>
+      <StackPanel Visibility="{Binding IsFfmpegDownloading, Converter={StaticResource VisibleWhen}}">
+       <ProgressBar Value="{Binding FfmpegUpdateProgressPercent}" Maximum="100" Height="6" Style="{StaticResource RoundedProgressBar}"/>
+       <TextBlock Text="{Binding FfmpegUpdateProgressPercent, StringFormat={}{0}%}" HorizontalAlignment="Right" Margin="0,5,0,8"/>
+      </StackPanel>
+      <Button Content="{Binding LocalizedStrings[CheckShortButton]}" Command="{Binding CheckFFmpegUpdateCommand}" IsEnabled="{Binding CanManageFfmpegUpdate}" HorizontalAlignment="Right" Padding="14,7"/>
+     </StackPanel>
+    </Border>
+   </StackPanel>
+  </ScrollViewer>
+  <ui:ContentDialogHost x:Name="DialogHost" Grid.RowSpan="2" Panel.ZIndex="50"/>
+ </Grid>
+</ui:FluentWindow>

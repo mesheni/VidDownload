@@ -17,7 +17,7 @@ namespace VidDownload.WPF.Services
             CancellationToken cancellationToken);
 
         /// <summary>Метаданные до загрузки (`yt-dlp -J`; для плейлистов — плоский список элементов).</summary>
-        Task<VideoInfo> FetchInfoAsync(string url, bool isPlaylist, CancellationToken cancellationToken = default);
+        Task<VideoInfo> FetchInfoAsync(string url, bool isPlaylist, CancellationToken cancellationToken = default, Settings? settings = null);
 
         Task<string> GetLocalVersionAsync();
     }

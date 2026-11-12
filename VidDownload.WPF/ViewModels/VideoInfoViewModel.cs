@@ -91,6 +91,9 @@ namespace VidDownload.WPF.ViewModels
         [ObservableProperty]
         private string _selectionSummary = string.Empty;
 
+        [ObservableProperty]
+        private string _downloadSettingsSummary = string.Empty;
+
         /// <summary>В плейлисте ничего не выбрано (подсказка под списком).</summary>
         [ObservableProperty]
         private bool _hasNoPlaylistSelection;

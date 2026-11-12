@@ -148,6 +148,7 @@ namespace VidDownload.WPF.ViewModels
         }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanManageFfmpegUpdate))]
         private bool _isFfmpegChecking;
 
         [ObservableProperty]
@@ -190,6 +191,7 @@ namespace VidDownload.WPF.ViewModels
         private string _appVersion = string.Empty;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanManageAppUpdate))]
         private bool _isAppUpdateChecking;
 
         [ObservableProperty]
@@ -199,10 +201,43 @@ namespace VidDownload.WPF.ViewModels
         private string _appUpdateStatusMessage = string.Empty;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanManageAppUpdate))]
         private bool _isAppUpdateDownloading;
 
         [ObservableProperty]
         private int _appUpdateProgressPercent;
+
+        [ObservableProperty]
+        private int _ytDlpUpdateProgressPercent;
+
+        [ObservableProperty]
+        private int _ffmpegUpdateProgressPercent;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanManageYtDlpUpdate))]
+        private bool _isYtDlpUpdating;
+
+        [ObservableProperty]
+        private bool _isYtDlpDownloading;
+
+        [ObservableProperty]
+        private bool _isFfmpegDownloading;
+
+        public bool CanManageAppUpdate => !IsAppUpdateChecking && !IsAppUpdateDownloading;
+        public bool CanManageYtDlpUpdate => !IsYtDlpUpdating;
+        public bool CanManageFfmpegUpdate => !IsFfmpegChecking;
+
+        [ObservableProperty]
+        private string _ytDlpVersion = string.Empty;
+
+        [RelayCommand]
+        private void OpenUpdates() => new UpdatesWindow(this).ShowDialog();
+
+        [RelayCommand]
+        private Task RefreshAppUpdateAsync() => CheckAppUpdateAsync();
+
+        [RelayCommand]
+        private Task UpdateYtDlpAsync() => CheckUpdateAsync();
 
         /// <summary>Карточка видна как до подтверждения, так и во время загрузки обновления.</summary>
         public bool ShowAppUpdateCard => IsAppUpdateAvailable || IsAppUpdateDownloading;
@@ -729,7 +764,7 @@ namespace VidDownload.WPF.ViewModels
                 IsFetchingInfo = true;
                 try
                 {
-                    info = await _ytDlpService.FetchInfoAsync(Url, IsPlaylist);
+                    info = await _ytDlpService.FetchInfoAsync(Url, IsPlaylist, settings: _settings.Clone());
                 }
                 catch (Exception ex)
                 {
@@ -747,10 +782,12 @@ namespace VidDownload.WPF.ViewModels
                     var window = AppServices.ServiceProvider.GetRequiredService<VideoInfoWindow.VideoInfoWindow>();
                     window.Owner = System.Windows.Application.Current.MainWindow;
                     window.ViewModel.Initialize(info, IsAudioOnly);
+                    window.ViewModel.DownloadSettingsSummary = IsAudioOnly
+                        ? $"{_loc["AudioCodecLabel"]} {_settings.AudioCodec} · {_settings.AudioQuality}"
+                        : $"{_loc["ResolutionLabel"]} {_settings.Resolution}p · {_settings.VideoCodec} · {_settings.Format.ToUpperInvariant()}";
                     window.ShowDialog();
                     if (!window.ViewModel.Confirmed)
                         return false;
-                    _settings.FormatSelector = window.ViewModel.FormatSelector;
                     _settings.PlaylistItems = window.ViewModel.PlaylistItems;
                 }
             }
@@ -1023,6 +1060,19 @@ namespace VidDownload.WPF.ViewModels
                 ? string.Format(_loc["DownloadFailedNotify"], item.DisplayTitle)
                 : string.Format(_loc["DownloadFailedWithReason"], item.DisplayTitle, reason));
             RunSafe(() => AddHistoryAsync(item, DownloadStatus.Failed), nameof(AddHistoryAsync));
+            if (!item.Options.FormatSelector.Contains("protocol^=m3u8", StringComparison.Ordinal)
+                && YtDlpService.CanOfferAlternativeFormat(item.Url, item.ErrorMessage, item.IsAudioOnly, item.IsPlaylist))
+                RunSafe(() => OfferAlternativeFormatAsync(item), nameof(OfferAlternativeFormatAsync));
+        }
+
+        private async Task OfferAlternativeFormatAsync(DownloadItem item)
+        {
+            if (!await _dialogService.AskAsync(_loc["AlternativeFormatPrompt"], _loc["AlternativeFormatTitle"]))
+                return;
+
+            var options = item.Options.Clone();
+            options.FormatSelector = Command.HlsFormatSelector(options.Resolution);
+            _queue.Enqueue(new DownloadItem(item.Url, options, false, false, item.IsReEncode));
         }
 
         private void OnItemCancelled(object? sender, DownloadItem item)
@@ -1173,7 +1223,7 @@ namespace VidDownload.WPF.ViewModels
             _notifications.Ask(
                 string.Format(_loc["ClipboardLinkDetected"], url),
                 _loc["ClipboardLinkTitle"],
-                () => Enqueue(url, notify: true));
+                () => { Url = url; RunSafe(DownloadAsync, nameof(DownloadAsync)); });
         }
 
         // ==== Настройки ====
@@ -1338,9 +1388,12 @@ namespace VidDownload.WPF.ViewModels
                 }
 
                 FfmpegVersion = _loc["FFmpegUpdating"];
+                IsFfmpegDownloading = true;
+                FfmpegUpdateProgressPercent = 0;
 
                 var progress = new Progress<DownloadProgress>(p =>
                 {
+                    FfmpegUpdateProgressPercent = Math.Clamp(p.Percent, 0, 100);
                     if (!string.IsNullOrEmpty(p.StatusMessage))
                         FfmpegStatusMessage = p.StatusMessage;
                 });
@@ -1362,6 +1415,7 @@ namespace VidDownload.WPF.ViewModels
             }
             finally
             {
+                IsFfmpegDownloading = false;
                 IsFfmpegChecking = false;
                 if (!interactive)
                     EndStartupCheck();
@@ -1378,6 +1432,10 @@ namespace VidDownload.WPF.ViewModels
         /// </summary>
         private async Task CheckUpdateCoreAsync(bool interactive)
         {
+            if (IsYtDlpUpdating)
+                return;
+            IsYtDlpUpdating = true;
+            YtDlpStatusMessage = _loc["AppCheckingUpdate"];
             if (!interactive)
                 BeginStartupCheck();
 
@@ -1392,13 +1450,17 @@ namespace VidDownload.WPF.ViewModels
                 catch (Exception ex)
                 {
                     AppLog.Error(nameof(MainViewModel), $"yt-dlp update check failed: {ex.Message}");
+                    YtDlpStatusMessage = string.Format(_loc["ErrorWithMessage"], ex.Message);
                     return;
                 }
 
+                string currentVer = await _updateService.GetCurrentVersionAsync();
+                YtDlpVersion = currentVer;
+                YtDlpStatusMessage = info.IsUpdateAvailable
+                    ? string.Format(_loc["AppUpdateAvailable"], info.Version)
+                    : _loc["AppUpToDate"];
                 if (!info.IsUpdateAvailable)
                     return;
-
-                string currentVer = await _updateService.GetCurrentVersionAsync();
                 bool fileNotFound = string.IsNullOrEmpty(currentVer);
                 string displayCurrent = fileNotFound ? _loc["VersionNotFound"] : currentVer;
 
@@ -1420,27 +1482,32 @@ namespace VidDownload.WPF.ViewModels
 
                 try
                 {
+                    IsYtDlpDownloading = true;
+                    YtDlpUpdateProgressPercent = 0;
                     var progress = new Progress<DownloadProgress>(p =>
                     {
+                        YtDlpUpdateProgressPercent = Math.Clamp(p.Percent, 0, 100);
                         if (!string.IsNullOrEmpty(p.StatusMessage))
                             YtDlpStatusMessage = p.StatusMessage;
                     });
 
                     await _updateService.DownloadUpdateAsync(info, progress);
 
+                    YtDlpVersion = await _updateService.GetCurrentVersionAsync();
+                    YtDlpStatusMessage = string.Format(_loc["YtDlpUpdated"], YtDlpVersion);
+
                     _notifications.Success(string.Format(_loc["YtDlpUpdated"], info.Version), _loc["UpdateCompletedTitle"]);
                 }
                 catch (Exception ex)
                 {
+                    YtDlpStatusMessage = string.Format(_loc["ErrorWithMessage"], ex.Message);
                     _notifications.Error(string.Format(_loc["ErrorWithMessage"], ex.Message), _loc["UpdateErrorTitle"]);
-                }
-                finally
-                {
-                    YtDlpStatusMessage = string.Empty;
                 }
             }
             finally
             {
+                IsYtDlpDownloading = false;
+                IsYtDlpUpdating = false;
                 if (!interactive)
                     EndStartupCheck();
             }
@@ -1456,7 +1523,7 @@ namespace VidDownload.WPF.ViewModels
         /// </summary>
         private async Task CheckAppUpdateCoreAsync(bool interactive)
         {
-            if (IsAppUpdateChecking)
+            if (!CanManageAppUpdate)
                 return;
 
             if (!interactive)
@@ -1469,6 +1536,7 @@ namespace VidDownload.WPF.ViewModels
             {
                 var info = await _updateService.CheckAppUpdateAsync();
                 _appUpdateInfo = info;
+                IsAppUpdateAvailable = info.IsUpdateAvailable;
 
                 if (!info.IsUpdateAvailable)
                 {
@@ -1502,6 +1570,8 @@ namespace VidDownload.WPF.ViewModels
         [RelayCommand]
         private async Task UpdateAppAsync()
         {
+            if (!CanManageAppUpdate)
+                return;
             if (_appUpdateInfo == null || !_appUpdateInfo.IsUpdateAvailable)
                 return;
 

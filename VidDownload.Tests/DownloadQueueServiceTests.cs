@@ -23,7 +23,7 @@ namespace VidDownload.Tests
             public Task<string> GetLocalVersionAsync() => Task.FromResult("2025.01.01");
 
             public Task<VidDownload.WPF.Control.VideoInfo> FetchInfoAsync(
-                string url, bool isPlaylist, CancellationToken cancellationToken = default)
+                string url, bool isPlaylist, CancellationToken cancellationToken = default, Settings settings = null)
                 => Task.FromResult(new VidDownload.WPF.Control.VideoInfo());
         }
 

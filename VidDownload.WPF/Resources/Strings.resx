@@ -994,4 +994,8 @@
   <data name="TimeStartPlaceholder" xml:space="preserve"><value>00:00:00</value></data>
   <data name="TimeEndPlaceholder" xml:space="preserve"><value>00:05:00</value></data>
   <data name="AutoPlaceholder" xml:space="preserve"><value>авто</value></data>
+  <data name="AlternativeFormatTitle" xml:space="preserve"><value>Другой формат видео</value></data>
+  <data name="AlternativeFormatPrompt" xml:space="preserve"><value>YouTube отклонил прямую загрузку (ошибка 403). Повторить через поток HLS с выбранным ограничением разрешения? Кодек может измениться, а размер файла — увеличиться.</value></data>
+  <data name="UpdatesTitle" xml:space="preserve"><value>Обновления</value></data>
+  <data name="UpdatesDescription" xml:space="preserve"><value>Версии приложения и инструментов загрузки. Проверяйте обновления и следите за ходом установки.</value></data>
 </root>

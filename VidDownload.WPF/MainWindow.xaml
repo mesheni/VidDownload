@@ -140,30 +140,12 @@
                     <!-- Нижняя секция боковой панели -->
                     <StackPanel DockPanel.Dock="Bottom">
                         <!-- Карточка доступного обновления -->
-                        <Border CornerRadius="10" Background="{DynamicResource SurfaceBgrBrush}"
-                                BorderBrush="{DynamicResource AppBorderBrush}" BorderThickness="1"
-                                Padding="12,10" Margin="0,0,0,10"
-                                Visibility="{Binding ShowAppUpdateCard, Converter={StaticResource BoolToVis}}">
-                            <StackPanel>
-                                <TextBlock Text="{Binding LocalizedStrings[AppUpdateDownloadTitle]}" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,3"/>
-                                <TextBlock Text="{Binding AppUpdateStatusMessage}" FontSize="11" TextTrimming="CharacterEllipsis"
-                                           Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,8"/>
-                                <Grid Visibility="{Binding IsAppUpdateDownloading, Converter={StaticResource BoolToVis}}" Margin="0,0,0,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <ProgressBar Value="{Binding AppUpdateProgressPercent}" Maximum="100" Height="6" Style="{StaticResource RoundedProgressBar}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding AppUpdateProgressPercent, StringFormat={}{0}%}" FontSize="11"
-                                               Foreground="{DynamicResource TextSecondaryBrush}" Margin="9,0,0,0" VerticalAlignment="Center"/>
-                                </Grid>
-                                <Button Style="{StaticResource AccentPillButton}" Height="28" Padding="12,0" FontSize="11.5"
-                                        Visibility="{Binding IsAppUpdateDownloading, Converter={StaticResource InvertBoolToVis}}"
-                                        Content="{Binding LocalizedStrings[UpdateBarAction]}"
-                                        Command="{Binding UpdateAppCommand}"/>
+                        <Button Style="{StaticResource SecondaryFlatButton}" Command="{Binding OpenUpdatesCommand}" Height="40" HorizontalContentAlignment="Left" Padding="10,0" Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="17" Margin="0,0,10,0"/>
+                                <TextBlock Text="{Binding LocalizedStrings[UpdatesTitle]}"/>
                             </StackPanel>
-                        </Border>
+                        </Button>
 
                         <!-- Настройки -->
                         <Button Style="{StaticResource SecondaryFlatButton}" HorizontalContentAlignment="Left"

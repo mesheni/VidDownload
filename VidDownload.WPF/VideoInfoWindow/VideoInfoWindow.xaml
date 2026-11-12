@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:converters="clr-namespace:VidDownload.WPF.Converters"
         mc:Ignorable="d"
-        Title="{Binding LocalizedStrings[PreviewWindowTitle]}" Width="620" Height="640" MinWidth="520" MinHeight="420"
+        Title="{Binding LocalizedStrings[PreviewWindowTitle]}" Width="620" Height="460" MinWidth="520" MinHeight="420"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize" Icon="/icon.png" WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True">
     <Window.Resources>
@@ -115,48 +115,14 @@
             </Border>
 
             <!-- Форматы одиночного видео -->
-            <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="12,10"
-                    Visibility="{Binding IsFormatsVisible, Converter={StaticResource BoolToVis}}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="2,0,0,7">
-                        <TextBlock Text="{Binding LocalizedStrings[PreviewFormatsSection]}" Style="{StaticResource SectionLabel}" VerticalAlignment="Center"/>
-                        <CheckBox IsChecked="{Binding UseAutoFormat}" Content="{Binding LocalizedStrings[PreviewAutoFormat]}"
-                                  FontSize="{StaticResource FontSizeCaption}"
-                                  Margin="16,0,0,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <ListBox x:Name="FormatsList" Grid.Row="1" ItemsSource="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
-                             Background="Transparent" BorderThickness="0" MaxHeight="300" MinHeight="120"
-                             SizeChanged="OnSnapListSizeChanged"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             ScrollViewer.CanContentScroll="True"
-                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
-                             AutomationProperties.Name="{Binding LocalizedStrings[PreviewFormatsAutomation]}">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                                <Setter Property="Padding" Value="8,5"/>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayText}" FontFamily="{StaticResource MonoFont}" FontSize="{StaticResource FontSizeCaption}"
-                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="2,4"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Grid>
+            <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="16" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="{Binding LocalizedStrings[ParametersTitle]}" Style="{StaticResource SectionLabel}" Margin="0,0,0,8"/>
+                    <TextBlock Text="{Binding DownloadSettingsSummary}" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                </StackPanel>
             </Border>
 
             <!-- Подсказка для режима «только аудио»: карточки форматов нет -->
-            <TextBlock Grid.Row="2" Text="{Binding LocalizedStrings[PreviewAudioOnlyHint]}"
-                       Style="{StaticResource FieldHintText}" Margin="4,10,4,0"
-                       TextWrapping="Wrap" VerticalAlignment="Top"
-                       Visibility="{Binding IsAudioOnly, Converter={StaticResource BoolToVis}}"/>
 
             <!-- Кнопки -->
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,4,0,2">
@@ -173,9 +139,6 @@
                            MinWidth="120" Height="40" FontSize="{StaticResource FontSizeBody}" Margin="10,0,0,0">
                     <TextBlock Text="{Binding LocalizedStrings[CancelButton]}"/>
                 </ui:Button>
-                <TextBlock Text="{Binding SelectionSummary}" VerticalAlignment="Center" Margin="16,0,0,0"
-                           FontFamily="{StaticResource MonoLightFont}" FontSize="{StaticResource FontSizeCaption}"
-                           Foreground="{DynamicResource TextSecondaryBrush}"/>
             </StackPanel>
         </Grid>
 

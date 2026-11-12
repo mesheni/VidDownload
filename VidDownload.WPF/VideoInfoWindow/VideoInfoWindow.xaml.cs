@@ -51,7 +51,6 @@ namespace VidDownload.WPF.VideoInfoWindow
 
         private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            SnapAfterLayout(FormatsList);
             SnapAfterLayout(EntriesList);
         }
 

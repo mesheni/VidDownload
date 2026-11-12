@@ -169,7 +169,7 @@
                         </DockPanel>
 
                         <!-- Файл cookies.txt -->
-                        <DockPanel LastChildFill="True" Margin="0,0,0,8" Visibility="{Binding IsCookiesFileRequired, Converter={StaticResource BoolToVis}}">
+                        <DockPanel LastChildFill="True" Margin="0,0,0,8" Visibility="{Binding IsCookiesFileSelected, Converter={StaticResource BoolToVis}}">
                             <TextBlock DockPanel.Dock="Left" Text="cookies.txt" FontFamily="{StaticResource MonoFont}"
                                        FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" Width="120" VerticalAlignment="Center"/>
                             <Button DockPanel.Dock="Right" Style="{StaticResource SecondaryFlatButton}"
