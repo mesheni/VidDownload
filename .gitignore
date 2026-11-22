@@ -52,3 +52,6 @@ Updater/obj/
 Thumbs.db
 ehthumbs.db
 Icon?
+# AI tool workspaces
+.omo/
+.zcode/
