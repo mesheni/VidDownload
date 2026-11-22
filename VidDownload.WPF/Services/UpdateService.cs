@@ -23,6 +23,18 @@ namespace VidDownload.WPF.Services
         /// </summary>
         private const string AppAssetExtension = ".exe";
 
+        /// <summary>
+        /// Самообновление заменяет один exe, поэтому работает только для portable single-file сборки.
+        /// Установка через MSI (рядом лежит VidDownload.WPF.dll) обновляется новым MSI.
+        /// </summary>
+        public static bool CanSelfUpdate { get; } = DetectSelfUpdateSupport();
+
+        private static bool DetectSelfUpdateSupport()
+        {
+            string? dir = Path.GetDirectoryName(Environment.ProcessPath);
+            return !string.IsNullOrEmpty(dir) && !File.Exists(Path.Combine(dir, "VidDownload.WPF.dll"));
+        }
+
         private readonly IYtDlpService _ytDlpService;
 
         public UpdateService(IYtDlpService ytDlpService)
@@ -124,10 +136,11 @@ namespace VidDownload.WPF.Services
 
                 string currentVer = GetAppVersion();
 
-                if (string.IsNullOrEmpty(currentVer) ||
-                    !Version.TryParse(currentVer, out var current) ||
-                    !Version.TryParse(info.Version, out var latest) ||
-                    current < latest)
+                // Теги с суффиксами (1.2.0-beta) разбирает VersionHelper; если версию распознать
+                // нельзя, обновление не навязываем
+                if (VersionHelper.IsValidDotted(currentVer) &&
+                    VersionHelper.IsValidDotted(info.Version) &&
+                    VersionHelper.CompareDotted(currentVer, info.Version) < 0)
                 {
                     info.IsUpdateAvailable = true;
                 }

@@ -667,6 +667,12 @@ Add to queue?</value>
   <data name="PostQueueConfirm" xml:space="preserve">
     <value>The queue is finished. Perform "{0}"?</value>
   </data>
+  <data name="PostQueueAutoNotice" xml:space="preserve">
+    <value>If there is no response, the action will run automatically in {0} s.</value>
+  </data>
+  <data name="YtDlpUpdateBusy" xml:space="preserve">
+    <value>yt-dlp can't be updated while downloads are in progress. Wait for them to finish.</value>
+  </data>
   <data name="PostQueueConfirmShutdown" xml:space="preserve">
     <value>The queue is finished. Shut down the PC in 30 seconds? (cancel with: shutdown /a)</value>
   </data>

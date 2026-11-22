@@ -109,9 +109,26 @@ namespace VidDownload.Tests
         {
             var args = Command.LoadVideo("url", BaseSettings(), isPlaylist: true, isCheckCoder: false);
 
+            // Папка идёт отдельным аргументом -P, шаблон -o остаётся относительным
+            int p = args.IndexOf("-P");
+            Assert.True(p >= 0);
+            Assert.Equal(@"C:\videos", args[p + 1]);
             Assert.Contains("-o", args);
-            Assert.Contains(@"C:\videos/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s", args);
-            Assert.DoesNotContain("-P", args);
+            Assert.Contains(@"%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s", args);
+            Assert.DoesNotContain(args, a => a.StartsWith(@"C:\videos/"));
+        }
+
+        [Fact]
+        public void LoadVideo_Playlist_PercentInSavePath_DoesNotLeakIntoTemplate()
+        {
+            var settings = BaseSettings();
+            settings.SavePath = @"C:\100% music";
+
+            var args = Command.LoadVideo("url", settings, isPlaylist: true, isCheckCoder: false);
+
+            int o = args.IndexOf("-o");
+            Assert.Equal("%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s", args[o + 1]);
+            Assert.Contains(@"C:\100% music", args);
         }
 
         [Fact]

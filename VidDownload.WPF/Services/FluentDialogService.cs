@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using VidDownload.WPF.Resources;
@@ -26,12 +27,22 @@ namespace VidDownload.WPF.Services
 
         public virtual Task<bool> AskAsync(string message, string title) => ConfirmAsync(message, title);
 
-        public async Task<bool> ConfirmAsync(string message, string title)
+        public Task<bool> ConfirmAsync(string message, string title) => ConfirmCoreAsync(message, title, CancellationToken.None);
+
+        public Task<bool> AskAsync(string message, string title, CancellationToken cancellationToken) =>
+            ConfirmCoreAsync(message, title, cancellationToken);
+
+        private async Task<bool> ConfirmCoreAsync(string message, string title, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await Dialogs.ShowSimpleDialogAsync(CreateOptions(title, message));
+                var result = await Dialogs.ShowSimpleDialogAsync(CreateOptions(title, message), cancellationToken);
                 return result == ContentDialogResult.Primary;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Диалог закрыт программно (ContentDialog сам снимается с хоста) — решает вызывающий код
+                throw;
             }
             catch (Exception ex)
             {

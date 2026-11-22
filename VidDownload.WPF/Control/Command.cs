@@ -239,15 +239,15 @@ namespace VidDownload.WPF.Control
 
         private static void AppendOutput(List<string> args, Settings settings, bool isPlaylist)
         {
+            // Папку передаём отдельно через -P: символ % в её имени иначе стал бы
+            // частью шаблона -o и сломал имена файлов
+            args.Add("-P");
+            args.Add(settings.SavePath);
+
             if (isPlaylist)
             {
                 args.Add("-o");
-                args.Add($"{settings.SavePath}/%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
-            }
-            else
-            {
-                args.Add("-P");
-                args.Add(settings.SavePath);
+                args.Add("%(playlist)s/%(playlist_index)s- %(title)s.%(ext)s");
             }
         }
 

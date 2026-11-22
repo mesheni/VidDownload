@@ -20,7 +20,23 @@ namespace VidDownload.WPF.Services
 
         public ObservableCollection<DownloadItem> Items { get; } = new();
 
-        public int MaxConcurrent { get; set; } = 1;
+        private int _maxConcurrent = 1;
+
+        /// <summary>Идёт выход из приложения: новые загрузки не запускаются.</summary>
+        private bool _exiting;
+
+        public int MaxConcurrent
+        {
+            get => _maxConcurrent;
+            set
+            {
+                if (_maxConcurrent == value)
+                    return;
+                _maxConcurrent = value;
+                // Увеличенный лимит должен сразу занять свободные слоты ожидающими элементами
+                Pump();
+            }
+        }
 
         public bool HasActiveDownloads => Items.Any(i => i.Status == DownloadItemStatus.Downloading);
 
@@ -92,6 +108,7 @@ namespace VidDownload.WPF.Services
                     break;
                 case DownloadItemStatus.Queued:
                     item.Status = DownloadItemStatus.Paused;
+                    item.StatusMessage = LocalizedStrings.Instance["StatusPaused"];
                     break;
             }
         }
@@ -152,9 +169,32 @@ namespace VidDownload.WPF.Services
             }
         }
 
+        /// <summary>
+        /// Выход из приложения: сначала сохраняет очередь (Queued/Downloading/Paused),
+        /// затем останавливает процессы yt-dlp, не переводя элементы в Cancelled —
+        /// иначе при следующем запуске восстановить было бы нечего.
+        /// </summary>
+        public void StopAllForExit()
+        {
+            if (_exiting)
+                return;
+
+            SavePending();
+            _exiting = true;
+
+            foreach (var item in Items.Where(i => i.Status == DownloadItemStatus.Downloading).ToList())
+            {
+                item.PauseRequested = true;
+                item.Cts?.Cancel();
+            }
+        }
+
         /// <summary>Запускает стоящие в очереди элементы, пока есть свободные слоты.</summary>
         private void Pump()
         {
+            if (_exiting)
+                return;
+
             int limit = Math.Clamp(MaxConcurrent, 1, 3);
             while (Items.Count(i => i.Status == DownloadItemStatus.Downloading) < limit)
             {

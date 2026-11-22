@@ -34,6 +34,11 @@ namespace VidDownload.WPF.ViewModels
         private readonly IClipboardMonitorService _clipboardMonitor;
         private readonly IYtDlpService _ytDlpService;
         private bool _isLoading;
+        private readonly SemaphoreSlim _saveLock = new(1, 1);
+        private bool _postQueuePromptOpen;
+
+        /// <summary>Через сколько секунд без ответа выполняется действие «после очереди».</summary>
+        private static readonly TimeSpan PostQueueAutoTimeout = TimeSpan.FromSeconds(60);
         private string _savePath = UserSettings.DefaultDownloadPath;
 
         /// <summary>Последний загруженный снимок настроек — источник сетевых параметров (куки/прокси/ретраи/архив).</summary>
@@ -789,6 +794,7 @@ namespace VidDownload.WPF.ViewModels
                     if (!window.ViewModel.Confirmed)
                         return false;
                     _settings.PlaylistItems = window.ViewModel.PlaylistItems;
+                    _settings.FormatSelector = window.ViewModel.FormatSelector;
                 }
             }
 
@@ -801,6 +807,8 @@ namespace VidDownload.WPF.ViewModels
         private void Enqueue(string url, bool notify = false)
         {
             ApplySelectionsToSettings();
+            _settings.FormatSelector = string.Empty;
+            _settings.PlaylistItems = string.Empty;
 
             var item = new DownloadItem(url, _settings.Clone(), IsPlaylist, IsAudioOnly, IsReEncode);
             _queue.Enqueue(item);
@@ -1008,31 +1016,69 @@ namespace VidDownload.WPF.ViewModels
             RunSafe(CheckPostQueueActionAsync, nameof(CheckPostQueueActionAsync));
         }
 
+        /// <summary>Есть ли в очереди то, что ещё не завершено (загрузка, ожидание, пауза).</summary>
+        private bool HasUnfinishedWork() => _queue.Items.Any(i => i.Status is DownloadItemStatus.Downloading
+            or DownloadItemStatus.Queued
+            or DownloadItemStatus.Paused);
+
         /// <summary>
-        /// Действие после очереди (выключение/сон/гибернация): спрашивает подтверждение,
-        /// когда после завершения загрузки в очереди не осталось активных элементов.
+        /// Действие после очереди (выключение/сон/гибернация): спрашивает подтверждение, когда
+        /// в очереди не осталось незавершённых элементов. Если пользователь не ответил за
+        /// <see cref="PostQueueAutoTimeout"/> (например, ушёл спать), действие выполняется само.
         /// </summary>
         private async Task CheckPostQueueActionAsync()
         {
-            if (PostQueueAction.Length == 0)
+            string action = PostQueueAction;
+            if (action.Length == 0 || _postQueuePromptOpen || HasUnfinishedWork())
                 return;
 
-            if (_queue.Items.Any(i => i.Status is DownloadItemStatus.Downloading
-                or DownloadItemStatus.Queued
-                or DownloadItemStatus.Paused))
-                return;
-
-            string actionName = PostQueueActionItems[Math.Clamp(SelectedPostQueueIndex, 0, PostQueueActionItems.Count - 1)];
-            string message = PostQueueAction == "Shutdown"
-                ? _loc["PostQueueConfirmShutdown"]
-                : string.Format(_loc["PostQueueConfirm"], actionName);
-
-            if (!await _dialogService.AskAsync(message, _loc["ConfirmationTitle"]))
-                return;
-
+            _postQueuePromptOpen = true;
             try
             {
-                switch (PostQueueAction)
+                string actionName = PostQueueActionItems[Math.Clamp(SelectedPostQueueIndex, 0, PostQueueActionItems.Count - 1)];
+                string question = action == "Shutdown"
+                    ? _loc["PostQueueConfirmShutdown"]
+                    : string.Format(_loc["PostQueueConfirm"], actionName);
+                string message = question + Environment.NewLine + Environment.NewLine +
+                    string.Format(_loc["PostQueueAutoNotice"], (int)PostQueueAutoTimeout.TotalSeconds);
+
+                // По таймауту диалог закрывается сам, иначе после сна/гибернации на экране
+                // остался бы устаревший вопрос, а следующий диалог конфликтовал бы с ним за хост
+                bool confirmed;
+                using (var timeout = new CancellationTokenSource(PostQueueAutoTimeout))
+                {
+                    try
+                    {
+                        confirmed = await _dialogService.AskAsync(message, _loc["ConfirmationTitle"], timeout.Token);
+                    }
+                    catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+                    {
+                        // Отсутствие ответа за отведённое время — согласие
+                        confirmed = true;
+                    }
+                }
+
+                // Явный отказ отменяет действие
+                if (!confirmed)
+                    return;
+
+                // За время ожидания пользователь мог добавить новые загрузки
+                if (HasUnfinishedWork())
+                    return;
+
+                ExecutePostQueueAction(action);
+            }
+            finally
+            {
+                _postQueuePromptOpen = false;
+            }
+        }
+
+        private static void ExecutePostQueueAction(string action)
+        {
+            try
+            {
+                switch (action)
                 {
                     case "Shutdown":
                         // 30 секунд на отмену: shutdown /a
@@ -1062,13 +1108,25 @@ namespace VidDownload.WPF.ViewModels
             RunSafe(() => AddHistoryAsync(item, DownloadStatus.Failed), nameof(AddHistoryAsync));
             if (!item.Options.FormatSelector.Contains("protocol^=m3u8", StringComparison.Ordinal)
                 && YtDlpService.CanOfferAlternativeFormat(item.Url, item.ErrorMessage, item.IsAudioOnly, item.IsPlaylist))
+            {
+                // Диалог про альтернативный формат показывается первым; действие после очереди
+                // проверится после него (иначе два диалога конфликтуют за один хост)
                 RunSafe(() => OfferAlternativeFormatAsync(item), nameof(OfferAlternativeFormatAsync));
+            }
+            else
+            {
+                // Упавший последний элемент тоже завершает очередь (отмена пользователем — нет)
+                RunSafe(CheckPostQueueActionAsync, nameof(CheckPostQueueActionAsync));
+            }
         }
 
         private async Task OfferAlternativeFormatAsync(DownloadItem item)
         {
             if (!await _dialogService.AskAsync(_loc["AlternativeFormatPrompt"], _loc["AlternativeFormatTitle"]))
+            {
+                await CheckPostQueueActionAsync();
                 return;
+            }
 
             var options = item.Options.Clone();
             options.FormatSelector = Command.HlsFormatSelector(options.Resolution);
@@ -1231,6 +1289,19 @@ namespace VidDownload.WPF.ViewModels
         private async Task LoadSettingsAsync()
         {
             _isLoading = true;
+            try
+            {
+                await LoadSettingsCoreAsync();
+            }
+            finally
+            {
+                // Иначе исключение внутри оставило бы _isLoading=true, и настройки перестали бы сохраняться
+                _isLoading = false;
+            }
+        }
+
+        private async Task LoadSettingsCoreAsync()
+        {
             var userSettings = await _settingsService.LoadAsync();
             _persisted = userSettings;
             // Пустые сохранённые значения не должны оставлять комбобоксы «пустыми»:
@@ -1279,7 +1350,6 @@ namespace VidDownload.WPF.ViewModels
             }
 
             RateLimitError = IsValidRateLimit(RateLimit) ? string.Empty : _loc["RateLimitInvalid"];
-            _isLoading = false;
         }
 
         /// <summary>
@@ -1288,6 +1358,20 @@ namespace VidDownload.WPF.ViewModels
         /// так одновременные правки из окна настроек и конвертера не затираются.
         /// </summary>
         private async Task SaveSettingsAsync()
+        {
+            // Цикл «прочитать – изменить – записать» не должен выполняться параллельно
+            await _saveLock.WaitAsync();
+            try
+            {
+                await SaveSettingsCoreAsync();
+            }
+            finally
+            {
+                _saveLock.Release();
+            }
+        }
+
+        private async Task SaveSettingsCoreAsync()
         {
             ApplySelectionsToSettings();
 
@@ -1472,6 +1556,14 @@ namespace VidDownload.WPF.ViewModels
                     return;
                 }
 
+                // Запущенный yt-dlp.exe нельзя заменить: обновление дождётся конца загрузок
+                if (_queue.HasActiveDownloads)
+                {
+                    YtDlpStatusMessage = _loc["YtDlpUpdateBusy"];
+                    _notifications.Info(_loc["YtDlpUpdateBusy"]);
+                    return;
+                }
+
                 if (!fileNotFound &&
                     !await _dialogService.AskAsync(
                         string.Format(_loc["YtDlpUpdateDialog"], displayCurrent, info.Version),
@@ -1576,7 +1668,7 @@ namespace VidDownload.WPF.ViewModels
                 return;
 
             // В релизе нет portable .exe — предложить открыть страницу загрузки
-            if (string.IsNullOrEmpty(_appUpdateInfo.DownloadUrl))
+            if (string.IsNullOrEmpty(_appUpdateInfo.DownloadUrl) || !UpdateService.CanSelfUpdate)
             {
                 AppUpdateStatusMessage = _loc["AppUpdateManualOnly"];
                 if (await _dialogService.AskAsync(_loc["AppUpdateOpenPage"], _loc["AppUpdateDownloadTitle"]))
@@ -1636,12 +1728,13 @@ namespace VidDownload.WPF.ViewModels
                     Arguments = $"--src \"{downloadedPath}\" --dst \"{appExe}\" --pid {Environment.ProcessId}" +
                         (string.IsNullOrEmpty(updaterPackagePath) ? string.Empty : $" --updater-src \"{updaterPackagePath}\""),
                     UseShellExecute = true,
-                    Verb = "runas",
+                    // Права администратора нужны, только если папка приложения защищена от записи
+                    Verb = IsDirectoryWritable(Path.GetDirectoryName(appExe)) ? string.Empty : "runas",
                     CreateNoWindow = true
                 };
 
                 Process.Start(updaterInfo);
-                _queue.CancelAll();
+                _queue.StopAllForExit();
                 System.Windows.Application.Current.Shutdown();
             }
             catch (Exception ex)
@@ -1652,6 +1745,25 @@ namespace VidDownload.WPF.ViewModels
             finally
             {
                 IsAppUpdateDownloading = false;
+            }
+        }
+
+        private static bool IsDirectoryWritable(string? directory)
+        {
+            if (string.IsNullOrEmpty(directory))
+                return false;
+
+            try
+            {
+                string probe = Path.Combine(directory, $".write-test-{Guid.NewGuid():N}.tmp");
+                using (File.Create(probe, 1, FileOptions.DeleteOnClose))
+                {
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 

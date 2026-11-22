@@ -31,9 +31,15 @@ namespace VidDownload.WPF.Services
                 var json = await File.ReadAllTextAsync(SettingsPath).ConfigureAwait(false);
                 return JsonSerializer.Deserialize<UserSettings>(json) ?? new UserSettings();
             }
+            catch (JsonException ex)
+            {
+                // Битый JSON сохраняем рядом, чтобы следующее сохранение не затёрло его значениями по умолчанию
+                AppLog.Error(nameof(JsonSettingsService), $"Settings file is corrupt: {ex.Message}");
+                BackupCorruptFile(SettingsPath);
+                return new UserSettings();
+            }
             catch (Exception ex)
             {
-                // Повреждённый settings.json не должен молча стирать настройки пользователя
                 AppLog.Error(nameof(JsonSettingsService), $"Failed to load settings: {ex.Message}");
                 return new UserSettings();
             }
@@ -57,6 +63,38 @@ namespace VidDownload.WPF.Services
         /// чтобы обрыв процесса посреди записи не оставил битый JSON.
         /// </summary>
         internal static async Task AtomicWriteAsync(string path, string content)
+        {
+            // Одновременные сохранения писали бы в один и тот же .tmp и падали друг на друге
+            await WriteLock.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                await AtomicWriteCoreAsync(path, content).ConfigureAwait(false);
+            }
+            finally
+            {
+                WriteLock.Release();
+            }
+        }
+
+        private static readonly SemaphoreSlim WriteLock = new(1, 1);
+
+        /// <summary>Переименовывает повреждённый файл в *.corrupt-дата.bak, не теряя данные пользователя.</summary>
+        internal static void BackupCorruptFile(string path)
+        {
+            try
+            {
+                if (!File.Exists(path))
+                    return;
+                string backup = $"{path}.corrupt-{DateTime.Now:yyyyMMdd-HHmmss}.bak";
+                File.Move(path, backup, overwrite: true);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error(nameof(JsonSettingsService), $"Failed to back up corrupt file: {ex.Message}");
+            }
+        }
+
+        private static async Task AtomicWriteCoreAsync(string path, string content)
         {
             string tempPath = path + ".tmp";
             try

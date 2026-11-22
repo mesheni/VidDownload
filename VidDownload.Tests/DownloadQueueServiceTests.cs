@@ -312,5 +312,64 @@ namespace VidDownload.Tests
             Assert.Contains(nameof(DownloadItem.TotalPercent), raised);
             Assert.Equal(42, item.TotalPercent);
         }
+        [Fact]
+        public async Task StopAllForExit_PausesActiveItem_WithoutCancelling_OrStartingNext()
+        {
+            var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var ytDlp = new FakeYtDlpService
+            {
+                Handler = async ct =>
+                {
+                    started.TrySetResult();
+                    await Task.Delay(Timeout.Infinite, ct);
+                    return new DownloadResult();
+                }
+            };
+            var queue = new DownloadQueueService(ytDlp);
+            bool cancelledRaised = false;
+            queue.ItemCancelled += (_, _) => cancelledRaised = true;
+
+            var active = MakeItem();
+            var waiting = MakeItem("https://youtu.be/y");
+            queue.Enqueue(active);
+            queue.Enqueue(waiting);
+            await WaitAsync(started);
+
+            queue.StopAllForExit();
+
+            for (int i = 0; i < 100 && active.Status != DownloadItemStatus.Paused; i++)
+                await Task.Delay(50);
+
+            Assert.Equal(DownloadItemStatus.Paused, active.Status);
+            Assert.Equal(DownloadItemStatus.Queued, waiting.Status);
+            Assert.False(cancelledRaised);
+        }
+
+        [Fact]
+        public async Task IncreasingMaxConcurrent_StartsWaitingItem()
+        {
+            var ytDlp = new FakeYtDlpService
+            {
+                Handler = async ct =>
+                {
+                    await Task.Delay(Timeout.Infinite, ct);
+                    return new DownloadResult();
+                }
+            };
+            var queue = new DownloadQueueService(ytDlp) { MaxConcurrent = 1 };
+
+            var first = MakeItem();
+            var second = MakeItem("https://youtu.be/y");
+            queue.Enqueue(first);
+            queue.Enqueue(second);
+            Assert.Equal(DownloadItemStatus.Queued, second.Status);
+
+            queue.MaxConcurrent = 2;
+
+            Assert.Equal(DownloadItemStatus.Downloading, second.Status);
+
+            queue.CancelAll();
+            await Task.Delay(100);
+        }
     }
 }

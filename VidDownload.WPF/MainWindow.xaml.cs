@@ -278,7 +278,7 @@ namespace VidDownload.WPF
                 return;
 
             // Останавливаем процессы yt-dlp до завершения приложения
-            AppServices.ServiceProvider.GetRequiredService<IDownloadQueueService>().CancelAll();
+            AppServices.ServiceProvider.GetRequiredService<IDownloadQueueService>().StopAllForExit();
 
             _closeConfirmed = true;
             Close();

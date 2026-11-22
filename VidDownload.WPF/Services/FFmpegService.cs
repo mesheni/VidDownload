@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -52,6 +53,40 @@ namespace VidDownload.WPF.Services
             {
                 return string.Empty;
             }
+        }
+
+        private const char StampSeparator = '|';
+
+        /// <summary>Сборки у BtbN пересобираются ежедневно: новой считаем сборку не раньше чем через этот срок.</summary>
+        private static readonly TimeSpan StaleBuildAge = TimeSpan.FromDays(30);
+
+        internal static string BuildStamp(string tag, string assetName, DateTime assetUpdatedUtc) =>
+            string.Join(StampSeparator, tag, assetName, assetUpdatedUtc.ToString("O", CultureInfo.InvariantCulture));
+
+        /// <summary>
+        /// Нужно ли обновление: сменились тег или файл сборки, либо установленной сборке больше
+        /// <see cref="StaleBuildAge"/>. Старый формат (только тег) один раз приводит к переустановке.
+        /// </summary>
+        internal static bool IsNewerBuild(string storedStamp, string currentStamp)
+        {
+            if (string.IsNullOrEmpty(storedStamp))
+                return true;
+
+            string[] stored = storedStamp.Split(StampSeparator);
+            string[] current = currentStamp.Split(StampSeparator);
+            if (stored.Length < 3 || current.Length < 3)
+                return !string.Equals(storedStamp, currentStamp, StringComparison.Ordinal);
+
+            if (stored[0] != current[0] || stored[1] != current[1])
+                return true;
+
+            if (DateTime.TryParse(stored[2], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var storedDate) &&
+                DateTime.TryParse(current[2], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var currentDate))
+            {
+                return currentDate - storedDate >= StaleBuildAge;
+            }
+
+            return false;
         }
 
         private static string GetStoredTag()
@@ -145,14 +180,14 @@ namespace VidDownload.WPF.Services
                     !a.Name.Contains("master", StringComparison.OrdinalIgnoreCase))
                     ?? matches.FirstOrDefault();
 
+                // Без подходящего архива скачивать нечего — обновление не предлагаем
                 if (chosen != null)
                 {
                     info.DownloadUrl = chosen.BrowserDownloadUrl;
-                }
+                    info.Stamp = BuildStamp(latest.TagName, chosen.Name, chosen.UpdatedAt.UtcDateTime);
 
-                if (string.IsNullOrEmpty(storedTag) || storedTag != latest.TagName)
-                {
-                    info.IsUpdateAvailable = true;
+                    // Тег у BtbN плавающий («latest»), поэтому по одному тегу обновление не обнаружить
+                    info.IsUpdateAvailable = IsNewerBuild(storedTag, info.Stamp);
                 }
             }
             catch
@@ -196,7 +231,7 @@ namespace VidDownload.WPF.Services
                 if (!File.Exists(exePath))
                     throw new InvalidOperationException(LocalizedStrings.Instance["FFmpegExeNotFound"]);
 
-                StoreTag(info.LatestVersion);
+                StoreTag(string.IsNullOrEmpty(info.Stamp) ? info.LatestVersion : info.Stamp);
 
                 progress?.Report(new DownloadProgress { Percent = 100, StatusMessage = LocalizedStrings.Instance["FFmpegUpdatedShort"] });
             }

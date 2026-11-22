@@ -670,6 +670,12 @@
   <data name="PostQueueConfirm" xml:space="preserve">
     <value>Очередь завершена. Выполнить «{0}»?</value>
   </data>
+  <data name="PostQueueAutoNotice" xml:space="preserve">
+    <value>Если не ответить, действие выполнится автоматически через {0} с.</value>
+  </data>
+  <data name="YtDlpUpdateBusy" xml:space="preserve">
+    <value>Нельзя обновить yt-dlp, пока идут загрузки. Дождитесь их завершения.</value>
+  </data>
   <data name="PostQueueConfirmShutdown" xml:space="preserve">
     <value>Очередь завершена. Выключить компьютер через 30 секунд? (отмена — команда shutdown /a)</value>
   </data>

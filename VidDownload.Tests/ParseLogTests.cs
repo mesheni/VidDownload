@@ -182,5 +182,15 @@ namespace VidDownload.Tests
             Assert.Equal(10, progress.PlaylistCount);
             Assert.Equal("Mix", progress.PlaylistTitle);
         }
+        [Theory]
+        [InlineData("[ExtractAudio] Destination: C:\\videos\\clip.mp3", @"C:\videos\clip.mp3")]
+        [InlineData("[VideoRemuxer] Remuxing video from webm to mp4; Destination: C:\\videos\\clip.mp4", @"C:\videos\clip.mp4")]
+        [InlineData("[VideoConvertor] Converting video from webm to mp4; Destination: C:\\videos\\clip.mp4", @"C:\videos\clip.mp4")]
+        public void PostProcessorLines_SetFinalDestinationPath(string line, string expected)
+        {
+            var progress = ParseLog.ParseProgressLine(line);
+
+            Assert.Equal(expected, progress.DestinationPath);
+        }
     }
 }

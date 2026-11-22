@@ -27,8 +27,12 @@ namespace VidDownload.WPF.Control
             RegexOptions.Compiled);
 
         // [download] Destination: C:\path\file.mp4
+        // Постобработка меняет итоговый файл, поэтому путь берём и из её строк:
+        // [ExtractAudio] Destination: C:\path\file.mp3
+        // [VideoRemuxer] Remuxing video from webm to mp4; Destination: C:\path\file.mp4
+        // [VideoConvertor] Converting video from webm to mp4; Destination: C:\path\file.mp4
         private static readonly Regex DestinationRegex = new(
-            @"^\[download\]\s+Destination:\s+(?<path>.+)$",
+            @"^\[(?:download|ExtractAudio|VideoRemuxer|VideoConvertor)\]\s+(?:[^;]*;\s*)?Destination:\s+(?<path>.+)$",
             RegexOptions.Compiled);
 
         // [Merger] Merging formats into "C:\path\file.mp4"

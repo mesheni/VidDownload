@@ -20,6 +20,9 @@ namespace VidDownload.WPF.Services
             WriteIndented = true
         };
 
+        /// <summary>Предел размера истории: файл перечитывается и перезаписывается при каждой загрузке.</summary>
+        private const int MaxEntries = 1000;
+
         private readonly SemaphoreSlim _lock = new(1, 1);
 
         public JsonDownloadHistoryService()
@@ -38,6 +41,8 @@ namespace VidDownload.WPF.Services
             {
                 var entries = await LoadInternalAsync().ConfigureAwait(false);
                 entries.Insert(0, entry);
+                if (entries.Count > MaxEntries)
+                    entries.RemoveRange(MaxEntries, entries.Count - MaxEntries);
                 await SaveInternalAsync(entries).ConfigureAwait(false);
             }
             finally
@@ -97,6 +102,12 @@ namespace VidDownload.WPF.Services
 
                 var json = await File.ReadAllTextAsync(HistoryPath).ConfigureAwait(false);
                 return JsonSerializer.Deserialize<List<DownloadHistoryEntry>>(json) ?? new List<DownloadHistoryEntry>();
+            }
+            catch (JsonException ex)
+            {
+                AppLog.Error(nameof(JsonDownloadHistoryService), $"History file is corrupt: {ex.Message}");
+                JsonSettingsService.BackupCorruptFile(HistoryPath);
+                return new List<DownloadHistoryEntry>();
             }
             catch (Exception ex)
             {

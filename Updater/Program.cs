@@ -114,12 +114,21 @@ internal static class Program
 
         try
         {
-            var startInfo = new ProcessStartInfo(dst)
+            // Запуск через explorer.exe: приложение стартует с правами обычного пользователя,
+            // а не с повышенными правами Updater (иначе Windows блокирует перетаскивание
+            // ссылок и файлов из Проводника в окно)
+            try
             {
-                WorkingDirectory = Path.GetDirectoryName(dst),
-                UseShellExecute = true
-            };
-            Process.Start(startInfo);
+                Process.Start(new ProcessStartInfo("explorer.exe", $"\"{dst}\"") { UseShellExecute = false });
+            }
+            catch (Exception)
+            {
+                Process.Start(new ProcessStartInfo(dst)
+                {
+                    WorkingDirectory = Path.GetDirectoryName(dst),
+                    UseShellExecute = true
+                });
+            }
             Console.WriteLine($"Restarted: {dst}");
         }
         catch (Exception ex)

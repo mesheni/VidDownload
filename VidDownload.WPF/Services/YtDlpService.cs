@@ -64,6 +64,7 @@ namespace VidDownload.WPF.Services
                 proc.StartInfo.CreateNoWindow = true;
 
                 AddJavaScriptRuntimeArgument(proc);
+                AddFfmpegLocationArgument(proc);
                 proc.StartInfo.ArgumentList.Add("--newline");
 
                 foreach (var arg in args)
@@ -265,6 +266,20 @@ namespace VidDownload.WPF.Services
 
             process.StartInfo.ArgumentList.Add("--js-runtimes");
             process.StartInfo.ArgumentList.Add(runtime);
+        }
+
+        /// <summary>
+        /// Явно указывает yt-dlp на ffmpeg приложения: без этого склейка и извлечение аудио
+        /// ломаются, если yt-dlp и ffmpeg лежат в разных папках.
+        /// </summary>
+        private static void AddFfmpegLocationArgument(Process process)
+        {
+            string ffmpeg = AppPaths.ResolveToolPath("ffmpeg.exe");
+            if (!File.Exists(ffmpeg))
+                return;
+
+            process.StartInfo.ArgumentList.Add("--ffmpeg-location");
+            process.StartInfo.ArgumentList.Add(ffmpeg);
         }
 
         public async Task<string> GetLocalVersionAsync()

@@ -667,6 +667,12 @@
   <data name="PostQueueConfirm" xml:space="preserve">
     <value>队列已完成。执行“{0}”？</value>
   </data>
+  <data name="PostQueueAutoNotice" xml:space="preserve">
+    <value>如果没有响应，将在 {0} 秒后自动执行该操作。</value>
+  </data>
+  <data name="YtDlpUpdateBusy" xml:space="preserve">
+    <value>有下载正在进行时无法更新 yt-dlp，请等待下载完成。</value>
+  </data>
   <data name="PostQueueConfirmShutdown" xml:space="preserve">
     <value>队列已完成。将在 30 秒后关机？（取消命令：shutdown /a）</value>
   </data>

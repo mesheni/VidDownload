@@ -176,7 +176,7 @@ namespace VidDownload.WPF
         protected override void OnExit(ExitEventArgs e)
         {
             // Останавливаем активные процессы yt-dlp, чтобы не оставлять сирот
-            AppServices.ServiceProvider.GetService<IDownloadQueueService>()?.CancelAll();
+            AppServices.ServiceProvider.GetService<IDownloadQueueService>()?.StopAllForExit();
             AppServices.ServiceProvider.GetService<ITrayService>()?.Dispose();
             AppServices.ServiceProvider.GetService<IClipboardMonitorService>()?.Dispose();
             _activateSignal?.Dispose();

@@ -31,7 +31,9 @@ namespace VidDownload.WPF.Control
             return true;
         }
 
-        public static string Format(TimeSpan time) => time.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+        public static string Format(TimeSpan time) =>
+            // Формат hh обрезал бы значения от 24 часов, поэтому часы считаем отдельно
+            string.Create(CultureInfo.InvariantCulture, $"{(long)time.TotalHours:00}:{time.Minutes:00}:{time.Seconds:00}");
 
         /// <summary>Строит «*start-end» для yt-dlp; обе границы обязательны, начало строго меньше конца.</summary>
         public static bool TryBuildSection(string startInput, string endInput, out string section)

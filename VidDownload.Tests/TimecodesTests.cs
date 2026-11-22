@@ -1,3 +1,4 @@
+using System;
 using VidDownload.WPF.Control;
 using Xunit;
 
@@ -41,6 +42,19 @@ namespace VidDownload.Tests
             Assert.False(Timecodes.TryBuildSection("1:30", "", out _));
             Assert.False(Timecodes.TryBuildSection("5:00", "1:30", out _));
             Assert.False(Timecodes.TryBuildSection("bad", "5:00", out _));
+        }
+        [Fact]
+        public void Format_DoesNotWrapAfter24Hours()
+        {
+            Assert.Equal("25:00:00", Timecodes.Format(TimeSpan.FromHours(25)));
+            Assert.Equal("00:01:30", Timecodes.Format(TimeSpan.FromSeconds(90)));
+        }
+
+        [Fact]
+        public void TryBuildSection_SupportsLongRanges()
+        {
+            Assert.True(Timecodes.TryBuildSection("0", "25:00:00", out string section));
+            Assert.Equal("*00:00:00-25:00:00", section);
         }
     }
 }

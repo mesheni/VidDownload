@@ -26,6 +26,12 @@ namespace VidDownload.WPF.Services
         void ClearFinished();
         void CancelAll();
 
+        /// <summary>
+        /// Выход из приложения: сохраняет очередь и останавливает процессы,
+        /// оставляя элементы восстанавливаемыми (в отличие от <see cref="CancelAll"/>).
+        /// </summary>
+        void StopAllForExit();
+
         /// <summary>Сохраняет незавершённые элементы в queue.json.</summary>
         void SavePending();
 

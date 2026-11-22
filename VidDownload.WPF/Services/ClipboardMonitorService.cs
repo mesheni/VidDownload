@@ -39,7 +39,7 @@ namespace VidDownload.WPF.Services
                 if (value)
                 {
                     // Не реагируем на то, что уже лежит в буфере в момент включения
-                    _lastText = SafeGetText();
+                    _lastText = SafeGetText() ?? string.Empty;
                     _timer.Start();
                 }
                 else
@@ -51,8 +51,11 @@ namespace VidDownload.WPF.Services
 
         private void OnTick(object? sender, EventArgs e)
         {
-            string text = SafeGetText();
-            if (text == _lastText)
+            string? text = SafeGetText();
+
+            // Буфер занят другим процессом — пропускаем тик, не сбрасывая последнее значение,
+            // иначе та же ссылка на следующем тике снова сочтётся новой
+            if (text == null || text == _lastText)
                 return;
 
             _lastText = text;
@@ -60,7 +63,7 @@ namespace VidDownload.WPF.Services
                 UrlDetected?.Invoke(this, text);
         }
 
-        private static string SafeGetText()
+        private static string? SafeGetText()
         {
             try
             {
@@ -70,8 +73,8 @@ namespace VidDownload.WPF.Services
             }
             catch
             {
-                // Буфер может быть временно занят другим процессом — пропускаем тик
-                return string.Empty;
+                // Буфер может быть временно занят другим процессом
+                return null;
             }
         }
 
